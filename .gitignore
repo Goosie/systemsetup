@@ -1,0 +1,13 @@
+# Node / Python rommel
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store

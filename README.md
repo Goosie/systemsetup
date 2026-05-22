@@ -1,0 +1,40 @@
+# Goosielabs Systemsetup
+
+Hoe de Goosielabs server in elkaar zit — voor mezelf om scherp te houden,
+voor anderen om te begrijpen wat hier gebeurt.
+
+## Wat staat hier?
+
+Centrale plek voor alles wat de server *vormt* — geen apps, maar de
+configuratie, scripts en agents eromheen.
+
+| Map           | Wat                                                      |
+|---------------|----------------------------------------------------------|
+| `claude/`     | Astrid — persoonlijke Claude assistent (CLAUDE.md, settings) |
+| `scripts/`    | haitje, jurry, backup, newapp — server-tooling           |
+| `nginx/`      | Kopieën van `/etc/nginx/sites-enabled/*` als referentie  |
+| `systemd/`    | Service files voor strfry, lnbits, nutshell, backups     |
+| `templates/`  | nostr-boilerplate, mcp-template.json                     |
+| `docs/`       | Uitleg per onderdeel                                     |
+
+## Server in één blik
+
+- **Host:** `deploy@goosielabs.com` (Ubuntu 24.04)
+- **Webroot:** `/var/www/goosielabs/`
+- **Apps:** `/var/www/goosielabs/apps/`
+- **Node:** v20.20.2
+
+Subdomeinen: zie [`docs/infra.md`](docs/infra.md).
+
+## De V-formatie
+
+Goosie Labs werkt met AI-ganzen, ieder met een eigen rol. Zie [`docs/ganzen.md`](docs/ganzen.md).
+
+## Apps
+
+Overzicht van wat er draait, in bouw is, of experiment is: zie [`docs/apps.md`](docs/apps.md).
+
+## Hoe is dit opgebouwd?
+
+TODO — Perry schrijft hier zelf het verhaal van hoe Goosielabs is ontstaan
+en hoe de stukken samenhangen.
