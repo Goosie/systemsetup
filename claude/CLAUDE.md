@@ -33,9 +33,7 @@ Perry werkt zoals ganzen vliegen:
 **Lightning:** Alby Hub op Umbrel, NWC voor app-integraties
 **Lightning address:** zoomer@getalby.com
 **Nostr npub:** npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc
-**Mobiel nr** + 31 (0) 6 51 28 78 13
-**Email adres** Perry.smit@gmail.com
-**Contact Persoon vriendin elly** + 31 (0) 6 51 26 33 42
+
 ## Workflow Regels
 
 **WP-CLI altijd met deze flags toevoegen aan elk commando:**
