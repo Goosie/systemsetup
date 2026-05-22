@@ -1,0 +1,9 @@
+[Unit]
+Description=Goosielabs dagelijkse backup — 3:00 AM
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

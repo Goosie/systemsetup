@@ -1,0 +1,14 @@
+[Unit]
+Description=LNbits
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/lnbits
+ExecStart=/home/deploy/.local/bin/poetry run lnbits --port 5000 --host 0.0.0.0
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

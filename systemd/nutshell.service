@@ -1,0 +1,15 @@
+[Unit]
+Description=Cashu Nutshell Mint
+After=network.target lnbits.service
+Requires=lnbits.service
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/nutshell
+ExecStart=/home/deploy/.cache/pypoetry/virtualenvs/cashu-u8tFPHb7-py3.10/bin/mint
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Goosielabs dagelijkse backup
+After=network.target mariadb.service
+
+[Service]
+Type=oneshot
+User=deploy
+ExecStart=/home/deploy/backup.sh
+StandardOutput=journal
+StandardError=journal

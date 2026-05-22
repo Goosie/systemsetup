@@ -1,0 +1,16 @@
+[Unit]
+Description=strfry Nostr relay
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+ExecStart=/usr/local/bin/strfry relay --config=/etc/strfry.conf
+Restart=always
+RestartSec=5
+WorkingDirectory=/var/lib/strfry
+LimitNOFILE=524288
+
+
+[Install]
+WantedBy=multi-user.target
