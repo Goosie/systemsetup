@@ -1,0 +1,20 @@
+[Unit]
+Description=Goosie Labs Admission DVM
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/scripts/admission
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=5
+Environment=ADMISSION_PORT=3004
+Environment=RELAY_URL=wss://goosielabs.com/relay
+Environment=WHITELIST_PATH=/home/deploy/whitelist.json
+Environment=PERRY_PUBKEY=a80398e86c03ffadc7030fe135ee7614b6fabb204fc0f6641838fb4b8abf0b0c
+# Zet een geheim voor handmatige admin-endpoints:
+# Environment=ADMIN_SECRET=kies-een-sterk-geheim
+
+[Install]
+WantedBy=multi-user.target
