@@ -1,42 +1,46 @@
 #!/bin/bash
+set -e
+
 APPNAME=$1
 APPDIR="/var/www/goosielabs/apps/$APPNAME"
 CLAUDE_MD="/home/deploy/.claude/CLAUDE.md"
+DATUM=$(date +%Y-%m-%d)
+
+[[ -z "$APPNAME" ]] && { echo "Gebruik: newapp <naam>"; exit 1; }
+[[ "$APPNAME" =~ [^a-z0-9-] ]] && { echo "❌ Naam mag alleen a-z, 0-9 en - bevatten"; exit 1; }
 
 echo "🦆 Aanmaken app: $APPNAME"
 
-# Python template engine
-python3 /home/deploy/create-app.py $APPNAME
+python3 /home/deploy/create-app.py "$APPNAME"
 
-cd $APPDIR
+cd "$APPDIR" || { echo "❌ $APPDIR bestaat niet — create-app.py mislukt"; exit 1; }
 
-# Geheugen-vriendelijk bouwen (server heeft 1.9Gi RAM + 2GB swap)
+git init
+git config init.defaultBranch main
+gh repo create "Goosie/$APPNAME" --private --source=. --remote=origin &
+GH_PID=$!
+
+# Node memory beperken — server heeft 1.9Gi RAM + 2GB swap
 export NODE_OPTIONS="--max-old-space-size=1024"
 
-# Build de app
 echo "📦 Packages installeren..."
 npm install --no-audit --no-fund --prefer-offline
 echo "🏗 Bouwen..."
 npm run build 2>&1
 
-# Nginx — alleen toevoegen als nog niet bestaat
+wait $GH_PID
+
 if ! grep -q "location /apps/$APPNAME/" /etc/nginx/sites-enabled/goosielabs.com; then
-    sudo sed -i "s|    location /apps/ {|    location /apps/$APPNAME/ {\n        alias /var/www/goosielabs/apps/$APPNAME/dist/;\n        try_files \$uri \$uri/ =404;\n    }\n\n    location /apps/ {|" /etc/nginx/sites-enabled/goosielabs.com
+    sudo sed -i "s|    location /apps/ {|    location /apps/$APPNAME/ {\n        alias /var/www/goosielabs/apps/$APPNAME/dist/;\n        try_files \$uri \$uri/ /apps/$APPNAME/index.html;\n    }\n\n    location /apps/ {|" /etc/nginx/sites-enabled/goosielabs.com
+    sudo nginx -t && sudo nginx -s reload
 fi
-sudo nginx -t && sudo nginx -s reload
 
 echo ""
 echo "💡 Type in Claude Code: Lees CLAUDE.md en stel je voor als Architect"
 echo ""
 
-# Git
-git init
-git config init.defaultBranch main
-git config user.email "perry.smit@gmail.com"
-git config user.name "Goosie"
-gh repo create Goosie/$APPNAME --private --source=. --remote=origin
+DEFAULT_COLOR="#6366f1"
 
-# Tile aanmaken voor landing page
 if [ ! -f "$APPDIR/tile.json" ]; then
     cat > "$APPDIR/tile.json" << TILEJSON
 {
@@ -46,15 +50,24 @@ if [ ! -f "$APPDIR/tile.json" ]; then
   "url": "https://goosielabs.com/apps/$APPNAME/",
   "visible": true,
   "order": 50,
-  "juridischadvies": "https://github.com/Goosie/$APPNAME/blob/main/juridischadvies.md"
+  "github": "https://github.com/Goosie/$APPNAME",
+  "juridischadvies": "https://github.com/Goosie/$APPNAME/blob/main/juridischadvies.md",
+  "icon": "/apps/$APPNAME/icons/icon-192.png",
+  "icon_bg": "$DEFAULT_COLOR"
 }
 TILEJSON
-    echo "📌 tile.json aangemaakt — pas de beschrijving aan in $APPDIR/tile.json"
+    echo "📌 tile.json aangemaakt — pas title, description en icon_bg aan"
 fi
 
-# Juridisch advies aanmaken
+echo "🎨 App icon genereren..."
+mkdir -p "$APPDIR/public/icons" "$APPDIR/dist/icons"
+node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" 2>&1
+cp "$APPDIR/public/icons/icon-192.png" "$APPDIR/dist/icons/" 2>/dev/null || true
+cp "$APPDIR/public/icons/icon-512.png" "$APPDIR/dist/icons/" 2>/dev/null || true
+echo "🎨 Icon klaar — pas icon_bg aan in tile.json en hergeneer met:"
+echo "   node /var/www/goosielabs/generate-icons.mjs $APPNAME <#kleur> [emoji-glyph]"
+
 if [ ! -f "$APPDIR/juridischadvies.md" ]; then
-    DATUM=$(date +%Y-%m-%d)
     cat > "$APPDIR/juridischadvies.md" << JURIDISCH
 # Juridisch Advies — $APPNAME
 > Opgesteld door Jurry, juridisch agent Goosie Labs
@@ -93,16 +106,8 @@ JURIDISCH
     echo "⚖️  juridischadvies.md aangemaakt — run 'jurry review $APPNAME' voor een volledige analyse"
 fi
 
-# Juridisch advies HTML genereren
-python3 /home/deploy/scripts/generate-juridisch-html.py "$APPNAME"
-
-# Landing page bijwerken
 echo "🖼 Landing page bijwerken..."
 /home/deploy/update-tiles.sh
-
-# Astrid bijwerken — voeg nieuwe app toe aan CLAUDE.md
-echo "📋 Astrid bijwerken..."
-DATUM=$(date +%Y-%m-%d)
 
 if ! grep -q "| $APPNAME " "$CLAUDE_MD"; then
     sed -i "/| Astrid /i | $APPNAME | — beschrijving nog toe te voegen — | IN BOUW | /apps/$APPNAME |" "$CLAUDE_MD"
@@ -111,6 +116,9 @@ else
     echo "ℹ️  Astrid kende $APPNAME al"
 fi
 
+echo "🔄 Claude config syncen..."
+/home/deploy/sync-claude-config.sh quiet
+
+
 echo ""
 echo "✅ App $APPNAME live op https://goosielabs.com/apps/$APPNAME/"
-
