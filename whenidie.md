@@ -432,3 +432,5 @@ Als je dit werk wilt voortzetten: volg je instinct, leer al doende, en wees niet
 ---
 
 *"De eerste gans breekt de wind. De rest vliegt makkelijker."*
+
+<!-- last updated: 2026-05-26 -->
