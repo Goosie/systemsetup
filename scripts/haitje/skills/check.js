@@ -17,7 +17,7 @@ const EXPECTED_SERVER_SECTIONS = [
   'Stack',
   'Apps',
   'NIP',
-  'Kwaliteitsregels',
+  'QUALITY RULES',
 ];
 
 // Welke secties verwachten we in de globale CLAUDE.md?
