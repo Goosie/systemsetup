@@ -42,3 +42,4 @@ Wat draait er, en waar.
 | Idee        | Bron / link | Notitie |
 |-------------|-------------|---------|
 | Futurepaper | [decent-newsroom/newsroom](https://github.com/decent-newsroom/newsroom) | Onderzoeken of het wat is voor het futurepaper idee |
+| Gittr       | [gittr.space](https://gittr.space/) | Mogelijk interessant voor ons — onderzoeken |
