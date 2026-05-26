@@ -195,6 +195,36 @@ Dit is de AI-tool waarmee ik bouw. Gemaakt door Anthropic. Je start het met het 
 
 ## Hoe ik werk (voor wie het wil voortzetten)
 
+### SSH-toegang instellen
+
+Ik werk vanaf twee apparaten: mijn desktop-pc en mijn mobiel (Termux). Beide hebben een eigen SSH-sleutel.
+
+**Desktop → server:** de SSH-alias `deploy` staat ingesteld in `~/.ssh/config` op mijn pc. De sleutel zit in LastPass.
+
+**Mobiel (Termux) → server:** Termux heeft een aparte sleutel. De configuratie staat in `~/.ssh/config` op de telefoon:
+
+```
+Host deploy
+    HostName 209.38.106.245
+    User deploy
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+Als je een nieuw apparaat toegang wilt geven:
+
+```bash
+# Op het nieuwe apparaat — sleutel aanmaken:
+ssh-keygen -t ed25519 -C "omschrijving-apparaat"
+
+# Publieke sleutel ophalen:
+cat ~/.ssh/id_ed25519.pub
+
+# Op de server (via een apparaat dat al toegang heeft):
+echo "PLAK_PUBLIEKE_SLEUTEL" >> ~/.ssh/authorized_keys
+```
+
+---
+
 ### Sessies met tmux
 
 Ik werk via een terminal op de server. Sessies blijven draaien ook als ik mijn pc uitzet, via **tmux**.
