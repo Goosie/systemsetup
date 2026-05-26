@@ -110,7 +110,9 @@ echo "🖼 Landing page bijwerken..."
 /home/deploy/update-tiles.sh
 
 if ! grep -q "| $APPNAME " "$CLAUDE_MD"; then
-    sed -i "/| Astrid /i | $APPNAME | — beschrijving nog toe te voegen — | IN BOUW | /apps/$APPNAME |" "$CLAUDE_MD"
+    # Patroon matcht alleen de projectentabel-rij (naam-cel exact "Astrid"),
+    # niet "Astrid bijwerken" in de newapp-stappentabel — anders dubbele/foute insert.
+    sed -i "/| Astrid *|/i | $APPNAME | — beschrijving nog toe te voegen — | IN BOUW | /apps/$APPNAME |" "$CLAUDE_MD"
     echo "✅ Astrid weet nu van $APPNAME (toegevoegd op $DATUM)"
 else
     echo "ℹ️  Astrid kende $APPNAME al"
