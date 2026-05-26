@@ -2,7 +2,7 @@
 
 ## Server
 
-- **Host:** `deploy@goosielabs.com` (SSH alias: `deploy`)
+- **Host:** `deploy` (SSH alias: `ssh deploy`)
 - **OS:** Ubuntu 24.04
 - **Webroot:** `/var/www/goosielabs/`
 - **Apps:** `/var/www/goosielabs/apps/`
