@@ -36,3 +36,9 @@ Wat draait er, en waar.
 | Project    | Beschrijving |
 |------------|--------------|
 | Tai Chi song | Nederlandse mnemonic voor 60 Chen-bewegingen |
+
+## Onderzoeken
+
+| Idee        | Bron / link | Notitie |
+|-------------|-------------|---------|
+| Futurepaper | [decent-newsroom/newsroom](https://github.com/decent-newsroom/newsroom) | Onderzoeken of het wat is voor het futurepaper idee |
