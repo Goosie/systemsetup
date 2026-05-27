@@ -26,6 +26,8 @@ configuratie, scripts en agents eromheen.
 
 Subdomeinen: zie [`docs/infra.md`](docs/infra.md).
 
+**`goosie` helpcommando:** typ `goosie` in de terminal voor een overzicht van alle beschikbare commando's (newapp, openapp, gans, tmux-sneltoetsen, exit2, etc.). Bronbestand: `~/.bashrc.d/goosie.sh`
+
 ## De V-formatie
 
 Goosie Labs werkt met AI-ganzen, ieder met een eigen rol. Zie [`docs/ganzen.md`](docs/ganzen.md).
