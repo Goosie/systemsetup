@@ -23,6 +23,7 @@ Wat draait er, en waar.
 | Dilemma    | `/apps/dilemma`      | Post dilemma met sat-bounty, gemeenschap adviseert |
 | Feedback   | `/apps/feedback`     | Eerlijke feedback op ideeën, anoniem en beloond |
 | Nospass    | `/apps/nospass`      | TODO |
+| HonkFerence | `/apps/honkference` | Nostr-conferentie app. Presenter split view, deelnemers theater/fullscreen. Rol via NIP-30311. Video-stack MVP nog open. |
 
 ## Experiment
 
