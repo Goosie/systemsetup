@@ -32,6 +32,12 @@ Subdomeinen: zie [`docs/infra.md`](docs/infra.md).
 
 Goosie Labs werkt met AI-ganzen, ieder met een eigen rol. Zie [`docs/ganzen.md`](docs/ganzen.md).
 
+## Centrale TODO
+
+Alle openstaande taken staan in `~/todo.md`. Zeg `@Astrid zet op #todo <taak>` om iets toe te voegen.
+Filter per app: `grep "#app:naam" ~/todo.md`
+App CLAUDE.md bestanden bevatten geen eigen TODO-lijsten meer — die verwijzen naar `~/todo.md`.
+
 ## Apps
 
 Overzicht van wat er draait, in bouw is, of experiment is: zie [`docs/apps.md`](docs/apps.md).
