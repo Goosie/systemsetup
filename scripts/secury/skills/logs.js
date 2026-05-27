@@ -1,3 +1,4 @@
+// 2026-05-27: nginx xmlrpc block changed to regex ~* "/+xmlrpc\.php" — exact match bypassed by //xmlrpc.php (35.234.62.229, 8k+ hits via Google Cloud)
 import { execSync } from 'child_process';
 
 function run(cmd) {
