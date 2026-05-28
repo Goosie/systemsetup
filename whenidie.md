@@ -464,4 +464,326 @@ Als je dit werk wilt voortzetten: volg je instinct, leer al doende, en wees niet
 
 *"De eerste gans breekt de wind. De rest vliegt makkelijker."*
 
-<!-- last updated: 2026-05-26 -->
+---
+
+## Taking over with new keys — complete technical handover
+
+> This section is written in English for technical clarity.
+> It describes every step needed to take full control of Goosie Labs
+> under a completely new set of Nostr keys.
+>
+> Read `key-management.md` alongside this section for more detail on key procedures.
+
+### What keys exist and where they live
+
+**Perry's main Nostr key (controls everything)**
+
+| What | Value |
+|---|---|
+| npub | npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc |
+| pubkey hex | a80398e86c03ffadc7030fe135ee7614b6fabb204fc0f6641838fb4b8abf0b0c |
+| nsec | In LastPass (never stored on server) |
+| NIP-05 identities | perry@goosielabs.com, goosie@goosielabs.com, zoomer@goosielabs.com |
+
+**Agent keys (AI team — each goose has its own Nostr identity)**
+
+All agent keypairs live at `/home/deploy/agents/<name>/nostr-key.json` on the server.
+Each file contains: `pubkey`, `npub`, `nsec` (bech32), `nsecHex`.
+
+| Agent | File | npub |
+|---|---|---|
+| Astrid | /home/deploy/agents/astrid/nostr-key.json | npub1qz9qf8pk8ys9ej2ej3ak7a9tvglkst2qcah5evvnf9ppfn60yrhqjfpx5k |
+| Danky  | /home/deploy/agents/danky/nostr-key.json  | npub1pnfwvr2z9w2gsl4f82k9wz224gmf6u2ts5qtxnm4s3kh44r0xtxqzr56kh |
+| Finny  | /home/deploy/agents/finny/nostr-key.json  | npub196pvegw4k7kzeygnktd3eemgsxtpvz28g96unhseysju46vjl3askgsk8h |
+| Haitje | /home/deploy/agents/haitje/nostr-key.json | npub128sgwsfduc63up0yj23a9tuqknsrd0keer74r2pyejqdc788qyhq9yzpzh |
+| Jurry  | /home/deploy/agents/jurry/nostr-key.json  | npub17tkzrur9am9qxtpf7x68t4qwcs6w5gafew6p2fz76f3rsf7pdeasyv9wrh |
+| Ruby   | /home/deploy/agents/ruby/nostr-key.json   | npub1gxl3vc6k5epchrqxkn0nhu7jfdqd2qvjgukwluupayck8a8t6ycsvawp7q |
+| Secury | /home/deploy/agents/secury/nostr-key.json | npub16r8xu03cpv9l3a654f0ksf6dpuxwt0a68cy7wwqypd5nvyjpez9qvmhtkz |
+| Tessa  | /home/deploy/agents/tessa/nostr-key.json  | npub18062kz77yumvzp3xpmgh2t5lrlmh90y4ja2jek807392vf8mp44s05lw6y |
+
+---
+
+### Step-by-step: taking full control with new keys
+
+**Before you start:**
+- You have SSH access to the server (`ssh deploy` from a terminal)
+- You have access to LastPass (for reference, not for reusing Perry's keys)
+- You have a fresh Nostr keypair (generate one — instructions below)
+
+---
+
+#### 1. Generate your own new keypair
+
+SSH to the server, then run:
+
+```bash
+node --input-type=module << 'EOF'
+import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+import { nip19 } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+
+const sk = generateSecretKey();
+const pk = getPublicKey(sk);
+const nsecHex = Buffer.from(sk).toString('hex');
+
+console.log('nsec bech32:', nip19.nsecEncode(sk));
+console.log('nsec hex   :', nsecHex);
+console.log('npub bech32:', nip19.npubEncode(pk));
+console.log('npub hex   :', pk);
+EOF
+```
+
+Write both `nsec hex` and `npub hex` on paper. Store the nsec somewhere safe (password manager). Clear your terminal:
+```bash
+clear && history -c
+```
+
+We'll call your new values:
+- `NEW_PUBKEY_HEX` = your new pubkey hex (64 chars, public)
+- `NEW_NSEC_HEX`   = your new nsec hex (64 chars, keep secret)
+
+---
+
+#### 2. Update the nsite gateway
+
+The gateway serves the website. It has Perry's pubkey hardcoded.
+
+```bash
+nano /home/deploy/nsite-gateway/server.js
+```
+
+Find line 6:
+```javascript
+const PUBKEY = 'a80398e86c03ffadc7030fe135ee7614b6fabb204fc0f6641838fb4b8abf0b0c';
+```
+Replace with your `NEW_PUBKEY_HEX`.
+
+Save (Ctrl+O, Enter, Ctrl+X), then restart:
+```bash
+sudo systemctl restart nsite-gateway
+```
+
+---
+
+#### 3. Update the relay whitelist
+
+The relay only accepts events (posts, website manifests) from pubkeys in this list.
+
+```bash
+nano /home/deploy/whitelist.json
+```
+
+Add your `NEW_PUBKEY_HEX` as a new entry in the JSON array:
+```json
+[
+  "NEW_PUBKEY_HEX",
+  "a80398e86...",   ← keep Perry's for now, remove later
+  ...
+]
+```
+
+Save the file. The relay reads the whitelist in real time — no restart needed.
+
+---
+
+#### 4. Update Blossom (file storage)
+
+Blossom stores the website files. Only whitelisted pubkeys get permanent storage.
+
+```bash
+nano /home/deploy/blossom/config.yml
+```
+
+There are two `pubkeys:` lists in this file (one under `image/*`, one under `*`).
+In both lists, add your `NEW_PUBKEY_HEX`. You can also replace Perry's pubkey.
+
+Example (both lists should be identical):
+```yaml
+    pubkeys:
+      - "NEW_PUBKEY_HEX"        # You (new owner)
+      - "008a049c363920..."      # Astrid (keep agent keys)
+      - "0cd2e60d422b94..."      # Danky
+      ... etc
+```
+
+Save, then restart:
+```bash
+sudo systemctl restart blossom
+```
+
+---
+
+#### 5. Update NIP-05 verification
+
+NIP-05 is how Nostr clients verify identities like `perry@goosielabs.com`.
+The file is served from WordPress.
+
+```bash
+nano /var/www/goosielabs/.well-known/nostr.json
+```
+
+Current content:
+```json
+{
+  "names": {
+    "_":      "a80398e86...",
+    "perry":  "a80398e86...",
+    "goosie": "a80398e86...",
+    "zoomer": "a80398e86...",
+    "astrid": "008a049c3...",
+    ...
+  }
+}
+```
+
+Replace all occurrences of Perry's pubkey with your `NEW_PUBKEY_HEX`.
+Or replace the name entries entirely with your own name:
+```json
+{
+  "names": {
+    "_":       "NEW_PUBKEY_HEX",
+    "yourname": "NEW_PUBKEY_HEX",
+    "astrid":  "008a049c3...",
+    ...
+  }
+}
+```
+
+Verify it works:
+```bash
+curl https://goosielabs.com/.well-known/nostr.json
+```
+
+---
+
+#### 6. Republish the website with your new key
+
+The website (nsite) is a set of files signed by the owner's Nostr key.
+You need to sign and publish a new manifest.
+
+```bash
+read -s NOSTR_NSEC && export NOSTR_NSEC
+# Type your NEW_NSEC_HEX and press Enter (nothing shown on screen)
+
+cd /home/deploy/nsite-test
+node publish.mjs ./site
+```
+
+Expected output:
+```
+Publishing 2 file(s) from ./site
+  uploading /index.html ... ✓ abc123...
+  uploading /404.html   ... ✓ def456...
+  publishing kind 15128 manifest ... ✓ accepted
+Done. Site is live at https://nsite.goosielabs.com
+```
+
+Wait 60 seconds (cache TTL), then open **https://nsite.goosielabs.com** — the site should load.
+
+---
+
+#### 7. Update the agent keys (optional but recommended)
+
+The agent keypairs are stored in JSON files. If you want the AI team to have fresh identities:
+
+```bash
+# For each agent, generate a new keypair and update the file
+# Example for Astrid:
+node --input-type=module << 'EOF'
+import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+import { nip19 } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+import { writeFileSync } from 'fs';
+
+const sk = generateSecretKey();
+const pk = getPublicKey(sk);
+const data = {
+  pubkey: pk,
+  npub: nip19.npubEncode(pk),
+  nsec: nip19.nsecEncode(sk),
+  nsecHex: Buffer.from(sk).toString('hex'),
+};
+writeFileSync('/home/deploy/agents/astrid/nostr-key.json', JSON.stringify(data, null, 2));
+console.log('Astrid new npub:', data.npub);
+EOF
+```
+
+Repeat for each agent: danky, finny, haitje, jurry, ruby, secury, tessa.
+
+After updating agent keys, also update:
+- `/home/deploy/blossom/config.yml` — update agent pubkeys in both `pubkeys:` lists
+- `/home/deploy/whitelist.json` — replace old agent pubkeys with new ones
+- `/var/www/goosielabs/.well-known/nostr.json` — update agent entries
+
+---
+
+#### 8. Verify everything works
+
+```bash
+# Gateway serving correctly?
+curl -s http://127.0.0.1:3340/ | head -3
+
+# All services running?
+systemctl is-active nsite-gateway blossom strfry lnbits nutshell
+
+# NIP-05 returning your new pubkey?
+curl -s https://goosielabs.com/.well-known/nostr.json | python3 -m json.tool
+
+# Website loading?
+curl -s https://nsite.goosielabs.com | head -5
+```
+
+---
+
+#### 9. Update CLAUDE.md so Astrid knows the new owner
+
+```bash
+nano /home/deploy/.claude/CLAUDE.md
+```
+
+Find the line with Perry's npub and replace with yours.
+Also update `/home/deploy/CLAUDE.md` (the project-level instructions).
+
+This makes the AI assistant aware of the new owner identity.
+
+---
+
+#### 10. Lightning and Bitcoin (separate from Nostr)
+
+The Lightning node is on the **Umbrel** (a home computer, not the server).
+Nostr keys do NOT control Lightning directly — unless NWC connections were set up.
+
+To take control of the Lightning funds:
+1. Get physical access to the Umbrel, OR connect via the home network
+2. Open Alby Hub: **http://umbrel.local:59000**
+3. The login credentials are in LastPass
+4. You also need the 2FA code from Perry's phone (authenticator app)
+
+If you cannot get 2FA access, the funds are locked in Alby Hub but the LND node underneath can still be accessed directly via terminal if you have the Umbrel password.
+
+**To withdraw all funds:**
+1. In Alby Hub → Channels → Close channel with Megalith LSP
+2. Wait for on-chain confirmation (can take hours to days)
+3. The sats will appear in the on-chain wallet
+4. Send them to a Bitcoin address you control
+
+**Important:** Do not force-close a channel unless you have no other option. Force-close locks funds for ~144 blocks (~1 day) due to the Lightning protocol's safety mechanism.
+
+---
+
+#### Summary checklist
+
+- [ ] Generated new keypair, nsec stored safely
+- [ ] `/home/deploy/nsite-gateway/server.js` — PUBKEY updated → service restarted
+- [ ] `/home/deploy/whitelist.json` — new pubkey added
+- [ ] `/home/deploy/blossom/config.yml` — pubkeys updated → service restarted
+- [ ] `/var/www/goosielabs/.well-known/nostr.json` — NIP-05 updated
+- [ ] nsite republished with new key → https://nsite.goosielabs.com loads
+- [ ] Agent keys regenerated (optional)
+- [ ] CLAUDE.md files updated with new owner npub
+- [ ] Lightning funds secured (if Umbrel accessible)
+- [ ] Old pubkey removed from whitelist.json (after 1 week)
+
+---
+
+*Full key management procedures: `/home/deploy/key-management.md`*
+
+<!-- last updated: 2026-05-28 -->
