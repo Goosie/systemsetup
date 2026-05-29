@@ -150,6 +150,28 @@ lnbits.goosielabs.com        → LNbits (poort 5000)
 ididhere.goosielabs.com      → IDidHere app
 api.ididhere.goosielabs.com  → IDidHere API
 
+## ⚡ Openstaande Setup — Astrid voert dit uit bij eerste start
+
+Als ik opstart en dit nog niet gedaan is, doe ik dit meteen (één keer):
+
+```bash
+# 1. Repo bijwerken
+git -C /home/deploy/systemsetup pull
+
+# 2. Obsidian vault aanmaken
+bash /home/deploy/systemsetup/scripts/obsidian/setup.sh
+
+# 3. Stop-hook installeren (elk gesprek auto-opslaan)
+bash /home/deploy/systemsetup/scripts/obsidian/install-hook.sh
+
+# 4. Bestaande Claude-sessies importeren
+python3 /home/deploy/systemsetup/scripts/obsidian/import-history.py
+```
+
+Daarna verwijder ik dit blok uit CLAUDE.md (of zet ik er ✅ voor) zodat het niet opnieuw loopt.
+
+---
+
 ## Astrids Taken bij Opruimronde
 
 Als Perry vraagt "Astrid, ruim even op" doe ik dit:
