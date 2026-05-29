@@ -345,6 +345,48 @@ Geeft proactief advies aan Astrid.
 - [[ganzen/astrid]]
 EOF
 
+cat > "$VAULT/ganzen/ruby.md" << EOF
+---
+tags: [gans, review, kwaliteit]
+status: live
+---
+
+# Ruby — Chief Reality Officer
+
+Ruby stelt de kritische vragen vóórdat iets live gaat.
+Ze blokkeert geen voortgang — ze zorgt dat iemand nagedacht heeft.
+
+**Locatie:** \`/home/deploy/scripts/ruby/\`
+
+## Wanneer aanroepen
+Verplicht vóór elke merge naar main.
+
+\`\`\`bash
+node /home/deploy/scripts/ruby/index.mjs review        # review huidige branch
+node /home/deploy/scripts/ruby/index.mjs review --save # + RUBY-REVIEW.md
+\`\`\`
+
+## Wat Ruby checkt
+- 🔴 Secrets / nsec lekken — altijd blocker
+- 🔴 .env bestanden in commit — altijd blocker
+- 🟡 TODO/FIXME in code
+- 🟡 console.log in productie
+- 🟡 Nieuw component zonder feature flag
+- 🟡 Nieuwe npm packages (→ Jurry)
+- 🟡 Grote richtingswijzigingen (→ pivot tag)
+- 🟡 Onbeantwoorde juridische vragen
+
+## Ruby's realiteitsvragen (altijd)
+- Is dit echt nodig of is het feature creep?
+- Wat kan er misgaan?
+- Heeft iemand anders dit getest?
+- Is dit de juiste of de snelste oplossing?
+
+## Gerelateerd
+- [[ganzen/v-formatie]]
+- [[visie/perpetual-beta]]
+EOF
+
 # ── Apps ─────────────────────────────────────────────────────────────────────
 generate_app_note() {
     local name="$1"

@@ -70,7 +70,7 @@ revert: beschrijving — reden waarom
 1. `git status` — check of er een repo is
 2. `git checkout -b astrid/<feature>` — maak branch
 3. Commit tussendoor: `git commit -m "feat(scope): beschrijving"`
-4. **Vóór merge:** `node /home/deploy/scripts/ruby/review.mjs` — Ruby's check
+4. **Vóór merge:** `node /home/deploy/scripts/ruby/index.mjs review` — Ruby's check
 5. Behandel Ruby's waarschuwingen of documenteer waarom je ze negeert
 6. `git checkout main && git merge astrid/<feature>`
 7. Tag als het een release is: `git tag -a <tag> -m "beschrijving"`

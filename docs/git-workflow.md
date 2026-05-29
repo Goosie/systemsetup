@@ -83,7 +83,8 @@ Ruby is de Chief Reality Officer. Ze vraagt de kritische vragen *voordat* iets l
 
 ```bash
 # Voer dit uit op de branch die je wilt mergen
-node /home/deploy/scripts/ruby/review.mjs
+node /home/deploy/scripts/ruby/index.mjs review
+node /home/deploy/scripts/ruby/index.mjs review --save   # schrijft ook RUBY-REVIEW.md
 ```
 
 Ruby checkt automatisch:
