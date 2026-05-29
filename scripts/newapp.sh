@@ -53,7 +53,11 @@ if [ ! -f "$APPDIR/tile.json" ]; then
   "github": "https://github.com/Goosie/$APPNAME",
   "juridischadvies": "https://github.com/Goosie/$APPNAME/blob/main/juridischadvies.md",
   "icon": "/apps/$APPNAME/icons/icon-192.png",
-  "icon_bg": "$DEFAULT_COLOR"
+  "icon_bg": "$DEFAULT_COLOR",
+  "donation": {
+    "lightning": "zoomer@getalby.com",
+    "comment": "donation-$APPNAME"
+  }
 }
 TILEJSON
     echo "📌 tile.json aangemaakt — pas title, description en icon_bg aan"
@@ -104,6 +108,17 @@ if [ ! -f "$APPDIR/juridischadvies.md" ]; then
 
 JURIDISCH
     echo "⚖️  juridischadvies.md aangemaakt — run 'jurry review $APPNAME' voor een volledige analyse"
+fi
+
+echo "⚡ DonationButton kopiëren..."
+DONATION_TEMPLATE="/home/deploy/systemsetup/templates/DonationButton.tsx"
+COMPONENTS_DIR="$APPDIR/src/components"
+mkdir -p "$COMPONENTS_DIR"
+if [ -f "$DONATION_TEMPLATE" ]; then
+    cp "$DONATION_TEMPLATE" "$COMPONENTS_DIR/DonationButton.tsx"
+    echo "✅ DonationButton.tsx klaar — gebruik: <DonationButton appName=\"$APPNAME\" />"
+else
+    echo "⚠️  DonationButton template niet gevonden op $DONATION_TEMPLATE"
 fi
 
 echo "🖼 Landing page bijwerken..."

@@ -121,9 +121,30 @@ Het session-id staat in de output als je Claude Code afsluit.
 | Finny        | Chief Financial Gans — bewaakt inkomsten, uitgaven en satoshis. | ROL | V-Formatie |
 | Tessy        | QA Gans — test alles, drukt op alle knoppen, geeft apps testdata. Script per app. | LIVE | /apps/*/scripts/tessa/ |
 
+## Dual World Architecture
+
+Goosie Labs heeft twee werelden die parallel lopen:
+
+- **goosielabs.com** — WordPress hoofdsite. Centraal. Toegankelijk voor iedereen. Apps via nginx op `/apps/<naam>/`.
+- **nsite.goosielabs.com** — Decentraal. Nostr-native nsite gateway (`/home/deploy/nsite-gateway/`). Bestanden gesigneerd op Nostr. Zelfde apps als WordPress.
+
+Content wordt ontwikkeld op WordPress, maar ook gepusht naar nsite. Beide werelden in de lucht houden. Zie `docs/vision.md`.
+
+## Donatie Model
+
+Elk app krijgt een `DonationButton` component (sjabloon: `templates/DonationButton.tsx`).
+
+- Betaling via Lightning (LNURL-pay of NWC via Alby Hub)
+- Doneren = stemmen op het idee
+- Optioneel: betaling als Nostr-event op `wss://goosielabs.com/relay`
+- Per app: eigen LNbits wallet voor tracking, fallback naar `zoomer@getalby.com`
+
+Bij `newapp <naam>` wordt de DonationButton automatisch gekopieerd naar `src/components/DonationButton.tsx`.
+
 ## Subdomeinen
 
 goosielabs.com               → WordPress + homepage
+nsite.goosielabs.com         → Nostr-native nsite gateway
 mint.goosielabs.com          → Cashu mint (poort 3338)
 lnbits.goosielabs.com        → LNbits (poort 5000)
 ididhere.goosielabs.com      → IDidHere app
