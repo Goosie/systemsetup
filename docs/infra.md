@@ -8,11 +8,23 @@
 - **Apps:** `/var/www/goosielabs/apps/`
 - **Node:** v20.20.2
 
+## Dual World Architecture
+
+Goosie Labs draait in twee parallelle werelden:
+
+| Wereld | URL | Techniek |
+|--------|-----|----------|
+| Centraal | `goosielabs.com` | WordPress + nginx, serveert apps via `/apps/<naam>/` |
+| Decentraal | `nsite.goosielabs.com` | nsite-gateway (`/home/deploy/nsite-gateway/`), bestanden gesigneerd op Nostr |
+
+Beide werelden draaien dezelfde apps uit `/var/www/goosielabs/apps/`. Content wordt ontwikkeld op WordPress en ook naar nsite gepusht. Zie `docs/vision.md` voor de achtergrond.
+
 ## Subdomeinen
 
 | Subdomein                    | Wat                            | Poort |
 |------------------------------|--------------------------------|-------|
 | goosielabs.com               | WordPress + homepage           | 80/443 |
+| nsite.goosielabs.com         | Nostr-native nsite gateway     | —     |
 | mint.goosielabs.com          | Cashu mint (Nutshell)          | 3338  |
 | lnbits.goosielabs.com        | LNbits                         | 5000  |
 | ididhere.goosielabs.com      | IDidHere app                   | —     |

@@ -1,6 +1,6 @@
 # Apps
 
-Wat draait er, en waar.
+Wat draait er, en waar. Alle apps draaien in twee werelden: via WordPress op `goosielabs.com/apps/<naam>/` én via de nsite-gateway op `nsite.goosielabs.com`. Elke app krijgt een `DonationButton` — sats doneren = stemmen op het idee.
 
 ## Live
 

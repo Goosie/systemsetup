@@ -53,12 +53,40 @@ Boilerplate: React+TS+Vite+Tailwind+Nostr-tools+shadcn/ui
 
 ## Git Discipline (ALTIJD)
 
-Voordat je iets aanpast:
-1. Check of er een git repo is: git status
-2. Maak een branch: git checkout -b astrid/omschrijving-datum
-3. Commit tussendoor: git add -A && git commit -m "beschrijving"
-4. Als klaar en getest: git checkout main && git merge astrid/omschrijving-datum
-5. Bij mislukken: git checkout main && git branch -D astrid/omschrijving-datum
+Volledig git-workflow staat in `docs/git-workflow.md`. Samenvatting:
+
+**Branches:** nooit direct op `main`. Altijd `astrid/<feature>` branch.
+
+**Commit formaat (Conventional Commits):**
+```
+feat(scope): beschrijving in het Nederlands
+fix(scope): beschrijving
+chore: beschrijving
+experiment(scope): beschrijving
+revert: beschrijving — reden waarom
+```
+
+**Stappenplan:**
+1. `git status` — check of er een repo is
+2. `git checkout -b astrid/<feature>` — maak branch
+3. Commit tussendoor: `git commit -m "feat(scope): beschrijving"`
+4. **Vóór merge:** `node /home/deploy/scripts/ruby/index.mjs review` — Ruby's check
+5. Behandel Ruby's waarschuwingen of documenteer waarom je ze negeert
+6. `git checkout main && git merge astrid/<feature>`
+7. Tag als het een release is: `git tag -a <tag> -m "beschrijving"`
+8. `git push && git push --tags`
+9. `git branch -d astrid/<feature>` — branch opruimen
+
+**Feature uitzetten zonder code:**
+```bash
+node scripts/toggle-feature.mjs <feature> false   # app rebuildt automatisch
+node scripts/toggle-feature.mjs --list             # overzicht alle flags
+```
+
+**Terugdraaien:**
+- Feature flag: `toggle-feature.mjs <naam> false` (snelst)
+- Commit revert: `git revert <hash>` (als er geen flag is)
+- Branch weggooien: `git branch -D astrid/<feature>` (als nog niet gemerged)
 
 ## tmux Workflow
 
@@ -121,13 +149,56 @@ Het session-id staat in de output als je Claude Code afsluit.
 | Finny        | Chief Financial Gans — bewaakt inkomsten, uitgaven en satoshis. | ROL | V-Formatie |
 | Tessy        | QA Gans — test alles, drukt op alle knoppen, geeft apps testdata. Script per app. | LIVE | /apps/*/scripts/tessa/ |
 
+## Dual World Architecture
+
+Goosie Labs heeft twee werelden die parallel lopen:
+
+- **goosielabs.com** — WordPress hoofdsite. Centraal. Toegankelijk voor iedereen. Apps via nginx op `/apps/<naam>/`.
+- **nsite.goosielabs.com** — Decentraal. Nostr-native nsite gateway (`/home/deploy/nsite-gateway/`). Bestanden gesigneerd op Nostr. Zelfde apps als WordPress.
+
+Content wordt ontwikkeld op WordPress, maar ook gepusht naar nsite. Beide werelden in de lucht houden. Zie `docs/vision.md`.
+
+## Donatie Model
+
+Elk app krijgt een `DonationButton` component (sjabloon: `templates/DonationButton.tsx`).
+
+- Betaling via Lightning (LNURL-pay of NWC via Alby Hub)
+- Doneren = stemmen op het idee
+- Optioneel: betaling als Nostr-event op `wss://goosielabs.com/relay`
+- Per app: eigen LNbits wallet voor tracking, fallback naar `zoomer@getalby.com`
+
+Bij `newapp <naam>` wordt de DonationButton automatisch gekopieerd naar `src/components/DonationButton.tsx`.
+
 ## Subdomeinen
 
 goosielabs.com               → WordPress + homepage
+nsite.goosielabs.com         → Nostr-native nsite gateway
 mint.goosielabs.com          → Cashu mint (poort 3338)
 lnbits.goosielabs.com        → LNbits (poort 5000)
 ididhere.goosielabs.com      → IDidHere app
 api.ididhere.goosielabs.com  → IDidHere API
+
+## ⚡ Openstaande Setup — Astrid voert dit uit bij eerste start
+
+Als ik opstart en dit nog niet gedaan is, doe ik dit meteen (één keer):
+
+```bash
+# 1. Repo bijwerken
+git -C /home/deploy/systemsetup pull
+
+# 2. Obsidian vault aanmaken
+bash /home/deploy/systemsetup/scripts/obsidian/setup.sh
+
+# 3. Stop-hook installeren (elk gesprek auto-opslaan)
+bash /home/deploy/systemsetup/scripts/obsidian/install-hook.sh
+
+# 4. Bestaande Claude-sessies importeren
+python3 /home/deploy/systemsetup/scripts/obsidian/import-history.py
+```
+
+Daarna verwijder ik dit blok uit CLAUDE.md (of zet ik er ✅ voor) zodat het niet opnieuw loopt.
+
+---
 
 ## Astrids Taken bij Opruimronde
 

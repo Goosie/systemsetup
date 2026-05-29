@@ -53,7 +53,11 @@ if [ ! -f "$APPDIR/tile.json" ]; then
   "github": "https://github.com/Goosie/$APPNAME",
   "juridischadvies": "https://github.com/Goosie/$APPNAME/blob/main/juridischadvies.md",
   "icon": "/apps/$APPNAME/icons/icon-192.png",
-  "icon_bg": "$DEFAULT_COLOR"
+  "icon_bg": "$DEFAULT_COLOR",
+  "donation": {
+    "lightning": "zoomer@getalby.com",
+    "comment": "donation-$APPNAME"
+  }
 }
 TILEJSON
     echo "📌 tile.json aangemaakt — pas title, description en icon_bg aan"
@@ -104,6 +108,34 @@ if [ ! -f "$APPDIR/juridischadvies.md" ]; then
 
 JURIDISCH
     echo "⚖️  juridischadvies.md aangemaakt — run 'jurry review $APPNAME' voor een volledige analyse"
+fi
+
+TEMPLATES="/home/deploy/systemsetup/templates"
+
+echo "🚩 Feature flags kopiëren..."
+mkdir -p "$APPDIR/src/config" "$APPDIR/src/hooks" "$APPDIR/src/components" "$APPDIR/scripts"
+for tmpl in features.ts useFeatureFlag.ts toggle-feature.mjs; do
+    src="$TEMPLATES/$tmpl"
+    if [ ! -f "$src" ]; then
+        echo "⚠️  Template niet gevonden: $src"
+        continue
+    fi
+    case "$tmpl" in
+        features.ts)        dest="$APPDIR/src/config/features.ts" ;;
+        useFeatureFlag.ts)  dest="$APPDIR/src/hooks/useFeatureFlag.ts" ;;
+        toggle-feature.mjs) dest="$APPDIR/scripts/toggle-feature.mjs" ;;
+    esac
+    cp "$src" "$dest"
+done
+chmod +x "$APPDIR/scripts/toggle-feature.mjs"
+echo "✅ Feature flags klaar — kill switch: node scripts/toggle-feature.mjs <feature> false"
+
+echo "⚡ DonationButton kopiëren..."
+if [ -f "$TEMPLATES/DonationButton.tsx" ]; then
+    cp "$TEMPLATES/DonationButton.tsx" "$APPDIR/src/components/DonationButton.tsx"
+    echo "✅ DonationButton.tsx klaar — gebruik: <DonationButton appName=\"$APPNAME\" />"
+else
+    echo "⚠️  DonationButton template niet gevonden"
 fi
 
 echo "🖼 Landing page bijwerken..."
