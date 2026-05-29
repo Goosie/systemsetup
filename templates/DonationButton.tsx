@@ -7,10 +7,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import { isEnabled } from '@/config/features'
 
-// Sats doneren = stemmen op dit idee.
-// Betaling gaat via Lightning (LNURL-pay). Als webln beschikbaar is (Alby extensie),
-// betaalt de gebruiker direct. Anders krijgen ze een invoice om te kopiëren of te scannen.
+// Kill switch: zet 'donationButton' op false in src/config/features.ts
+// of run: node scripts/toggle-feature.mjs donationButton false
+// Dan verdwijnt deze knop uit alle schermen zonder verdere codewijziging.
 
 interface DonationButtonProps {
   appName: string
@@ -27,6 +28,51 @@ declare global {
       enable(): Promise<void>
       sendPayment(invoice: string): Promise<{ preimage: string }>
     }
+    nostr?: {
+      signEvent(event: NostrEventTemplate): Promise<NostrEvent>
+    }
+  }
+}
+
+interface NostrEventTemplate {
+  kind: number
+  content: string
+  tags: string[][]
+  created_at: number
+}
+
+interface NostrEvent extends NostrEventTemplate {
+  id: string
+  pubkey: string
+  sig: string
+}
+
+const RELAY = 'wss://goosielabs.com/relay'
+
+// Publiceert de stem als Nostr-event nadat betaling geslaagd is.
+// Stemmen is altijd optioneel — als NIP-07 niet aanwezig is, stil overgeslagen.
+async function publishVote(appName: string, sats: number): Promise<void> {
+  if (!isEnabled('nostrVoting')) return
+  if (typeof window === 'undefined' || !window.nostr) return
+  try {
+    const draft: NostrEventTemplate = {
+      kind: 1,
+      content: `⚡ ${sats} sats → ${appName} #glvote`,
+      tags: [
+        ['t', 'glvote'],
+        ['app', appName],
+        ['amount', String(sats)],
+      ],
+      created_at: Math.floor(Date.now() / 1000),
+    }
+    const signed = await window.nostr.signEvent(draft)
+    const ws = new WebSocket(RELAY)
+    ws.onopen = () => {
+      ws.send(JSON.stringify(['EVENT', signed]))
+      setTimeout(() => ws.close(), 3000)
+    }
+  } catch {
+    // Stem publiceren is bijzaak — betaling is al geslaagd
   }
 }
 
@@ -36,11 +82,13 @@ export function DonationButton({
   amounts = [21, 100, 500, 2100],
   className,
 }: DonationButtonProps) {
+  // Feature flag — component rendert niet als donationButton uitstaat
+  if (!isEnabled('donationButton')) return null
+
   const [state, setState] = useState<State>('idle')
   const [selectedAmount, setSelectedAmount] = useState(amounts[0])
   const [invoice, setInvoice] = useState('')
   const [copied, setCopied] = useState(false)
-  const [totalVotes] = useState<number | null>(null)
 
   async function handlePay(sats: number) {
     setState('loading')
@@ -61,6 +109,7 @@ export function DonationButton({
           await window.webln.enable()
           await window.webln.sendPayment(pr)
           setState('paid')
+          publishVote(appName, sats)
           return
         } catch {
           // webln geweigerd of niet beschikbaar — toon invoice handmatig
@@ -74,6 +123,8 @@ export function DonationButton({
     }
   }
 
+  // Wanneer gebruiker de invoice handmatig kopieert/opent weten we niet zeker
+  // of betaling geslaagd is — stem publiceren pas na bevestiging via webln.
   function copyInvoice() {
     navigator.clipboard.writeText(invoice)
     setCopied(true)
@@ -95,9 +146,6 @@ export function DonationButton({
         title="Vind je dit leuk? Geef sats — direct, anoniem, via Lightning."
       >
         ⚡ Motiveer ons
-        {totalVotes !== null && (
-          <span className="ml-2 text-xs text-muted-foreground">{totalVotes} sats</span>
-        )}
       </Button>
 
       <Dialog open={state !== 'idle'} onOpenChange={(open) => !open && setState('idle')}>

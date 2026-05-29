@@ -53,12 +53,40 @@ Boilerplate: React+TS+Vite+Tailwind+Nostr-tools+shadcn/ui
 
 ## Git Discipline (ALTIJD)
 
-Voordat je iets aanpast:
-1. Check of er een git repo is: git status
-2. Maak een branch: git checkout -b astrid/omschrijving-datum
-3. Commit tussendoor: git add -A && git commit -m "beschrijving"
-4. Als klaar en getest: git checkout main && git merge astrid/omschrijving-datum
-5. Bij mislukken: git checkout main && git branch -D astrid/omschrijving-datum
+Volledig git-workflow staat in `docs/git-workflow.md`. Samenvatting:
+
+**Branches:** nooit direct op `main`. Altijd `astrid/<feature>` branch.
+
+**Commit formaat (Conventional Commits):**
+```
+feat(scope): beschrijving in het Nederlands
+fix(scope): beschrijving
+chore: beschrijving
+experiment(scope): beschrijving
+revert: beschrijving — reden waarom
+```
+
+**Stappenplan:**
+1. `git status` — check of er een repo is
+2. `git checkout -b astrid/<feature>` — maak branch
+3. Commit tussendoor: `git commit -m "feat(scope): beschrijving"`
+4. **Vóór merge:** `node /home/deploy/scripts/ruby/review.mjs` — Ruby's check
+5. Behandel Ruby's waarschuwingen of documenteer waarom je ze negeert
+6. `git checkout main && git merge astrid/<feature>`
+7. Tag als het een release is: `git tag -a <tag> -m "beschrijving"`
+8. `git push && git push --tags`
+9. `git branch -d astrid/<feature>` — branch opruimen
+
+**Feature uitzetten zonder code:**
+```bash
+node scripts/toggle-feature.mjs <feature> false   # app rebuildt automatisch
+node scripts/toggle-feature.mjs --list             # overzicht alle flags
+```
+
+**Terugdraaien:**
+- Feature flag: `toggle-feature.mjs <naam> false` (snelst)
+- Commit revert: `git revert <hash>` (als er geen flag is)
+- Branch weggooien: `git branch -D astrid/<feature>` (als nog niet gemerged)
 
 ## tmux Workflow
 

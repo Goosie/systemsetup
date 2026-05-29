@@ -110,15 +110,32 @@ JURIDISCH
     echo "⚖️  juridischadvies.md aangemaakt — run 'jurry review $APPNAME' voor een volledige analyse"
 fi
 
+TEMPLATES="/home/deploy/systemsetup/templates"
+
+echo "🚩 Feature flags kopiëren..."
+mkdir -p "$APPDIR/src/config" "$APPDIR/src/hooks" "$APPDIR/src/components" "$APPDIR/scripts"
+for tmpl in features.ts useFeatureFlag.ts toggle-feature.mjs; do
+    src="$TEMPLATES/$tmpl"
+    if [ ! -f "$src" ]; then
+        echo "⚠️  Template niet gevonden: $src"
+        continue
+    fi
+    case "$tmpl" in
+        features.ts)        dest="$APPDIR/src/config/features.ts" ;;
+        useFeatureFlag.ts)  dest="$APPDIR/src/hooks/useFeatureFlag.ts" ;;
+        toggle-feature.mjs) dest="$APPDIR/scripts/toggle-feature.mjs" ;;
+    esac
+    cp "$src" "$dest"
+done
+chmod +x "$APPDIR/scripts/toggle-feature.mjs"
+echo "✅ Feature flags klaar — kill switch: node scripts/toggle-feature.mjs <feature> false"
+
 echo "⚡ DonationButton kopiëren..."
-DONATION_TEMPLATE="/home/deploy/systemsetup/templates/DonationButton.tsx"
-COMPONENTS_DIR="$APPDIR/src/components"
-mkdir -p "$COMPONENTS_DIR"
-if [ -f "$DONATION_TEMPLATE" ]; then
-    cp "$DONATION_TEMPLATE" "$COMPONENTS_DIR/DonationButton.tsx"
+if [ -f "$TEMPLATES/DonationButton.tsx" ]; then
+    cp "$TEMPLATES/DonationButton.tsx" "$APPDIR/src/components/DonationButton.tsx"
     echo "✅ DonationButton.tsx klaar — gebruik: <DonationButton appName=\"$APPNAME\" />"
 else
-    echo "⚠️  DonationButton template niet gevonden op $DONATION_TEMPLATE"
+    echo "⚠️  DonationButton template niet gevonden"
 fi
 
 echo "🖼 Landing page bijwerken..."
