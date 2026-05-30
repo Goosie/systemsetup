@@ -1,8 +1,40 @@
 #!/usr/bin/env python3
 import sys
 import os
+import re
+import glob
 import shutil
 import subprocess
+
+SECRET_VITE_RE = re.compile(
+    r'^(VITE_\w*(?:KEY|SECRET|TOKEN|NSEC|ADMIN|NWC|PASSWORD|PWD)\w*)\s*=',
+    re.IGNORECASE,
+)
+
+def check_vite_secrets(appdir):
+    hits = []
+    for env_file in glob.glob(os.path.join(appdir, '**', '.env*'), recursive=True):
+        if 'node_modules' in env_file:
+            continue
+        try:
+            with open(env_file) as f:
+                for lineno, line in enumerate(f, 1):
+                    if line.lstrip().startswith('#'):
+                        continue
+                    if SECRET_VITE_RE.match(line.strip()):
+                        rel = os.path.relpath(env_file, appdir)
+                        varname = line.split('=')[0].strip()
+                        hits.append(f"  {rel}:{lineno}  {varname}")
+        except Exception:
+            pass
+    if hits:
+        print()
+        print("🚨 WAARSCHUWING: VITE_-variabelen met geheim-achtige namen gevonden!")
+        print("   Deze worden zichtbaar in de browser-bundle.")
+        for h in hits:
+            print(h)
+        print("   → Verplaats geheimen naar backend/.env (zonder VITE_-prefix).")
+        print()
 
 def get_config(appname):
     return {
@@ -63,6 +95,8 @@ def main():
     shutil.copy("/home/deploy/mcp-template.json", f"{appdir}/.mcp.json")
 
     print(f"✅ Placeholders vervangen: {list(config.keys())}")
+
+    check_vite_secrets(appdir)
 
 if __name__ == "__main__":
     main()
