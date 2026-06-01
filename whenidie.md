@@ -733,16 +733,56 @@ curl -s https://nsite.goosielabs.com | head -5
 
 ---
 
-#### 9. Update CLAUDE.md so Astrid knows the new owner
+#### 9. Update CLAUDE.md files — no app rebuilds needed
+
+**Good news first:** none of the app source files have Perry's npub hardcoded. All npub usage in app code is dynamic (derived from whoever is logged in). This means you do NOT need to rebuild or redeploy any app when rotating keys.
+
+Perry's npub does appear in one place per app: the `CLAUDE.md` file that sits in each GitHub repo. These are instructions for AI agents (Astrid, etc.) — they're not compiled into the app. But they should still be updated so AI agents working on the apps know the new owner identity.
+
+**Update the server-side CLAUDE.md files (Astrid's context):**
 
 ```bash
 nano /home/deploy/.claude/CLAUDE.md
+nano /home/deploy/CLAUDE.md
 ```
 
-Find the line with Perry's npub and replace with yours.
-Also update `/home/deploy/CLAUDE.md` (the project-level instructions).
+Find the line with Perry's npub and replace with yours in both files.
 
-This makes the AI assistant aware of the new owner identity.
+**Update the CLAUDE.md in each app repo on GitHub:**
+
+The following repos each have a `CLAUDE.md` with Perry's npub under `### Perry Smit (eigenaar)`:
+
+- `Goosie/catchzaps`
+- `Goosie/weddendat`
+- `Goosie/dilemma`
+- `Goosie/feedback`
+- `Goosie/lastwill`
+- `Goosie/nospass`
+- `Goosie/honkference`
+- `Goosie/zaphunt`
+- `Goosie/ididhere`
+- `Goosie/sofia`
+- `Goosie/proofofmove`
+
+For each repo, find this block and replace the npub and Lightning address with yours:
+
+```markdown
+### Perry Smit (eigenaar)
+- **Nostr npub:** npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc
+- **Lightning:** zoomer@getalby.com
+```
+
+You can do this via the GitHub web UI (edit file → commit) or clone each repo and push. A quick script if you prefer the terminal:
+
+```bash
+for repo in catchzaps weddendat dilemma feedback lastwill nospass honkference zaphunt ididhere sofia proofofmove; do
+  git clone git@github.com:Goosie/$repo.git /tmp/$repo
+  sed -i 's/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc/NEW_NPUB_BECH32/g' /tmp/$repo/CLAUDE.md
+  cd /tmp/$repo && git add CLAUDE.md && git commit -m "Update owner npub to new key" && git push
+done
+```
+
+Replace `NEW_NPUB_BECH32` with your actual new npub before running.
 
 ---
 
@@ -778,7 +818,8 @@ If you cannot get 2FA access, the funds are locked in Alby Hub but the LND node 
 - [ ] `/var/www/goosielabs/.well-known/nostr.json` — NIP-05 updated
 - [ ] nsite republished with new key → https://nsite.goosielabs.com loads
 - [ ] Agent keys regenerated (optional)
-- [ ] CLAUDE.md files updated with new owner npub
+- [ ] CLAUDE.md updated on server (`/home/deploy/.claude/CLAUDE.md` + `/home/deploy/CLAUDE.md`)
+- [ ] CLAUDE.md updated in all 11 app repos on GitHub (no rebuilds needed — source code has no hardcoded npubs)
 - [ ] Lightning funds secured (if Umbrel accessible)
 - [ ] Old pubkey removed from whitelist.json (after 1 week)
 
