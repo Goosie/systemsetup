@@ -6,20 +6,15 @@
  *
  * Pages published:
  *   /index.html     — homepage (tiles + V-Formation, regenerated from tile.json)
- *   /about.html     — About page (NL, from WP ID 43)
- *   /about-en.html  — About page (EN, from WP ID 90)
- *   /contact.html   — Contact page (NL)
- *   /contact-en.html — Contact page (EN)
- *   /mcp.html       — MCP article (EN)
- *   /bitcoin.html   — Bitcoin article (NL)
+ *   /about.html     — About page (EN, generated from code)
+ *   /contact.html   — Contact page (EN, generated from code)
+ *   /mcp.html       — MCP article (EN, from /tmp/mcp_en.html)
+ *   /bitcoin.html   — Bitcoin article (EN, generated from code)
  *
  * Usage:
  *   PERRY_NSEC=nsec1... node publish-homepage.mjs
  *   # or if stored in ~/.bashrc.local:
  *   source ~/.bashrc.local && node publish-homepage.mjs
- *
- * After first run, update nginx:
- *   See instructions printed at end of script.
  */
 
 import { createHash } from 'crypto';
@@ -612,25 +607,4 @@ try {
 
 const nsiteUrl = `${NSITE_BASE}/${npub}/`;
 console.log(`\x1b[1m✅ Site live at: ${nsiteUrl}\x1b[0m`);
-
-console.log(`
-\x1b[1m── Next step: switch nginx ───────────────────────────────────────\x1b[0m
-
-Perry's hex pubkey: ${pubkeyHex}
-
-Add this to the goosielabs.com nginx server block
-(BEFORE the existing \`location ~ \\.php$\` block):
-
-  # nsite homepage — Perry's decentralized site
-  location = / {
-      proxy_pass http://127.0.0.1:3340/${pubkeyHex}/index.html;
-      proxy_set_header Host nsite.goosielabs.com;
-  }
-  location ~ ^/(index\\.html|about.*\\.html|contact.*\\.html|mcp\\.html|bitcoin\\.html)$ {
-      proxy_pass http://127.0.0.1:3340/${pubkeyHex}$request_uri;
-      proxy_set_header Host nsite.goosielabs.com;
-  }
-
-Then: sudo nginx -t && sudo nginx -s reload
-And:  sudo systemctl stop php8.3-fpm  # (only after verifying nsite works)
-`);
+console.log(`   Also at: https://goosielabs.com/ (nginx → nsite proxy)`);
