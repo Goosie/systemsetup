@@ -1,0 +1,119 @@
+<!-- wp:html -->
+<div class="gl-page">
+
+  <!-- HERO -->
+  <div class="gl-hero">
+    <div class="gl-hero-inner">
+      <div class="gl-label">Contact</div>
+      <h1>Wij bellen gewoon terug.</h1>
+      <p class="gl-hero-sub">Naam en nummer. Geen formulier van twaalf pagina's. Geen sales pitch.</p>
+      <p class="gl-hero-text">We kijken of er iets past — in het tuinhonk of op afstand. Een sessie duurt een ochtend. Je vertrekt met iets werkends, of met duidelijkheid over wat je wilt bouwen.</p>
+      <div class="gl-goose-row">
+        <span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT GRID -->
+  <div class="gl-section-dark">
+    <div class="gl-section-inner">
+      <div class="gl-grid-2">
+
+        <!-- LINKS: info -->
+        <div>
+          <div class="gl-section-label gl-section-label-light">Direct bereikbaar</div>
+          <div class="gl-section-title gl-section-title-light" style="font-family:'Libre Baskerville',Georgia,serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;line-height:1.2;letter-spacing:-0.02em;margin-bottom:1.5rem;">Het tuinhonk staat open.</div>
+          <p class="gl-section-sub-light" style="margin-bottom:2rem;">Ons kantoor is een tuinhuis met een hele muur als whiteboard. Geen dresscode. Wel goede koffie en genoeg stiften.</p>
+
+          <div class="gl-contact-cards">
+            <div class="gl-contact-card">
+              <div class="gl-contact-icon" style="background:rgba(251,191,36,0.25);">⚡</div>
+              <div>
+                <div class="gl-contact-card-label">Lightning</div>
+                <div class="gl-contact-card-value"><a href="lightning:zoomer@getalby.com">zoomer@getalby.com</a></div>
+              </div>
+            </div>
+            <div class="gl-contact-card">
+              <div class="gl-contact-icon" style="background:rgba(139,92,246,0.3);">🟣</div>
+              <div>
+                <div class="gl-contact-card-label">Nostr DM</div>
+                <div class="gl-contact-card-value">npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECHTS: formulier -->
+        <div>
+          <div class="gl-form-wrap">
+            <div class="gl-form-title">Laat je nummer achter</div>
+            <div class="gl-form-sub">Wij bellen gewoon terug</div>
+            <div class="gl-form-group">
+              <label>Jouw naam</label>
+              <input type="text" id="gl-naam" placeholder="Hoe noemen we je?">
+            </div>
+            <div class="gl-form-group">
+              <label>Telefoonnummer</label>
+              <input type="tel" id="gl-tel" placeholder="+31 6 ...">
+            </div>
+            <div class="gl-form-group">
+              <label>Waar gaat het over? <span style="opacity:0.5;">(optioneel)</span></label>
+              <textarea id="gl-msg" placeholder="Een idee, een vraag, of gewoon nieuwsgierig..."></textarea>
+            </div>
+            <button class="gl-form-submit" onclick="glVerstuur()">Bel mij terug →</button>
+            <div class="gl-form-note">🪿 &nbsp; Geen spam. Geen nieuwsbrief. Gewoon een telefoontje.</div>
+            <div class="gl-form-success" id="gl-ok">✓ &nbsp; Ontvangen. We bellen je zo snel mogelijk.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- HOE EEN SESSIE WERKT -->
+  <div class="gl-section gl-section-gray">
+    <div class="gl-section-inner">
+      <div class="gl-section-label">Hoe het werkt</div>
+      <div class="gl-section-title" style="font-family:'Libre Baskerville',Georgia,serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;color:#042C53;line-height:1.2;letter-spacing:-0.02em;margin-bottom:0.75rem;">Van telefoontje naar werkende app.</div>
+      <p class="gl-section-sub">Geen traject. Geen offerte. Gewoon bouwen.</p>
+      <div class="gl-steps">
+        <div class="gl-step gl-step-hl">
+          <div class="gl-step-nr">01</div>
+          <h3>Telefoontje</h3>
+          <p>We bellen terug. Korte kennismaking — wat wil je bouwen, wat is het probleem?</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">02</div>
+          <h3>Sessie in het tuinhonk</h3>
+          <p>We tekenen het op de muur. Scope, stack, eerste stap — in één ochtend helder.</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">03</div>
+          <h3>V-Formatie vliegt</h3>
+          <p>Binnen dertig minuten draait er iets wat je kunt aanraken. Jij bepaalt de richting.</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">04</div>
+          <h3>Jij houdt de sleutels</h3>
+          <p>Alles open source. Geen lock-in. Jouw data, jouw identiteit, jouw app.</p>
+        </div>
+      </div>
+      <a href="/over-ons/" class="gl-btn">Meer over hoe we werken →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function glVerstuur(){
+  var n=document.getElementById("gl-naam").value.trim();
+  var t=document.getElementById("gl-tel").value.trim();
+  if(!n||!t){alert("Naam en telefoonnummer zijn nodig 🪿");return;}
+  document.getElementById("gl-ok").style.display="block";
+  document.getElementById("gl-naam").value="";
+  document.getElementById("gl-tel").value="";
+  document.getElementById("gl-msg").value="";
+  setTimeout(function(){document.getElementById("gl-ok").style.display="none";},6000);
+}
+</script>
+<!-- /wp:html -->

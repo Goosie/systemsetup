@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goosie Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-200:#85B7EB;
+    --blue-400:#378ADD; --blue-600:#185FA5; --blue-800:#0C447C; --blue-900:#042C53;
+    --gray-50:#F8F8F6; --gray-100:#EDEDEA; --gray-200:#D3D1C7;
+    --gray-400:#888780; --gray-600:#5F5E5A; --gray-800:#2C2C2A;
+    --white:#FFFFFF;
+    --font-display:'Libre Baskerville',Georgia,serif;
+    --font-body:'DM Sans',system-ui,sans-serif;
+  }
+  html { scroll-behavior:smooth; }
+  body { font-family:var(--font-body); background:var(--white); color:var(--gray-800); font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; }
+
+  /* NAV */
+  nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-100); }
+  .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
+  .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); text-decoration:none; letter-spacing:-0.02em; }
+  .nav-logo span { color:var(--blue-400); }
+  .nav-links { display:flex; gap:2rem; }
+  .nav-link { font-size:14px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:color 0.2s; }
+  .nav-link:hover { color:var(--blue-600); }
+
+  /* HERO */
+  .hero { background:linear-gradient(160deg,var(--blue-900) 0%,var(--blue-800) 50%,var(--blue-600) 100%); color:var(--white); padding:6rem 2rem 5rem; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-120px; right:-120px; width:500px; height:500px; border-radius:50%; background:rgba(55,138,221,0.15); pointer-events:none; }
+  .hero::after { content:''; position:absolute; bottom:-80px; left:10%; width:300px; height:300px; border-radius:50%; background:rgba(21,95,165,0.2); pointer-events:none; }
+  .hero-inner { max-width:1080px; margin:0 auto; position:relative; z-index:1; }
+  .hero-label { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:6px 14px; font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--blue-100); margin-bottom:2rem; }
+  .hero-label::before { content:''; width:6px; height:6px; border-radius:50%; background:#4ADE80; box-shadow:0 0 6px #4ADE80; }
+  .hero h1 { font-family:var(--font-display); font-size:clamp(2.4rem,5vw,3.8rem); font-weight:700; line-height:1.1; letter-spacing:-0.03em; color:var(--white); margin-bottom:1rem; }
+  .hero-sub { font-size:1.15rem; font-weight:300; color:var(--blue-200); margin-bottom:2rem; letter-spacing:0.01em; }
+  .hero-text { font-size:1.05rem; line-height:1.8; color:rgba(255,255,255,0.8); max-width:620px; margin-bottom:1rem; }
+  .hero-text em { color:var(--blue-200); font-style:italic; }
+  .hero-cta { margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap; }
+  .btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--white); color:var(--blue-800); font-family:var(--font-body); font-size:15px; font-weight:600; padding:13px 26px; border-radius:8px; text-decoration:none; transition:all 0.2s; }
+  .btn-primary:hover { background:var(--blue-100); }
+  .btn-ghost { display:inline-flex; align-items:center; gap:8px; background:transparent; color:rgba(255,255,255,0.85); font-family:var(--font-body); font-size:15px; font-weight:500; padding:13px 26px; border-radius:8px; text-decoration:none; border:1px solid rgba(255,255,255,0.25); transition:all 0.2s; }
+  .btn-ghost:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.4); }
+
+  /* GOOSE DECO */
+  .goose-row { display:flex; gap:6px; margin-top:3rem; opacity:0.35; }
+  .goose { font-size:1.4rem; }
+  .goose:nth-child(1) { margin-left:0; }
+  .goose:nth-child(2) { margin-left:40px; margin-top:12px; }
+  .goose:nth-child(3) { margin-left:80px; margin-top:20px; }
+  .goose:nth-child(4) { margin-left:120px; margin-top:28px; }
+  .goose:nth-child(5) { margin-left:160px; margin-top:34px; }
+
+  /* SECTION SHARED */
+  section { padding:5rem 2rem; }
+  .section-inner { max-width:1080px; margin:0 auto; }
+  .section-label { font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--blue-400); margin-bottom:0.75rem; }
+  .section-title { font-family:var(--font-display); font-size:clamp(1.6rem,3vw,2.4rem); font-weight:700; color:var(--blue-900); line-height:1.2; letter-spacing:-0.02em; margin-bottom:0.75rem; }
+  .section-sub { font-size:1rem; color:var(--gray-600); max-width:560px; }
+
+  /* PROJECTS GRID */
+  .projects { background:var(--gray-50); }
+  .projects-header { margin-bottom:3rem; }
+  .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.5rem; }
+  .project-card { background:var(--white); border:1px solid var(--gray-100); border-radius:16px; padding:1.75rem; display:flex; flex-direction:column; gap:0.75rem; transition:box-shadow 0.2s, transform 0.2s; }
+  .project-card:hover { box-shadow:0 8px 32px rgba(12,68,124,0.1); transform:translateY(-2px); }
+  .project-card-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .project-name { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--blue-900); }
+  .badge { display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+  .badge-live { background:#D1FAE5; color:#065F46; }
+  .badge-building { background:#FEF3C7; color:#92400E; }
+  .badge-experiment { background:#EDE9FE; color:#5B21B6; }
+  .badge-idea { background:var(--gray-100); color:var(--gray-600); }
+  .project-desc { font-size:0.92rem; line-height:1.65; color:var(--gray-600); flex:1; }
+  .project-links { display:flex; gap:1.25rem; margin-top:0.5rem; flex-wrap:wrap; align-items:center; }
+  .project-link { font-size:13px; font-weight:500; color:var(--blue-400); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+  .project-link:hover { color:var(--blue-600); }
+  .project-link::after { content:'→'; }
+  .project-link-github { color:var(--gray-400); }
+  .project-link-github:hover { color:var(--gray-800); }
+  .project-link-github::before { content:''; display:inline-block; width:14px; height:14px; margin-right:3px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23888780'%3E%3Cpath d='M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .project-link-github::after { content:''; }
+  .project-link-install { color:var(--blue-400); }
+  .project-card-title { display:flex; align-items:center; gap:10px; }
+  .project-icon { width:40px; height:40px; border-radius:10px; flex-shrink:0; object-fit:cover; }
+  .project-link-install:hover { color:var(--blue-600); }
+  .project-link-install::before { content:''; display:inline-block; width:14px; height:14px; margin-right:3px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23378ADD'%3E%3Cpath d='M17 2H7C5.897 2 5 2.897 5 4v16c0 1.103.897 2 2 2h10c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm0 18H7V4h10v16zm-5-3a1 1 0 100-2 1 1 0 000 2z'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .project-link-install::after { content:'→'; }
+
+  /* JOIN */
+  .join { background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 100%); color:var(--white); }
+  .join-inner { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+  .join h2 { font-family:var(--font-display); font-size:clamp(1.8rem,3vw,2.6rem); font-weight:700; letter-spacing:-0.02em; color:var(--white); margin-bottom:1.25rem; }
+  .join p { font-size:1.05rem; line-height:1.8; color:rgba(255,255,255,0.8); margin-bottom:2rem; }
+  .contact-cards { display:flex; flex-direction:column; gap:1rem; }
+  .contact-card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:14px; padding:1.25rem 1.5rem; display:flex; align-items:center; gap:1rem; }
+  .contact-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+  .contact-icon-nostr { background:rgba(139,92,246,0.3); }
+  .contact-icon-ln { background:rgba(251,191,36,0.25); }
+  .contact-card-text { }
+  .contact-card-label { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--blue-200); }
+  .contact-card-value { font-size:14px; font-weight:500; color:var(--white); word-break:break-all; margin-top:2px; }
+  .contact-card-value a { color:var(--white); text-decoration:none; }
+  .contact-card-value a:hover { text-decoration:underline; }
+
+  /* FOOTER */
+  footer { background:var(--blue-900); border-top:1px solid rgba(255,255,255,0.08); padding:2.5rem 2rem; }
+  .footer-inner { max-width:1080px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+  .footer-brand { font-family:var(--font-display); font-size:16px; color:rgba(255,255,255,0.6); }
+  .footer-brand strong { color:var(--white); }
+  .footer-copy { font-size:13px; color:rgba(255,255,255,0.4); }
+
+  /* HAMBURGER */
+  .nav-burger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:6px; background:none; border:none; }
+  .nav-burger span { display:block; width:22px; height:2px; background:var(--gray-800); border-radius:2px; transition:all 0.3s; }
+  .nav-burger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+  .nav-burger.open span:nth-child(2) { opacity:0; }
+  .nav-burger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .join-inner { grid-template-columns:1fr; gap:2rem; }
+    .nav-burger { display:flex; }
+    .nav-links { display:none; flex-direction:column; gap:0; position:absolute; top:64px; left:0; right:0; background:rgba(255,255,255,0.98); border-bottom:1px solid var(--gray-100); padding:0.5rem 0; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    .nav-links.open { display:flex; }
+    .nav-link { padding:0.85rem 2rem; font-size:15px; border-bottom:1px solid var(--gray-100); }
+    .nav-link:last-child { border-bottom:none; }
+    .projects-grid { grid-template-columns:1fr; }
+    .goose-row { display:none; }
+    .footer-inner { flex-direction:column; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Goosie<span>.</span>Labs</a>
+    <div class="nav-links" id="nav-links">
+      <a href="#projecten" class="nav-link">Projecten</a>
+      <a href="#meedoen" class="nav-link">Meedoen</a>
+      <a href="https://goosielabs.com/apps/" class="nav-link">Apps</a>
+      <a href="/over-ons/" class="nav-link">Over ons</a>
+      <a href="/contact/" class="nav-link">Contact</a>
+      <a href="/en/" class="nav-link" style="font-weight:600;color:var(--blue-600);">🇬🇧 EN</a>
+    </div>
+    <button class="nav-burger" id="nav-burger" aria-label="Menu" onclick="var b=document.getElementById('nav-burger'),m=document.getElementById('nav-links');b.classList.toggle('open');m.classList.toggle('open');">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">Open experimenteer-lab</div>
+    <h1>Goosie Labs</h1>
+    <div class="hero-sub">Een open lab voor Bitcoin, Nostr en AI</div>
+    <p class="hero-text">
+      Ganzen vliegen in V-formatie — de voorste wisselt zodat niemand uitgeput raakt, en ze komen terug voor achterblijvers. Zo werkt Goosie Labs ook: ideeën worden in de open lucht getest, de leiding wisselt, en niemand hoeft het alleen af te maken. Perry landt graag op nieuwe plekken, onderzoekt technologie die de wereld eerlijker maakt, en bouwt experimenten die anderen kunnen hergebruiken, verder bouwen, of oppakken om samen af te ronden.
+    </p>
+    <p class="hero-text"><em>Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.</em></p>
+    <div class="hero-cta">
+      <a href="#projecten" class="btn-primary">Bekijk de experimenten</a>
+      <a href="#meedoen" class="btn-ghost">Mee vliegen?</a>
+    </div>
+    <div class="goose-row" aria-hidden="true">
+      <span class="goose">🪿</span>
+      <span class="goose">🪿</span>
+      <span class="goose">🪿</span>
+      <span class="goose">🪿</span>
+      <span class="goose">🪿</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTEN -->
+<section class="projects" id="projecten">
+  <div class="section-inner">
+    <div class="projects-header">
+      <div class="section-label">Experimenten</div>
+      <h2 class="section-title">Wat er vliegt</h2>
+      <p class="section-sub">Experimenten in verschillende stadia — van idee tot werkend prototype</p>
+    </div>
+    <div class="projects-grid">
+
+<!-- APPS-TILES-START -->
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/catchzaps/icons/icon-192.png" alt="CatchZaps" width="40" height="40"><div class="project-name">CatchZaps</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Drop sats op de kaart, anderen lopen erheen en vangen ze op. Wordt herbouwd als volwaardig platform.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/catchzaps/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/catchzaps" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://goosielabs.com/apps/catchzaps/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/sofia/icons/icon-192.png" alt="Sofia" width="40" height="40"><div class="project-name">Sofia</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Nostr reisapp voor groepstrips — privé, zonder Facebook, eigen relay. Coordinate samen zonder je data weg te geven.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/sofia/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/sofia" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://goosielabs.com/apps/sofia/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/proofofmove/icons/icon-192.png" alt="ProofOfMove" width="40" height="40"><div class="project-name">ProofOfMove</div></div>
+          <span class="badge badge-experiment">Experiment</span>
+        </div>
+        <p class="project-desc">Train je bewegingen: Je schaduw over een virtuele avatar corrigeert je in realtime — groen is goed, rood betekent dat je bepaald lichaamsdeel iets moet verplaatsen. Alle bewegingen correct? Verdien sats. Neem zelf trainingen op en verdien eraan.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/proofofmove/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/proofofmove" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://goosielabs.com/apps/proofofmove/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/zaphunt/icons/icon-192.png" alt="ZapHunt" width="40" height="40"><div class="project-name">ZapHunt</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Maak je eigen speurtocht (laat AI je daarbij helpen), laat iedereen die wil en kan er een deposit op doen. De spelers verdienen sats voor ieder goed gegeven antwoord. Speuren maar, succes!</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/zaphunt/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/zaphunt" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://goosielabs.com/apps/zaphunt/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/zinin/icons/icon-192.png" alt="ZinIn" width="40" height="40"><div class="project-name">ZinIn</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Als twee mensen op hetzelfde moment ergens zin in hebben zonder het van elkaar te weten, brengt deze app hen bij elkaar. Waar heb je zin in? Wandelen? Filosofisch gesprek? Spelletje? Geef het aan en je wordt mogelijk gematched.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/zinin/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/zinin-demo" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/hellonsite/icons/icon-192.png" alt="HelloNsite" width="40" height="40"><div class="project-name">HelloNsite</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Create your Nostr identity via Onboarding, then publish your first decentralized website in one click. Stored on Blossom, indexed on Nostr — no hosting needed.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/hellonsite/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/hellonsite" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Goosie/hellonsite/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/proofofread/icons/icon-192.png" alt="ProofOfRead" width="40" height="40"><div class="project-name">ProofOfRead</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Bewijs dat je een boek echt hebt gelezen. Scan het ISBN, betaal 5 sats, beantwoord een AI-quiz — en ontvang een Nostr badge als bewijs.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/proofofread/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/proofofread" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/feedback/icons/icon-192.png" alt="Feedback" width="40" height="40"><div class="project-name">Feedback</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Eerlijke feedback is sociaal risicovol — mensen houden hun mond uit angst voor conflict. Dit protocol ontkoppelt invuller en ontvanger via Nostr-cryptografie: de identiteit van wie de feedback leest blijft verborgen. Stuur een link, ontvang anonieme reacties, betaal automatisch sats uit via Lightning zodra iemand invult.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/feedback/" class="project-link">Bekijk app</a>
+          <a href="https://goosielabs.com/apps/feedback/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/georgie/icons/icon-192.png" alt="Georgie Trip" width="40" height="40"><div class="project-name">Georgie Trip</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">3-day Kutaisi trip planner — sights, restaurants, hiking & shared memories</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/georgie/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/georgie" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Goosie/georgie/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/bookwriter/icons/icon-192.png" alt="bookwriter" width="40" height="40"><div class="project-name">bookwriter</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Schrijf je eigen thrillers met een beetje hulp van Goosie Writers AI. Zet flarden inspiratie op en laat de AI er een boek van maken — jij publiceert het op Nostr.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/bookwriter/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/bookwriter/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/weddendat/icons/icon-192.png" alt="weddendat" width="40" height="40"><div class="project-name">weddendat</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Gooi een weddenschap op tafel en zet sats in. De tegenpartij accepteert of niet, een arbiter beslist wie er wint — en de pot gaat automatisch via Lightning naar de winnaar.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/weddendat/" class="project-link">Bekijk app</a>
+          <a href="https://goosielabs.com/apps/weddendat/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/nospass/icons/icon-192.png" alt="NosPass" width="40" height="40"><div class="project-name">NosPass</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Wachtwoorden managen precies zoals jij wil dat het zou moeten werken, en geen jaarlijkse kosten!</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/nospass/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/nospass/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/onboarding/icons/icon-192.png" alt="Onboarding" width="40" height="40"><div class="project-name">Onboarding</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Generate unique visual identities from your Nostr public key — goosie, portrait, sigil, sprite, card and poster. Deterministic and reproducible.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/onboarding/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/onboarding" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Goosie/onboarding/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/lastwill/icons/icon-192.png" alt="lastwill" width="40" height="40"><div class="project-name">lastwill</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Wat wil je dat er gebeurt als je komt te overlijden? Bewaar je digitale nalatenschap prive en decentraal, zonder tussenpersoon. Druk wel tijdig op je still-alive button.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/lastwill/" class="project-link">Bekijk app</a>
+          <a href="https://goosielabs.com/apps/lastwill/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/honkference/icons/icon-192.png" alt="honkference" width="40" height="40"><div class="project-name">honkference</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Here we meet each other online when we need to honk something about new ideas or celebrate Goosie's achievements.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/honkference/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/honkference" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Goosie/honkference/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/dilemma/icons/icon-192.png" alt="Dilemma" width="40" height="40"><div class="project-name">Dilemma</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Post een dilemma met een sat-bounty. Anderen geven advies, de gemeenschap upvotet, jij kiest de winnaar — die de sats ontvangt via Lightning.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/dilemma/" class="project-link">Bekijk app</a>
+          <a href="https://goosielabs.com/apps/dilemma/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="/apps/hoofddorp/icons/icon-192.png" alt="Uitlaatplekken Hoofddorp" width="40" height="40"><div class="project-name">Uitlaatplekken Hoofddorp</div></div>
+          <span class="badge badge-building">In bouw</span>
+        </div>
+        <p class="project-desc">Kaart met hondenuitlaatplekken in Hoofddorp. Voeg een plek toe en reageer op plekken van anderen.</p>
+        <div class="project-links">
+          <a href="https://goosielabs.com/apps/hoofddorp/" class="project-link">Bekijk app</a>
+          <a href="https://github.com/Goosie/hoofddorp" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Goosie/hoofddorp/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Juridisch advies</a>
+        </div>
+      </div>
+
+      <!-- APPS-TILES-END -->
+
+      <div class="project-card">
+        <div class="project-card-top">
+          <div class="project-card-title"><img class="project-icon" src="https://goosielabs.com/mint/icons/icon-192.png" alt="Goosie Mint" width="40" height="40"><div class="project-name">Goosie Mint</div></div>
+          <span class="badge badge-live">Live</span>
+        </div>
+        <p class="project-desc">Eigen Cashu ecash mint van Goosie Labs — anoniem betalen met Bitcoin. Wordt gebruikt in de apps zoals ZapHunt, CatchZaps en ProofOfMove.</p>
+        <div class="project-links">
+          <a href="https://mint.goosielabs.com" class="project-link">Open mint</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+
+<!-- FORMATION -->
+<section class="formation" id="formation">
+  <div class="section-inner">
+    <div class="projects-header">
+      <div class="section-label">V-Formatie</div>
+      <h2 class="section-title">Het team</h2>
+      <p class="section-sub">AI-ganzen met elk een eigen identiteit op Nostr — klik om hun rol en instructies te lezen.</p>
+    </div>
+    <style>
+      .formation { background:var(--gray-50); padding:4rem 2rem; }
+      .formation .section-inner { max-width:1080px; margin:0 auto; }
+      .agents-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.875rem; margin-top:1.5rem; }
+      .agent-card { display:flex; align-items:flex-start; gap:0.75rem; background:white; border:1px solid #e8e8e4; border-radius:0.75rem; padding:0.875rem 1rem; text-decoration:none; color:inherit; transition:border-color 0.15s,box-shadow 0.15s; }
+      .agent-card:hover { border-color:#378add; box-shadow:0 2px 8px rgba(55,138,221,0.12); }
+      .agent-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:800; color:white; flex-shrink:0; }
+      .agent-info { flex:1; min-width:0; }
+      .agent-name { font-weight:600; font-size:0.9rem; margin-bottom:0.2rem; color:var(--gray-800); }
+      .agent-desc { font-size:0.72rem; color:var(--gray-400); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    </style>
+    <div class="agents-grid">
+<!-- AGENTS-TILES-START -->
+      <a href="https://nsite.goosielabs.com/npub1qz9qf8pk8ys9ej2ej3ak7a9tvglkst2qcah5evvnf9ppfn60yrhqjfpx5k/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#6366f1">A</div>
+        <div class="agent-info">
+          <div class="agent-name">Astrid</div>
+          <div class="agent-desc">Primary orchestrator and default assistant. Use for project overview, todo management, organisation memory, architect de…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1pnfwvr2z9w2gsl4f82k9wz224gmf6u2ts5qtxnm4s3kh44r0xtxqzr56kh/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#0ea5e9">D</div>
+        <div class="agent-info">
+          <div class="agent-name">Danky</div>
+          <div class="agent-desc">DevOps and infrastructure engineer. Use for git operations, backups, deployment order, server infrastructure, systemd se…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub196pvegw4k7kzeygnktd3eemgsxtpvz28g96unhseysju46vjl3askgsk8h/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#10b981">F</div>
+        <div class="agent-info">
+          <div class="agent-name">Finny</div>
+          <div class="agent-desc">Financial watchdog and cost monitor. Use for sat flow tracking, Lightning/Cashu risk assessment, cost analysis, financia…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub128sgwsfduc63up0yj23a9tuqknsrd0keer74r2pyejqdc788qyhq9yzpzh/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#f59e0b">H</div>
+        <div class="agent-info">
+          <div class="agent-name">Haitje</div>
+          <div class="agent-desc">Configuration auditor and V-Formation quality controller. Use for agent .md quality checks, CLAUDE.md coherence, vault s…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub17tkzrur9am9qxtpf7x68t4qwcs6w5gafew6p2fz76f3rsf7pdeasyv9wrh/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#8b5cf6">J</div>
+        <div class="agent-info">
+          <div class="agent-name">Jurry</div>
+          <div class="agent-desc">Legal and governance advisor. Use for license checking, privacy review, payment regulation, app risk classification, com…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1tw4j9w9tyqcrsr9nkja497zyxpcu6dsqexxdpalgcpgkcsl9pqtqqksqll/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#ef4444">S</div>
+        <div class="agent-info">
+          <div class="agent-name">Secury</div>
+          <div class="agent-desc">Security watchdog and threat detector. Use for nginx log analysis, fail2ban configuration, npm audit, dependency vulnera…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub18062kz77yumvzp3xpmgh2t5lrlmh90y4ja2jek807392vf8mp44s05lw6y/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#ec4899">T</div>
+        <div class="agent-info">
+          <div class="agent-name">Tessa</div>
+          <div class="agent-desc">QA engineer and testing specialist. Use for test planning, relay data seeding, app reachability verification, integratio…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1l8wusqe4uukqyd738umfdpmdszsxfqgujuelw5pfx3efmjddl9yqu6rddv/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#14b8a6">C</div>
+        <div class="agent-info">
+          <div class="agent-name">Checky</div>
+          <div class="agent-desc">Global quality controller and coordinator. Use for new app ideas, architecture decisions, usage anomalies, agent audits.…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1q9yhnh4667pzn46f9x0vnhmxdrgpyvwxhquzgcj8hqceegjfz8wqjezaw4/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#f97316">C</div>
+        <div class="agent-info">
+          <div class="agent-name">Communi</div>
+          <div class="agent-desc">Community engagement and public storytelling. Posts proactively about shipped features, highlights, milestones. Tells Go…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1p4ugkl2gxmd05f0vv3lsnxzwjajjhm8vz9dhxpwzz0lw62ux7y5qne6cha/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#a855f7">D</div>
+        <div class="agent-info">
+          <div class="agent-name">Designy</div>
+          <div class="agent-desc">Interface builder and UX/design specialist. Creates intuitive interfaces, maintains design consistency across all apps, …</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub15emgkxlsfmpjsv04zx8ueqd9z7kntuhjpgv0q0rw8ft5w2n62u6qnxu06t/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#06b6d4">N</div>
+        <div class="agent-info">
+          <div class="agent-name">Nosty</div>
+          <div class="agent-desc">Nostr identity manager & key rotation specialist</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub18scm33ty9afnwrnqd348l20hfk8nkeu48ay4mqclapl9uup8rukqhywez9/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#64748b">A</div>
+        <div class="agent-info">
+          <div class="agent-name">Admission</div>
+          <div class="agent-desc">Admission API and onboarding manager. Use for user admission workflows, invite code generation, Nostr identity verificat…</div>
+        </div>
+      </a>
+      <a href="https://nsite.goosielabs.com/npub1gxl3vc6k5epchrqxkn0nhu7jfdqd2qvjgukwluupayck8a8t6ycsvawp7q/" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:#e11d48">R</div>
+        <div class="agent-info">
+          <div class="agent-name">Ruby</div>
+          <div class="agent-desc"></div>
+        </div>
+      </a>
+
+<!-- AGENTS-TILES-END -->
+    </div>
+  </div>
+</section>
+
+<!-- MEEDOEN -->
+<section class="join" id="meedoen">
+  <div class="join-inner">
+    <div>
+      <div class="section-label" style="color:var(--blue-200);">Contact</div>
+      <h2>Mee vliegen?</h2>
+      <p>Zie je een experiment dat je wil afmaken? Een idee dat aansluit? Of wil je gewoon weten hoe iets werkt? Stuur een Nostr DM of een Lightning zap — beide zijn welkom.</p>
+    </div>
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="contact-icon contact-icon-nostr">🟣</div>
+        <div class="contact-card-text">
+          <div class="contact-card-label">Nostr DM</div>
+          <div class="contact-card-value">npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc</div>
+        </div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon contact-icon-ln">⚡</div>
+        <div class="contact-card-text">
+          <div class="contact-card-label">Lightning zap</div>
+          <div class="contact-card-value">
+            <a href="lightning:zoomer@getalby.com">zoomer@getalby.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand"><strong>Goosie Labs</strong> — open experimenten in Bitcoin, Nostr en AI</div>
+    <div class="footer-copy">Alles hier mag worden hergebruikt.</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -8,7 +8,7 @@
  *   /index.html     — homepage (tiles + V-Formation, regenerated from tile.json)
  *   /about.html     — About page (EN, generated from code)
  *   /contact.html   — Contact page (EN, generated from code)
- *   /mcp.html       — MCP article (EN, from /tmp/mcp_en.html)
+ *   /mcp.html       — MCP article (EN, from scripts/pages/mcp_en.html)
  *   /bitcoin.html   — Bitcoin article (EN, generated from code)
  *
  * Usage:
@@ -32,6 +32,7 @@ const BLOSSOM    = 'http://127.0.0.1:3339';
 const RELAY      = 'ws://127.0.0.1:7778';
 const NSITE_BASE = 'https://nsite.goosielabs.com';
 const APPS_DIR   = '/var/www/goosielabs/apps';
+const PAGES_DIR  = '/home/deploy/scripts/pages';
 const KEYS_DIR   = '/home/deploy/agents';
 const CLAUDE_DIR = '/home/deploy/.claude/agents';
 
@@ -275,7 +276,7 @@ async function generateHomepage() {
   }).join('\n');
 
   // Use WP export as base (carries full CSS + layout), then patch all Dutch text
-  let html = readFileSync('/tmp/homepage_base.html', 'utf8');
+  let html = readFileSync(`${PAGES_DIR}/homepage_base.html`, 'utf8');
 
   // lang + fix double-quote bugs
   html = html.replace('lang="nl"', 'lang="en"');
@@ -368,7 +369,7 @@ async function generateHomepage() {
 
 // ── Contact page (NL) — strip form, keep info ────────────────────────────────
 function generateContactNl() {
-  const fragment = readFileSync('/tmp/contact_nl.html', 'utf8');
+  const fragment = readFileSync(`${PAGES_DIR}/contact_nl.html`, 'utf8');
   // Remove WPForms form block
   const cleaned = fragment
     .replace(/<!-- wp:html -->/g, '')
@@ -395,7 +396,7 @@ function generateContactNl() {
 
 // ── Contact page (EN) ────────────────────────────────────────────────────────
 function generateContactEn() {
-  const fragment = readFileSync('/tmp/contact_en.html', 'utf8');
+  const fragment = readFileSync(`${PAGES_DIR}/contact_en.html`, 'utf8');
   const cleaned = fragment
     .replace(/<!-- wp:html -->/g, '')
     .replace(/<form[\s\S]*?<\/form>/gi, `
@@ -596,7 +597,7 @@ const pages = {
   '/index.html':      Buffer.from(await generateHomepage(), 'utf8'),
   '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
   '/contact.html':    Buffer.from(generateContactEn(), 'utf8'),
-  '/mcp.html':        Buffer.from(generateArticle('/tmp/mcp_en.html', 'What is MCP?', 'en'), 'utf8'),
+  '/mcp.html':        Buffer.from(generateArticle(`${PAGES_DIR}/mcp_en.html`, 'What is MCP?', 'en'), 'utf8'),
   '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
 };
 

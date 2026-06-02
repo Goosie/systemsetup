@@ -1,0 +1,125 @@
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What is MCP?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>MCP stands for <strong>Model Context Protocol</strong> — an open standard developed by Anthropic. It allows AI assistants like Claude to connect with external tools, databases, files, and services.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Think of MCP as a universal plug for AI: instead of writing custom code for every integration, tools talk to the AI through one standardized protocol.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How does it work?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>MCP uses a client-server architecture:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<li><strong>MCP Host</strong> — the AI assistant (e.g. Claude Code, Claude Desktop)</li>
+<li><strong>MCP Server</strong> — a program that exposes tools and data (e.g. Google Drive, GitHub, your own database)</li>
+<li><strong>MCP Client</strong> — the bridge that connects host and server</li>
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>Through MCP servers, the AI can <em>read</em>, <em>write</em>, and <em>take actions</em> — all under your control.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What can you do with it?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<li>Read and create files in Google Drive or your local system</li>
+<li>Create GitHub issues and review code</li>
+<li>Query and update databases</li>
+<li>Scrape websites and perform browser tasks</li>
+<li>Expose your own tools to the AI via a self-built MCP server</li>
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How do you use MCP with Claude?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">1. Claude Desktop</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Install Claude Desktop and edit the configuration file <code>claude_desktop_config.json</code>. Add MCP servers here:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:code -->
+<pre class="wp-block-code"><code>{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/folder"]
+    }
+  }
+}</code></pre>
+<!-- /wp:code -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">2. Claude Code (CLI)</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Add MCP servers via the terminal:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:code -->
+<pre class="wp-block-code"><code>claude mcp add &lt;name&gt; -- &lt;command&gt; [arguments]</code></pre>
+<!-- /wp:code -->
+
+<!-- wp:paragraph -->
+<p>View all active servers with:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:code -->
+<pre class="wp-block-code"><code>claude mcp list</code></pre>
+<!-- /wp:code -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">3. Popular MCP servers</h3>
+<!-- /wp:heading -->
+
+<!-- wp:table -->
+<figure class="wp-block-table"><table><thead><tr><th>Server</th><th>What it does</th></tr></thead><tbody><tr><td>@modelcontextprotocol/server-filesystem</td><td>Read/write local files</td></tr><tr><td>@modelcontextprotocol/server-github</td><td>Manage GitHub repos and issues</td></tr><tr><td>@modelcontextprotocol/server-google-drive</td><td>Google Drive files</td></tr><tr><td>@modelcontextprotocol/server-postgres</td><td>Query a PostgreSQL database</td></tr><tr><td>@modelcontextprotocol/server-puppeteer</td><td>Browser automation</td></tr></tbody></table></figure>
+<!-- /wp:table -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Build your own MCP server</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>You can also build your own MCP server using the official SDK in Python or TypeScript:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:code -->
+<pre class="wp-block-code"><code>npm install @modelcontextprotocol/sdk</code></pre>
+<!-- /wp:code -->
+
+<!-- wp:paragraph -->
+<p>This lets you offer any API, database, or service as a tool to Claude.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">More information</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<li>Official documentation: <a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a></li>
+<li>GitHub: <a href="https://github.com/modelcontextprotocol">github.com/modelcontextprotocol</a></li>
+<li>Claude Code docs: <a href="https://docs.anthropic.com/claude/docs">docs.anthropic.com</a></li>
+</ul>
+<!-- /wp:list -->
+

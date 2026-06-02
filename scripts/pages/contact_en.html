@@ -1,0 +1,120 @@
+<!-- wp:html -->
+<div class="gl-page">
+
+  <!-- HERO -->
+  <div class="gl-hero">
+    <div class="gl-hero-inner">
+      <div class="gl-label">Contact</div>
+      <h1>We just call you back.</h1>
+      <p class="gl-hero-sub">Name and number. No twelve-page form. No sales pitch.</p>
+      <p class="gl-hero-text">We'll see if something fits — at the garden shed or remotely. A session takes a morning. You leave with something that works, or with clarity about what you want to build.</p>
+      <div class="gl-goose-row">
+        <span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span><span class="gl-goose">🪿</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT GRID -->
+  <div class="gl-section-dark">
+    <div class="gl-section-inner">
+      <div class="gl-grid-2">
+
+        <!-- LEFT: info -->
+        <div>
+          <div class="gl-section-label gl-section-label-light">Reach us directly</div>
+          <div class="gl-section-title gl-section-title-light" style="font-family:'Libre Baskerville',Georgia,serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;line-height:1.2;letter-spacing:-0.02em;margin-bottom:1.5rem;">The garden shed is open.</div>
+          <p class="gl-section-sub-light" style="margin-bottom:2rem;">Our office is a garden house with an entire wall as a whiteboard. No dress code. Good coffee and plenty of markers.</p>
+
+          <div class="gl-contact-cards">
+            <div class="gl-contact-card">
+              <div class="gl-contact-icon" style="background:rgba(251,191,36,0.25);">⚡</div>
+              <div>
+                <div class="gl-contact-card-label">Lightning</div>
+                <div class="gl-contact-card-value"><a href="lightning:zoomer@getalby.com">zoomer@getalby.com</a></div>
+              </div>
+            </div>
+            <div class="gl-contact-card">
+              <div class="gl-contact-icon" style="background:rgba(139,92,246,0.3);">🟣</div>
+              <div>
+                <div class="gl-contact-card-label">Nostr DM</div>
+                <div class="gl-contact-card-value">npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: form -->
+        <div>
+          <div class="gl-form-wrap">
+            <div class="gl-form-title">Leave your number</div>
+            <div class="gl-form-sub">We'll just call you back</div>
+            <div class="gl-form-group">
+              <label>Your name</label>
+              <input type="text" id="gl-naam" placeholder="What should we call you?">
+            </div>
+            <div class="gl-form-group">
+              <label>Phone number</label>
+              <input type="tel" id="gl-tel" placeholder="+31 6 ...">
+            </div>
+            <div class="gl-form-group">
+              <label>What's it about? <span style="opacity:0.5;">(optional)</span></label>
+              <textarea id="gl-msg" placeholder="An idea, a question, or just curious..."></textarea>
+            </div>
+            <button class="gl-form-submit" onclick="glVerstuur()">Call me back →</button>
+            <div class="gl-form-note">🪿 &nbsp; No spam. No newsletter. Just a phone call.</div>
+            <div class="gl-form-success" id="gl-ok">✓ &nbsp; Received. We'll call you as soon as we can.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW A SESSION WORKS -->
+  <div class="gl-section gl-section-gray">
+    <div class="gl-section-inner">
+      <div class="gl-section-label">How it works</div>
+      <div class="gl-section-title" style="font-family:'Libre Baskerville',Georgia,serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;color:#042C53;line-height:1.2;letter-spacing:-0.02em;margin-bottom:0.75rem;">From a phone call to a working app.</div>
+      <p class="gl-section-sub">No process. No quote. Just building.</p>
+      <div class="gl-steps">
+        <div class="gl-step gl-step-hl">
+          <div class="gl-step-nr">01</div>
+          <h3>Phone call</h3>
+          <p>We call you back. Short intro — what do you want to build, what's the problem?</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">02</div>
+          <h3>Session at the garden shed</h3>
+          <p>We sketch it on the wall. Scope, stack, first step — clear in one morning.</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">03</div>
+          <h3>V-Formation flies</h3>
+          <p>Within thirty minutes something is running you can actually touch. You set the direction.</p>
+        </div>
+        <div class="gl-step">
+          <div class="gl-step-nr">04</div>
+          <h3>You hold the keys</h3>
+          <p>Everything open source. No lock-in. Your data, your identity, your app.</p>
+        </div>
+      </div>
+      <a href="/en/about-us/" class="gl-btn">More about how we work →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function glVerstuur(){
+  var n=document.getElementById("gl-naam").value.trim();
+  var t=document.getElementById("gl-tel").value.trim();
+  if(!n||!t){alert("Name and phone number are required 🪿");return;}
+  document.getElementById("gl-ok").style.display="block";
+  document.getElementById("gl-naam").value="";
+  document.getElementById("gl-tel").value="";
+  document.getElementById("gl-msg").value="";
+  setTimeout(function(){document.getElementById("gl-ok").style.display="none";},6000);
+}
+</script>
+<!-- /wp:html -->
+
