@@ -122,9 +122,9 @@ function publishManifest(nsecHex, pubkey, files) {
 // ── Shared nav + shell wrapper ────────────────────────────────────────────────
 function shell(title, bodyHtml, lang='nl', activePage='') {
   const navLinks = [
-    { href: '/',            label: 'Home',    key: 'home' },
-    { href: '/about.html',  label: 'About',   key: 'about' },
-    { href: '/contact.html',label: 'Contact', key: 'contact' },
+    { href: './',           label: 'Home',    key: 'home' },
+    { href: 'about.html',   label: 'About',   key: 'about' },
+    { href: 'contact.html', label: 'Contact', key: 'contact' },
   ];
   const nav = navLinks.map(l =>
     `<a href="${l.href}" class="nav-link${activePage===l.key?' nav-link-active':''}">${l.label}</a>`
@@ -283,8 +283,8 @@ function generateHomepage() {
   html = html.replace(/<a href="https:\/\/goosielabs\.com\/apps\/"[^>]*>Apps<\/a>/g, '');
   html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
   html = html.replace(/>Over ons<\/a>/, '>About</a>');
-  html = html.replace(/href="\/over-ons\/"/g, 'href="/about.html"');
-  html = html.replace(/href="\/contact\/"/, 'href="/contact.html"');
+  html = html.replace(/href="\/over-ons\/"/g, 'href="about.html"');
+  html = html.replace(/href="\/contact\/"/, 'href="contact.html"');
   html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
   html = html.replace(/id="projecten"/g, 'id="projects"');
 
