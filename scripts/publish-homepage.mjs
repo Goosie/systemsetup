@@ -123,8 +123,8 @@ function publishManifest(nsecHex, pubkey, files) {
 function shell(title, bodyHtml, lang='nl', activePage='') {
   const navLinks = [
     { href: '/',            label: 'Home',    key: 'home' },
-    { href: '/about.html',  label: 'Over ons', key: 'about' },
-    { href: '/contact.html',label: 'Contact',  key: 'contact' },
+    { href: '/about.html',  label: 'About',   key: 'about' },
+    { href: '/contact.html',label: 'Contact', key: 'contact' },
   ];
   const nav = navLinks.map(l =>
     `<a href="${l.href}" class="nav-link${activePage===l.key?' nav-link-active':''}">${l.label}</a>`
@@ -184,29 +184,173 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 
 // ── Homepage generator (from tile.json + nostr keys) ─────────────────────────
 function generateHomepage() {
-  // Read existing WP homepage as base — it has the full design + V-Formation section
-  // We update the nav links and strip WP-specific bits
+  const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
+  const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
+  const AGENT_COLORS   = { astrid:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', communi:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
+  const AGENT_ORDER    = ['astrid','danky','finny','haitje','jurry','secury','tessa','checky','communi','designy','nosty','admission','ruby'];
+
+  // Read tiles from tile.json directly
+  const tiles = [];
+  try {
+    for (const entry of readdirSync(APPS_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const appDir    = path.join(APPS_DIR, entry.name);
+      const tileFile  = path.join(appDir, 'tile.json');
+      const archived  = path.join(appDir, '.archived');
+      if (!existsSync(tileFile) || existsSync(archived)) continue;
+      try {
+        const d = JSON.parse(readFileSync(tileFile, 'utf8'));
+        if (d.visible === false) continue;
+        tiles.push(d);
+      } catch {}
+    }
+  } catch {}
+  tiles.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
+
+  // Read agents from nostr-key.json + .md descriptions
+  const agents = [];
+  try {
+    for (const name of readdirSync(KEYS_DIR)) {
+      const keyFile = path.join(KEYS_DIR, name, 'nostr-key.json');
+      if (!existsSync(keyFile)) continue;
+      try {
+        const key = JSON.parse(readFileSync(keyFile, 'utf8'));
+        if (!key.npub) continue;
+        let description = '';
+        const mdFile = path.join(CLAUDE_DIR, `${name}.md`);
+        if (existsSync(mdFile)) {
+          const m = readFileSync(mdFile, 'utf8').match(/^description:\s*(.+)$/m);
+          if (m) description = m[1].trim().replace(/^['"]|['"]$/g, '');
+        }
+        agents.push({ name, npub: key.npub, description });
+      } catch {}
+    }
+  } catch {}
+  agents.sort((a, b) => {
+    const ai = AGENT_ORDER.indexOf(a.name), bi = AGENT_ORDER.indexOf(b.name);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  // Generate tile cards HTML
+  const tilesHtml = tiles.map(t => {
+    const status   = t.status ?? 'experiment';
+    const label    = STATUS_LABELS[status] ?? status;
+    const cssClass = STATUS_CLASSES[status] ?? 'badge-idea';
+    const links = [];
+    if (t.url) links.push(`<a href="${t.url}" class="project-link">Open app</a>`);
+    if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>`);
+    if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>`);
+    const linksHtml = links.length ? `\n        <div class="project-links">\n          ${links.join('\n          ')}\n        </div>` : '';
+    const titleHtml = t.icon
+      ? `<div class="project-card-title"><img class="project-icon" src="${t.icon}" alt="${t.title ?? ''}" width="40" height="40"><div class="project-name">${t.title ?? ''}</div></div>`
+      : `<div class="project-name">${t.title ?? ''}</div>`;
+    return `      <div class="project-card">
+        <div class="project-card-top">
+          ${titleHtml}
+          <span class="badge ${cssClass}">${label}</span>
+        </div>
+        <p class="project-desc">${t.description ?? ''}</p>${linksHtml}
+      </div>`;
+  }).join('\n\n');
+
+  // Generate agent cards HTML
+  const agentCardsHtml = agents.map(a => {
+    const color    = AGENT_COLORS[a.name] ?? '#6366f1';
+    const nsiteUrl = `https://nsite.goosielabs.com/${a.npub}/`;
+    const initial  = a.name[0].toUpperCase();
+    const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
+    const desc     = a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description;
+    return `      <a href="${nsiteUrl}" class="agent-card" target="_blank" rel="noopener">
+        <div class="agent-avatar" style="background:${color}">${initial}</div>
+        <div class="agent-info">
+          <div class="agent-name">${title}</div>
+          <div class="agent-desc">${desc}</div>
+        </div>
+      </a>`;
+  }).join('\n');
+
+  // Use WP export as base (carries full CSS + layout), then patch all Dutch text
   let html = readFileSync('/tmp/homepage_base.html', 'utf8');
 
-  // Update nav: remove Inloggen, fix hrefs
-  html = html.replace(
-    /<a href="\/inloggen\/"[^>]*>.*?<\/a>/g, ''
-  );
-  html = html.replace(
-    /<a href="#projecten"[^>]*>Projecten<\/a>/,
-    '<a href="#projecten" class="nav-link">Projecten</a>'
-  );
-  // Update about/contact nav links to .html versions (for nsite path compatibility)
-  html = html.replace(/href="\/over-ons\//g, 'href="/about.html"');
-  html = html.replace(/href="\/contact\//g, 'href="/contact.html"');
+  // lang + fix double-quote bugs
+  html = html.replace('lang="nl"', 'lang="en"');
 
-  // Add nsite badge in footer
+
+  // Nav: remove unwanted links, translate labels
+  html = html.replace(/<a href="\/inloggen\/"[^>]*>.*?<\/a>/g, '');
+  html = html.replace(/<a href="\/en\/"[^>]*>[^<]*<\/a>/g, '');
+  html = html.replace(/<a href="#meedoen"[^>]*>Meedoen<\/a>/g, '');
+  html = html.replace(/<a href="https:\/\/goosielabs\.com\/apps\/"[^>]*>Apps<\/a>/g, '');
+  html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
+  html = html.replace(/>Over ons<\/a>/, '>About</a>');
+  html = html.replace(/href="\/over-ons\/"/g, 'href="/about.html"');
+  html = html.replace(/href="\/contact\/"/, 'href="/contact.html"');
+  html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
+  html = html.replace(/id="projecten"/g, 'id="projects"');
+
+  // Hero
+  html = html.replace('Open experimenteer-lab', 'Open experiment lab');
+  html = html.replace('Een open lab voor Bitcoin, Nostr en AI', 'An open lab for Bitcoin, Nostr and AI');
+  html = html.replace(
+    /Ganzen vliegen in V-formatie[^<]+/,
+    'Geese fly in V-formation — the lead changes so no one gets exhausted, and they circle back for stragglers. Goosie Labs works the same way: ideas are tested in the open, the lead rotates, and no one has to finish anything alone. Perry loves landing in new places, exploring technology that makes the world fairer, and building experiments others can reuse, build on, or pick up and finish together.'
+  );
+  html = html.replace(
+    'Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.',
+    'This is not a product. This is a lab. Everything here is in development — use it, build on it, or reach out.'
+  );
+  html = html.replace('>Bekijk de experimenten<', '>View experiments<');
+  html = html.replace(/>Mee vliegen\?(<\/a>)/, '>Fly along?$1');
+
+  // Projects section headings
+  html = html.replace(/>Experimenten<\/div>/, '>Experiments</div>');
+  html = html.replace(/>Wat er vliegt<\/h2>/, ">What's flying</h2>");
+  html = html.replace(
+    '>Experimenten in verschillende stadia — van idee tot werkend prototype<',
+    '>Experiments in various stages — from idea to working prototype<'
+  );
+
+  // Regenerate tiles between markers from live tile.json data
+  html = html.replace(
+    /<!-- APPS-TILES-START -->[\s\S]*?<!-- APPS-TILES-END -->/,
+    `<!-- APPS-TILES-START -->\n${tilesHtml}\n      <!-- APPS-TILES-END -->`
+  );
+
+  // Mint card (hardcoded after APPS-TILES-END in WP page)
+  html = html.replace(
+    'Eigen Cashu ecash mint van Goosie Labs — anoniem betalen met Bitcoin. Wordt gebruikt in de apps zoals ZapHunt, CatchZaps en ProofOfMove.',
+    'Goosie Labs own Cashu ecash mint — anonymous Bitcoin payments. Used in apps like ZapHunt, CatchZaps and ProofOfMove.'
+  );
+  html = html.replace(/>Open mint<\/a>/g, '>Open mint</a>');
+
+  // V-Formation section
+  html = html.replace('>V-Formatie<', '>V-Formation<');
+  html = html.replace(/>Het team</, '>The team<');
+  html = html.replace(
+    '>AI-ganzen met elk een eigen identiteit op Nostr — klik om hun rol en instructies te lezen.<',
+    '>AI geese each with their own Nostr identity — click to read their role and instructions.<'
+  );
+  // Regenerate agent cards
+  html = html.replace(
+    /<!-- AGENTS-TILES-START -->[\s\S]*?<!-- AGENTS-TILES-END -->/,
+    `<!-- AGENTS-TILES-START -->\n${agentCardsHtml}\n<!-- AGENTS-TILES-END -->`
+  );
+
+  // Join / contact section
+  html = html.replace(/<h2>Mee vliegen\?<\/h2>/, '<h2>Fly along?</h2>');
+  html = html.replace(
+    'Zie je een experiment dat je wil afmaken? Een idee dat aansluit? Of wil je gewoon weten hoe iets werkt? Stuur een Nostr DM of een Lightning zap — beide zijn welkom.',
+    'See an experiment you want to finish? An idea that fits? Or just want to know how something works? Send a Nostr DM or a Lightning zap — both are welcome.'
+  );
+
+  // Footer
+  html = html.replace('open experimenten in Bitcoin, Nostr en AI', 'open experiments in Bitcoin, Nostr and AI');
+  html = html.replace('Alles hier mag worden hergebruikt.', 'Everything here is free to reuse.');
+
+  // nsite marker
   html = html.replace(
     /<\/body>/,
-    `<script>
-      // Mark as nsite-served
-      document.documentElement.dataset.nsite = '${npub.slice(0,20)}…';
-    </script>\n</body>`
+    `<script>document.documentElement.dataset.nsite='${npub.slice(0,20)}…';</script>\n</body>`
   );
 
   return html;

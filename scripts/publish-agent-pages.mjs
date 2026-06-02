@@ -157,6 +157,24 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     a { color: #60a5fa; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
+    /* ── Back nav ── */
+    .back-nav {
+      background: #0a0f1a;
+      border-bottom: 1px solid #1e293b;
+      padding: 0.75rem 1.5rem;
+    }
+    .back-nav a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back-nav a:hover { color: #a5b4fc; text-decoration: none; }
+
     /* ── Header ── */
     .hero {
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -305,6 +323,9 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
   </style>
 </head>
 <body>
+  <nav class="back-nav">
+    <a href="https://nsite.goosielabs.com/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc/#formation">← Back to Goosie Labs</a>
+  </nav>
   <div class="hero">
     ${avatarHtml}
     <h1>${title}</h1>
