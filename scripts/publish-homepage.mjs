@@ -532,8 +532,7 @@ console.log('Generating pages…\n');
 
 const pages = {
   '/index.html':      Buffer.from(generateHomepage(), 'utf8'),
-  '/about.html':      Buffer.from(generateAboutNl(), 'utf8'),
-  '/about-en.html':   Buffer.from(generateAboutEn(), 'utf8'),
+  '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
   '/contact.html':    Buffer.from(generateContactNl(), 'utf8'),
   '/contact-en.html': Buffer.from(generateContactEn(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle('/tmp/mcp_en.html', 'What is MCP?', 'en'), 'utf8'),
