@@ -45,6 +45,28 @@ const c = {
   bold: s => `\x1b[1m${s}\x1b[0m`,
 };
 
+// ── Per-agent accent colors (matches homepage) ────────────────────────────────
+const AGENT_COLORS = {
+  astrid: '#6366f1', danky: '#0ea5e9', finny: '#10b981', haitje: '#f59e0b',
+  jurry: '#8b5cf6', secury: '#ef4444', tessa: '#ec4899', checky: '#14b8a6',
+  communi: '#f97316', designy: '#a855f7', nosty: '#06b6d4', admission: '#64748b',
+  ruby: '#e11d48',
+};
+
+function hexToRgb(hex) {
+  return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
+}
+function darken(hex, f) {
+  const {r,g,b} = hexToRgb(hex);
+  const h = v => Math.round(v*(1-f)).toString(16).padStart(2,'0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+function lighten(hex, f) {
+  const {r,g,b} = hexToRgb(hex);
+  const h = v => Math.round(v+(255-v)*f).toString(16).padStart(2,'0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
 // ── Parse frontmatter ─────────────────────────────────────────────────────────
 function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -138,6 +160,11 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     ? `<img class="avatar" src="${photoUrl}" alt="${title}" onerror="this.style.display='none'">`
     : `<div class="avatar-fallback">${title[0]}</div>`;
 
+  const accent      = AGENT_COLORS[name] ?? '#6366f1';
+  const accentDim   = darken(accent, 0.75);   // very dark bg (hero grad end, badge bg)
+  const accentMid   = darken(accent, 0.55);   // medium dark (avatar fallback bg, borders)
+  const accentLight = lighten(accent, 0.35);  // light text on dark bg
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -173,11 +200,11 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
       text-decoration: none;
       transition: color 0.15s;
     }
-    .back-nav a:hover { color: #a5b4fc; text-decoration: none; }
+    .back-nav a:hover { color: ${accentLight}; text-decoration: none; }
 
     /* ── Header ── */
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      background: linear-gradient(135deg, #0f172a 0%, ${accentDim} 100%);
       border-bottom: 1px solid #1e293b;
       padding: 3rem 1.5rem 2rem;
       text-align: center;
@@ -185,16 +212,16 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     .avatar {
       width: 96px; height: 96px;
       border-radius: 50%;
-      border: 3px solid #4f46e5;
+      border: 3px solid ${accent};
       object-fit: cover;
       margin-bottom: 1rem;
     }
     .avatar-fallback {
       width: 96px; height: 96px;
       border-radius: 50%;
-      border: 3px solid #4f46e5;
-      background: #312e81;
-      color: #a5b4fc;
+      border: 3px solid ${accent};
+      background: ${accentMid};
+      color: ${accentLight};
       font-size: 2.5rem;
       font-weight: 800;
       display: inline-flex;
@@ -206,7 +233,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
       font-size: 2rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      background: linear-gradient(90deg, #a5b4fc, #818cf8);
+      background: linear-gradient(90deg, ${accentLight}, ${accent});
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -223,9 +250,9 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
       display: inline-block;
       font-family: 'Courier New', monospace;
       font-size: 0.7rem;
-      color: #4f46e5;
-      background: #1e1b4b;
-      border: 1px solid #312e81;
+      color: ${accent};
+      background: ${accentDim};
+      border: 1px solid ${accentMid};
       border-radius: 9999px;
       padding: 0.2rem 0.75rem;
       margin-top: 0.25rem;
@@ -241,7 +268,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
 
     h1, h2, h3, h4 { color: #f1f5f9; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; }
     h1 { font-size: 1.6rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
-    h2 { font-size: 1.25rem; color: #a5b4fc; }
+    h2 { font-size: 1.25rem; color: ${accentLight}; }
     h3 { font-size: 1rem; color: #94a3b8; }
     h4 { font-size: 0.9rem; color: #64748b; }
 
@@ -253,7 +280,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
 
     code {
       background: #1e293b;
-      color: #a5b4fc;
+      color: ${accentLight};
       border-radius: 4px;
       padding: 0.1em 0.35em;
       font-family: 'Courier New', monospace;
@@ -311,9 +338,9 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     footer a { color: #475569; }
     .nsite-tag {
       display: inline-block;
-      background: #1e1b4b;
-      color: #818cf8;
-      border: 1px solid #312e81;
+      background: ${accentDim};
+      color: ${accentLight};
+      border: 1px solid ${accentMid};
       border-radius: 9999px;
       padding: 2px 10px;
       font-size: 0.7rem;
