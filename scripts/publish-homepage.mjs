@@ -146,7 +146,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     body { font-family:var(--font-body); background:var(--white); color:var(--gray-800); font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; }
     nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-100); }
     .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
-    .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); text-decoration:none; letter-spacing:-0.02em; }
+    .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; }
     .nav-logo span { color:var(--blue-400); }
     .nav-links { display:flex; gap:2rem; }
     .nav-link { font-size:14px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:color 0.2s; }
@@ -160,7 +160,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 <body>
   <nav>
     <div class="nav-inner">
-      <a href="/" class="nav-logo">Goosie<span>.</span>Labs</a>
+      <span class="nav-logo">Goosie<span>.</span>Labs</span>
       <div class="nav-links">
       ${nav}
       </div>
@@ -178,7 +178,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 }
 
 // ── Homepage generator (from tile.json + nostr keys) ─────────────────────────
-function generateHomepage() {
+async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
   const AGENT_COLORS   = { astrid:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', communi:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
@@ -226,6 +226,14 @@ function generateHomepage() {
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
   });
 
+  // Check which agents have a published nsite
+  await Promise.all(agents.map(async a => {
+    try {
+      const res = await fetch(`http://127.0.0.1:3340/${a.npub}/index.html`, { method: 'HEAD', signal: AbortSignal.timeout(2000) });
+      a.hasNsite = res.ok;
+    } catch { a.hasNsite = false; }
+  }));
+
   // Generate tile cards HTML
   const tilesHtml = tiles.map(t => {
     const status   = t.status ?? 'experiment';
@@ -255,13 +263,15 @@ function generateHomepage() {
     const initial  = a.name[0].toUpperCase();
     const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
     const desc     = a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description;
-    return `      <a href="${nsiteUrl}" class="agent-card" target="_blank" rel="noopener">
+    const inner = `
         <div class="agent-avatar" style="background:${color}">${initial}</div>
         <div class="agent-info">
           <div class="agent-name">${title}</div>
           <div class="agent-desc">${desc}</div>
-        </div>
-      </a>`;
+        </div>`;
+    return a.hasNsite
+      ? `      <a href="${nsiteUrl}" class="agent-card" target="_blank" rel="noopener">${inner}\n      </a>`
+      : `      <div class="agent-card">${inner}\n      </div>`;
   }).join('\n');
 
   // Use WP export as base (carries full CSS + layout), then patch all Dutch text
@@ -269,9 +279,14 @@ function generateHomepage() {
 
   // lang + fix double-quote bugs
   html = html.replace('lang="nl"', 'lang="en"');
+  // Remove link behaviour from nav-logo CSS
+  html = html.replace('.nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); text-decoration:none; letter-spacing:-0.02em; }',
+    '.nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; }');
 
 
-  // Nav: remove unwanted links, translate labels
+  // Nav: make logo non-clickable, remove unwanted links, translate labels
+  html = html.replace(/<a href="[^"]*" class="nav-logo">([^<]*<span>[^<]*<\/span>[^<]*)<\/a>/,
+    '<span class="nav-logo">$1</span>');
   html = html.replace(/<a href="\/inloggen\/"[^>]*>.*?<\/a>/g, '');
   html = html.replace(/<a href="\/en\/"[^>]*>[^<]*<\/a>/g, '');
   html = html.replace(/<a href="#meedoen"[^>]*>Meedoen<\/a>/g, '');
@@ -578,7 +593,7 @@ function generateBitcoinEn() {
 console.log('Generating pages…\n');
 
 const pages = {
-  '/index.html':      Buffer.from(generateHomepage(), 'utf8'),
+  '/index.html':      Buffer.from(await generateHomepage(), 'utf8'),
   '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
   '/contact.html':    Buffer.from(generateContactEn(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle('/tmp/mcp_en.html', 'What is MCP?', 'en'), 'utf8'),
