@@ -409,103 +409,117 @@ function generateContactEn() {
   return shell('Contact', `<div class="page-content">${cleaned}</div>`, 'en', 'contact');
 }
 
-// ── About pages — wrap fragment in shell ─────────────────────────────────────
-function generateAboutNl() {
-  let fragment = readFileSync('/tmp/about_nl.html', 'utf8')
-    .replace(/<!-- wp:html -->/g, '')
-    .replace(/<link rel="preconnect"[^>]*>/g, '')
-    .replace(/<link href="https:\/\/fonts[^>]*>/g, '')
-    .replace(/href="\/over-ons\//g, 'href="/about.html"')
-    .replace(/href="\/contact\//g, 'href="/contact.html"');
-  return `<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Over ons — Goosie Labs</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid #ededea; }
-    .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
-    .nav-logo { font-family:'Libre Baskerville',Georgia,serif; font-size:18px; color:#0c447c; text-decoration:none; letter-spacing:-0.02em; }
-    .nav-logo span { color:#378add; }
-    .nav-links { display:flex; gap:2rem; }
-    .nav-link { font-size:14px; font-weight:500; color:#5f5e5a; text-decoration:none; }
-    .nav-link:hover { color:#185fa5; }
-    footer { border-top:1px solid #ededea; padding:2rem; text-align:center; font-size:0.8rem; color:#888780; }
-    footer a { color:#888780; }
-    .nsite-badge { display:inline-block; background:#1e1b4b; color:#818cf8; border:1px solid #312e81; border-radius:9999px; padding:1px 8px; font-size:0.65rem; font-weight:700; margin-left:0.5rem; }
-  </style>
-</head>
-<body>
-  <nav>
-    <div class="nav-inner">
-      <a href="/" class="nav-logo">Goosie<span>.</span>Labs</a>
-      <div class="nav-links">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/about.html" class="nav-link" style="color:#185fa5">Over ons</a>
-        <a href="/contact.html" class="nav-link">Contact</a>
-      </div>
-    </div>
-  </nav>
-  ${fragment}
-  <footer>
-    <a href="https://goosielabs.com">goosielabs.com</a> ·
-    <a href="https://nsite.goosielabs.com">nsite</a>
-    <span class="nsite-badge">nsite</span>
-  </footer>
-</body>
-</html>`;
-}
-
+// ── About page (EN) — written directly, no WP dependency ─────────────────────
 function generateAboutEn() {
-  let fragment = readFileSync('/tmp/about_en.html', 'utf8')
-    .replace(/<!-- wp:html -->/g, '')
-    .replace(/<link rel="preconnect"[^>]*>/g, '')
-    .replace(/<link href="https:\/\/fonts[^>]*>/g, '')
-    .replace(/href="\/over-ons\//g, 'href="/about.html"')
-    .replace(/href="\/contact\//g, 'href="/contact.html"');
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About us — Goosie Labs</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid #ededea; }
-    .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
-    .nav-logo { font-family:'Libre Baskerville',Georgia,serif; font-size:18px; color:#0c447c; text-decoration:none; letter-spacing:-0.02em; }
-    .nav-logo span { color:#378add; }
-    .nav-links { display:flex; gap:2rem; }
-    .nav-link { font-size:14px; font-weight:500; color:#5f5e5a; text-decoration:none; }
-    .nav-link:hover { color:#185fa5; }
-    footer { border-top:1px solid #ededea; padding:2rem; text-align:center; font-size:0.8rem; color:#888780; }
-    footer a { color:#888780; }
-    .nsite-badge { display:inline-block; background:#1e1b4b; color:#818cf8; border:1px solid #312e81; border-radius:9999px; padding:1px 8px; font-size:0.65rem; font-weight:700; margin-left:0.5rem; }
-  </style>
-</head>
-<body>
-  <nav>
-    <div class="nav-inner">
-      <a href="/" class="nav-logo">Goosie<span>.</span>Labs</a>
-      <div class="nav-links">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/about.html" class="nav-link" style="color:#185fa5">About us</a>
-        <a href="/contact.html" class="nav-link">Contact</a>
+  return shell('About', `
+    <style>
+      .about-hero { background:linear-gradient(160deg,#042C53 0%,#0C447C 50%,#185FA5 100%); color:#fff; padding:6rem 2rem 5rem; }
+      .about-hero-inner { max-width:1080px; margin:0 auto; }
+      .about-label { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:6px 14px; font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:#B5D4F4; margin-bottom:2rem; }
+      .about-hero h1 { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(2.2rem,5vw,3.4rem); font-weight:700; line-height:1.1; letter-spacing:-0.03em; color:#fff; margin-bottom:1rem; }
+      .about-hero-sub { font-size:1.1rem; font-weight:300; color:#85B7EB; margin-bottom:1.5rem; }
+      .about-hero-text { font-size:1rem; line-height:1.85; color:rgba(255,255,255,0.8); max-width:640px; }
+      .about-section { padding:5rem 2rem; }
+      .about-section-inner { max-width:1080px; margin:0 auto; }
+      .about-section-gray { background:#F8F8F6; }
+      .about-section-dark { background:linear-gradient(135deg,#042C53 0%,#0C447C 100%); color:#fff; padding:5rem 2rem; }
+      .about-label-sm { font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:#378ADD; margin-bottom:0.75rem; }
+      .about-label-sm-light { color:#85B7EB; }
+      .about-h2 { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(1.5rem,3vw,2.2rem); font-weight:700; color:#042C53; line-height:1.2; letter-spacing:-0.02em; margin-bottom:0.75rem; }
+      .about-h2-light { color:#fff; }
+      .about-sub { font-size:1rem; color:#5F5E5A; max-width:580px; line-height:1.75; }
+      .about-sub-light { color:rgba(255,255,255,0.75); max-width:600px; }
+      .about-quote { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(1rem,2vw,1.3rem); font-style:italic; color:#0C447C; border-left:3px solid #378ADD; padding-left:1.5rem; margin:2.5rem 0; line-height:1.6; max-width:600px; }
+      .perry-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; margin-top:3rem; }
+      @media(max-width:640px){ .perry-grid { grid-template-columns:1fr; } }
+      .perry-block h3 { font-family:'Libre Baskerville',Georgia,serif; font-size:1.1rem; color:#042C53; margin-bottom:0.5rem; }
+      .perry-block p { font-size:0.95rem; color:#5F5E5A; line-height:1.75; }
+      .formation-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; margin-top:2rem; }
+      .goose-card { background:#fff; border:1px solid #EDEDEA; border-radius:0.75rem; padding:1.25rem; }
+      .goose-card-name { font-weight:700; font-size:0.95rem; color:#0C447C; margin-bottom:0.25rem; }
+      .goose-card-role { font-size:0.75rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#378ADD; margin-bottom:0.5rem; }
+      .goose-card-desc { font-size:0.85rem; color:#5F5E5A; line-height:1.6; }
+      .steps { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.5rem; margin-top:2rem; }
+      .step { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; padding:1.5rem; }
+      .step-num { font-size:2rem; font-weight:800; color:rgba(255,255,255,0.2); margin-bottom:0.5rem; }
+      .step-title { font-weight:600; color:#fff; margin-bottom:0.4rem; }
+      .step-desc { font-size:0.85rem; color:rgba(255,255,255,0.65); line-height:1.6; }
+      .tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.5rem; }
+      .tag { background:#E6F1FB; color:#185FA5; border-radius:9999px; padding:4px 12px; font-size:0.78rem; font-weight:500; }
+    </style>
+
+    <div class="about-hero">
+      <div class="about-hero-inner">
+        <div class="about-label">Open experiment lab</div>
+        <h1>We build what others don't dare to yet.</h1>
+        <p class="about-hero-sub">An open lab for Bitcoin, Nostr and AI.</p>
+        <p class="about-hero-text">Goosie Labs is not an agency. Not a startup. It is a place where technology that makes the world fairer is simply tried out. Everything here is in development — use it, build on it, or join in.</p>
       </div>
     </div>
-  </nav>
-  ${fragment}
-  <footer>
-    <a href="https://goosielabs.com">goosielabs.com</a> ·
-    <a href="https://nsite.goosielabs.com">nsite</a>
-    <span class="nsite-badge">nsite</span>
-  </footer>
-</body>
-</html>`;
+
+    <div class="about-section">
+      <div class="about-section-inner">
+        <div class="about-label-sm">The founder</div>
+        <h2 class="about-h2">Perry Smit</h2>
+        <blockquote class="about-quote">"This is not a product. This is a lab. Everything here is in development."</blockquote>
+        <div class="perry-grid">
+          <div class="perry-block">
+            <h3>Why Bitcoin</h3>
+            <p>Started with Bitcoin because it's fair. Moved on to Nostr because identity should belong to you. Now deep in AI because it finally runs locally — without Google watching over your shoulder.</p>
+          </div>
+          <div class="perry-block">
+            <h3>Outside the lab</h3>
+            <p>Mountain biking in the mountains, tai chi in the garden, or just walking. The best ideas arrive when you're not at a keyboard.</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag">Bitcoin</span>
+          <span class="tag">Nostr</span>
+          <span class="tag">Cashu</span>
+          <span class="tag">Lightning</span>
+          <span class="tag">Local AI</span>
+          <span class="tag">Self-Sovereign Identity</span>
+          <span class="tag">Austrian Economics</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section about-section-gray">
+      <div class="about-section-inner">
+        <div class="about-label-sm">The AI team</div>
+        <h2 class="about-h2">The V-Formation</h2>
+        <p class="about-sub">Geese fly in V-formation because each goose reduces air resistance for the next. They switch positions. No one always leads. The whole is faster than the sum of its parts.</p>
+        <div class="formation-grid">
+          <div class="goose-card"><div class="goose-card-name">🪿 Astrid</div><div class="goose-card-role">Primary orchestrator</div><div class="goose-card-desc">Overview, todos, memory. Keeps track of where Perry was and what's still open.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Danky</div><div class="goose-card-role">DevOps Goose</div><div class="goose-card-desc">Git committed. Backup done. Danky doesn't ask — Danky just does it.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Ruby</div><div class="goose-card-role">Chief Reality Officer</div><div class="goose-card-desc">Sober. Direct. Honks up with the question you'd have regretted not asking six weeks from now.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Finny</div><div class="goose-card-role">Chief Financial Goose</div><div class="goose-card-desc">Guards the sats. Keeps track of all income and expenses. Always keeping an overview.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Tessa</div><div class="goose-card-role">QA Goose</div><div class="goose-card-desc">Tests everything that moves and everything that doesn't. Presses all the buttons.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Jurry</div><div class="goose-card-role">Legal Advisor</div><div class="goose-card-desc">Knows exactly what's legal and what isn't. The goose you don't want to miss.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Haitje</div><div class="goose-card-role">Config Auditor</div><div class="goose-card-desc">Checks all agent configurations and keeps the formation tight.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Secury</div><div class="goose-card-role">Security Goose</div><div class="goose-card-desc">Watches nginx logs, fail2ban, open ports and npm vulnerabilities.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Checky</div><div class="goose-card-role">Quality Controller</div><div class="goose-card-desc">Routes new ideas and anomalies to the right specialist. Escalates to Astrid.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Communi</div><div class="goose-card-role">Community Goose</div><div class="goose-card-desc">Posts about shipped features on Nostr and Twitter. Tells the Goosie Labs story.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Designy</div><div class="goose-card-role">Interface Builder</div><div class="goose-card-desc">Designs interfaces and keeps visual consistency across all apps.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Nosty</div><div class="goose-card-role">Nostr Identity Manager</div><div class="goose-card-desc">Manages keypairs, key rotation and signing authority.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section-dark">
+      <div class="about-section-inner">
+        <div class="about-label-sm about-label-sm-light">How we work</div>
+        <h2 class="about-h2 about-h2-light">In half an hour, something stands.</h2>
+        <p class="about-sub-light">No quote. No process. We just build.</p>
+        <div class="steps">
+          <div class="step"><div class="step-num">01</div><div class="step-title">Session at the garden shed</div><div class="step-desc">We sketch it out on the wall. What do you want? What should it do? Who uses it?</div></div>
+          <div class="step"><div class="step-num">02</div><div class="step-title">Stack started</div><div class="step-desc">React, Vite, Nostr-tools — within thirty minutes something is running you can actually touch.</div></div>
+          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Astrid keeps the overview. Danky manages the code. Finny guards the sats. Tessa tests everything.</div></div>
+          <div class="step"><div class="step-num">04</div><div class="step-title">You get something real</div><div class="step-desc">A working prototype, or clear insight into what you want to build — and how.</div></div>
+        </div>
+      </div>
+    </div>
+  `, 'en', 'about');
 }
 
 // ── Article pages ─────────────────────────────────────────────────────────────
