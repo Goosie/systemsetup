@@ -527,6 +527,44 @@ function generateArticle(file, title, lang) {
   `, lang);
 }
 
+// ── Bitcoin article (EN) ──────────────────────────────────────────────────────
+function generateBitcoinEn() {
+  return shell('Bitcoin', `
+    <div class="page-content">
+      <article style="max-width:720px">
+        <h1>Bitcoin</h1>
+        <p>Bitcoin is the first and only truly scarce digital money. Launched in 2009 by the pseudonymous Satoshi Nakamoto, it lets anyone send value anywhere in the world without asking permission from a bank, government, or anyone else.</p>
+
+        <h2>What is Bitcoin?</h2>
+        <p>Bitcoin is a digital currency that works without banks or governments as intermediaries. Transactions are recorded on the blockchain — a decentralised, public ledger maintained by thousands of computers worldwide. No single party controls it. No one can print more of it.</p>
+        <p>There will only ever be 21 million bitcoin. That cap is enforced by code, not by a promise.</p>
+
+        <h2>Why does it have value?</h2>
+        <p>Bitcoin is scarce, durable, portable, divisible, and censorship-resistant. It has no CEO, no headquarters, and no off switch. That combination — hard money with no counterparty risk — is something that has never existed before.</p>
+        <p>At Goosie Labs we see Bitcoin not as speculation but as infrastructure: a neutral settlement layer anyone can build on, and a way to hold value without asking for permission.</p>
+
+        <h2>Lightning Network</h2>
+        <p>Bitcoin on-chain transactions are final and secure but not instant. The Lightning Network is a second layer that enables payments in milliseconds for fractions of a cent — ideal for apps. All the Goosie Labs apps that handle payments use Lightning via <a href="https://getalby.com" target="_blank" rel="noopener">Alby</a> and <a href="https://www.bolt12.org/" target="_blank" rel="noopener">NWC</a>.</p>
+
+        <h2>Cashu — ecash on Bitcoin</h2>
+        <p>Cashu is an ecash protocol that runs on top of Lightning. You deposit sats into a mint and receive bearer tokens — untraceable, instant, no accounts required. Goosie Labs runs its own mint at <a href="https://mint.goosielabs.com">mint.goosielabs.com</a> and uses Cashu inside apps like ZapHunt and CatchZaps for anonymous micro-payments.</p>
+
+        <h2>Austrian Economics</h2>
+        <p>Bitcoin makes sense if you understand money. Central banks expand the money supply, which transfers purchasing power from savers to debtors. Bitcoin inverts that: fixed supply, no inflation, no bailouts. The Austrian school of economics — Mises, Hayek, Rothbard — described this kind of hard money long before Satoshi built it.</p>
+
+        <p style="margin-top:2rem;font-size:0.9rem;color:#888780;">Bitcoin · Lightning · Cashu · Self-sovereign money</p>
+      </article>
+    </div>
+    <style>
+      article h1,article h2,article h3 { font-family:'Libre Baskerville',Georgia,serif; margin:1.5rem 0 0.75rem; color:#0c447c; }
+      article h1 { font-size:2rem; }
+      article h2 { font-size:1.4rem; }
+      article p { margin-bottom:1rem; color:#5f5e5a; line-height:1.8; }
+      article a { color:#185fa5; }
+    </style>
+  `, 'en');
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 console.log('Generating pages…\n');
 
@@ -535,7 +573,7 @@ const pages = {
   '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
   '/contact.html':    Buffer.from(generateContactEn(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle('/tmp/mcp_en.html', 'What is MCP?', 'en'), 'utf8'),
-  '/bitcoin.html':    Buffer.from(generateArticle('/tmp/bitcoin_nl.html', 'Bitcoin', 'nl'), 'utf8'),
+  '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
 };
 
 console.log('Uploading to Blossom…\n');
