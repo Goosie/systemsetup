@@ -160,10 +160,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     ? `<img class="avatar" src="${photoUrl}" alt="${title}" onerror="this.style.display='none'">`
     : `<div class="avatar-fallback">${title[0]}</div>`;
 
-  const accent      = AGENT_COLORS[name] ?? '#6366f1';
-  const accentDim   = darken(accent, 0.75);   // very dark bg (hero grad end, badge bg)
-  const accentMid   = darken(accent, 0.55);   // medium dark (avatar fallback bg, borders)
-  const accentLight = lighten(accent, 0.35);  // light text on dark bg
+  const accent = AGENT_COLORS[name] ?? '#6366f1';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -172,197 +169,93 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} — Goosie Labs V-Formation</title>
   <meta name="description" content="${description.replace(/"/g,'&quot;')}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-      background: #0a0f1a;
-      color: #e2e8f0;
-      line-height: 1.65;
-      min-height: 100vh;
+    :root {
+      --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-200:#85B7EB;
+      --blue-400:#378ADD; --blue-600:#185FA5; --blue-800:#0C447C; --blue-900:#042C53;
+      --gray-50:#F8F8F6; --gray-100:#EDEDEA; --gray-200:#D3D1C7;
+      --gray-400:#888780; --gray-600:#5F5E5A; --gray-800:#2C2C2A;
+      --white:#FFFFFF;
+      --font-display:'Libre Baskerville',Georgia,serif;
+      --font-body:'DM Sans',system-ui,sans-serif;
     }
-    a { color: #60a5fa; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    body { font-family:var(--font-body); background:var(--white); color:var(--gray-800); font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; }
+    a { color:var(--blue-400); text-decoration:none; }
+    a:hover { color:var(--blue-600); text-decoration:underline; }
 
-    /* ── Back nav ── */
-    .back-nav {
-      background: #0a0f1a;
-      border-bottom: 1px solid #1e293b;
-      padding: 0.75rem 1.5rem;
-    }
-    .back-nav a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      color: #94a3b8;
-      font-size: 0.85rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-    .back-nav a:hover { color: ${accentLight}; text-decoration: none; }
+    /* NAV */
+    nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-100); }
+    .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; }
+    .nav-logo span { color:var(--blue-400); }
+    .nav-back { font-size:14px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:color 0.2s; display:inline-flex; align-items:center; gap:0.4rem; }
+    .nav-back:hover { color:var(--blue-600); text-decoration:none; }
 
-    /* ── Header ── */
-    .hero {
-      background: linear-gradient(135deg, #0f172a 0%, ${accentDim} 100%);
-      border-bottom: 1px solid #1e293b;
-      padding: 3rem 1.5rem 2rem;
-      text-align: center;
-    }
-    .avatar {
-      width: 96px; height: 96px;
-      border-radius: 50%;
-      border: 3px solid ${accent};
-      object-fit: cover;
-      margin-bottom: 1rem;
-    }
-    .avatar-fallback {
-      width: 96px; height: 96px;
-      border-radius: 50%;
-      border: 3px solid ${accent};
-      background: ${accentMid};
-      color: ${accentLight};
-      font-size: 2.5rem;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-    }
-    .hero h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(90deg, ${accentLight}, ${accent});
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-    }
-    .hero .role {
-      font-size: 0.9rem;
-      color: #64748b;
-      max-width: 520px;
-      margin: 0 auto 1rem;
-      line-height: 1.5;
-    }
-    .npub-badge {
-      display: inline-block;
-      font-family: 'Courier New', monospace;
-      font-size: 0.7rem;
-      color: ${accent};
-      background: ${accentDim};
-      border: 1px solid ${accentMid};
-      border-radius: 9999px;
-      padding: 0.2rem 0.75rem;
-      margin-top: 0.25rem;
-      word-break: break-all;
-    }
+    /* HERO */
+    .hero { background:linear-gradient(160deg,var(--blue-900) 0%,var(--blue-800) 50%,var(--blue-600) 100%); color:var(--white); padding:4rem 2rem 3.5rem; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:-80px; right:-80px; width:360px; height:360px; border-radius:50%; background:rgba(55,138,221,0.15); pointer-events:none; }
+    .hero-inner { max-width:640px; margin:0 auto; position:relative; z-index:1; }
+    .avatar { width:96px; height:96px; border-radius:50%; border:3px solid rgba(255,255,255,0.4); object-fit:cover; margin-bottom:1.25rem; }
+    .avatar-fallback { width:96px; height:96px; border-radius:50%; background:${accent}; color:#fff; font-size:2.5rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.25rem; font-family:var(--font-display); }
+    .hero h1 { font-family:var(--font-display); font-size:2.4rem; font-weight:700; letter-spacing:-0.02em; color:var(--white); margin-bottom:0.75rem; }
+    .hero .role { font-size:1rem; color:var(--blue-200); max-width:520px; margin:0 auto 1.25rem; line-height:1.6; }
+    .npub-badge { display:inline-block; font-family:'Courier New',monospace; font-size:0.65rem; color:rgba(255,255,255,0.5); background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.15); border-radius:9999px; padding:0.2rem 0.75rem; word-break:break-all; }
 
-    /* ── Content ── */
-    main {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-    }
+    /* CONTENT */
+    .content-wrap { max-width:780px; margin:0 auto; padding:3rem 2rem 5rem; }
 
-    h1, h2, h3, h4 { color: #f1f5f9; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; }
-    h1 { font-size: 1.6rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
-    h2 { font-size: 1.25rem; color: ${accentLight}; }
-    h3 { font-size: 1rem; color: #94a3b8; }
-    h4 { font-size: 0.9rem; color: #64748b; }
+    h1,h2,h3,h4 { font-family:var(--font-display); font-weight:700; color:var(--blue-900); margin-top:2rem; margin-bottom:0.5rem; }
+    h1 { font-size:1.6rem; border-bottom:1px solid var(--gray-100); padding-bottom:0.5rem; }
+    h2 { font-size:1.25rem; color:var(--blue-800); }
+    h3 { font-size:1rem; color:var(--blue-600); }
+    h4 { font-size:0.9rem; color:var(--gray-600); }
 
-    p { margin-bottom: 1rem; color: #cbd5e1; }
-    main > p:first-child { margin-top: 0; }
+    p { margin-bottom:1rem; color:var(--gray-800); }
+    ul,ol { margin:0.75rem 0 1rem 1.5rem; color:var(--gray-800); }
+    li { margin-bottom:0.3rem; }
+    strong { color:var(--blue-900); font-weight:600; }
+    em { color:var(--gray-600); }
+    hr { border:none; border-top:1px solid var(--gray-100); margin:2rem 0; }
 
-    ul, ol { margin: 0.75rem 0 1rem 1.5rem; color: #cbd5e1; }
-    li { margin-bottom: 0.3rem; }
+    code { background:var(--blue-50); color:var(--blue-800); border-radius:4px; padding:0.1em 0.4em; font-family:'Courier New',monospace; font-size:0.85em; }
+    pre { background:var(--gray-50); border:1px solid var(--gray-100); border-radius:0.5rem; padding:1rem 1.25rem; overflow-x:auto; margin:1rem 0; }
+    pre code { background:none; color:var(--gray-600); padding:0; font-size:0.82em; line-height:1.6; }
 
-    code {
-      background: #1e293b;
-      color: ${accentLight};
-      border-radius: 4px;
-      padding: 0.1em 0.35em;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85em;
-    }
-    pre {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 0.5rem;
-      padding: 1rem 1.25rem;
-      overflow-x: auto;
-      margin: 1rem 0;
-    }
-    pre code {
-      background: none;
-      color: #94a3b8;
-      padding: 0;
-      font-size: 0.82em;
-      line-height: 1.6;
-    }
+    table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:0.875rem; }
+    th { background:var(--gray-50); color:var(--gray-600); text-align:left; padding:0.5rem 0.75rem; font-weight:600; border-bottom:1px solid var(--gray-200); }
+    td { padding:0.45rem 0.75rem; border-bottom:1px solid var(--gray-100); color:var(--gray-800); }
+    tr:last-child td { border-bottom:none; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      font-size: 0.875rem;
-    }
-    th {
-      background: #1e293b;
-      color: #94a3b8;
-      text-align: left;
-      padding: 0.5rem 0.75rem;
-      font-weight: 600;
-      border-bottom: 1px solid #334155;
-    }
-    td {
-      padding: 0.45rem 0.75rem;
-      border-bottom: 1px solid #1e293b;
-      color: #cbd5e1;
-    }
-    tr:last-child td { border-bottom: none; }
-
-    strong { color: #f1f5f9; font-weight: 600; }
-    em { color: #94a3b8; }
-    hr { border: none; border-top: 1px solid #1e293b; margin: 2rem 0; }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid #1e293b;
-      padding: 1.5rem;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #334155;
-    }
-    footer a { color: #475569; }
-    .nsite-tag {
-      display: inline-block;
-      background: ${accentDim};
-      color: ${accentLight};
-      border: 1px solid ${accentMid};
-      border-radius: 9999px;
-      padding: 2px 10px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-left: 0.5rem;
-    }
+    /* FOOTER */
+    footer { border-top:1px solid var(--gray-100); padding:2rem; text-align:center; font-size:0.8rem; color:var(--gray-400); }
+    footer a { color:var(--gray-400); }
+    .nsite-tag { display:inline-block; background:var(--blue-50); color:var(--blue-600); border:1px solid var(--blue-100); border-radius:9999px; padding:2px 10px; font-size:0.7rem; font-weight:700; margin-left:0.5rem; }
   </style>
 </head>
 <body>
-  <nav class="back-nav">
-    <a href="https://nsite.goosielabs.com/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc/#formation">← Back to Goosie Labs</a>
+  <nav>
+    <div class="nav-inner">
+      <span class="nav-logo">Goosie<span>.</span>Labs</span>
+      <a href="https://nsite.goosielabs.com/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc/#formation" class="nav-back">← Back to V-Formation</a>
+    </div>
   </nav>
+
   <div class="hero">
-    ${avatarHtml}
-    <h1>${title}</h1>
-    <p class="role">${description}</p>
-    ${npub ? `<div class="npub-badge">${npub}</div>` : ''}
+    <div class="hero-inner">
+      ${avatarHtml}
+      <h1>${title}</h1>
+      <p class="role">${description}</p>
+      ${npub ? `<div class="npub-badge">${npub}</div>` : ''}
+    </div>
   </div>
 
-  <main>
+  <div class="content-wrap">
     ${bodyHtml}
-  </main>
+  </div>
 
   <footer>
     <a href="https://goosielabs.com">goosielabs.com</a> ·
