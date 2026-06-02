@@ -49,7 +49,7 @@ De server is gehuurd. Als je hem wilt afsluiten: opzeg het abonnement bij Digita
 | **Cashu mint** | Digitale contant-geld machine (Nutshell) | mint.goosielabs.com |
 | **LNbits** | Lightning wallet backend voor apps | lnbits.goosielabs.com |
 | **Apps** | Alle mini-applicaties | goosielabs.com/apps/\<naam\> |
-| **IDidHere** | App op eigen subdomein | ididhere.goosielabs.com |
+| **IDidHere** | App op eigen subdomein | goosielabs.com/apps/ididhere/ |
 
 ### Services herstarten (als iets kapot gaat)
 
@@ -155,7 +155,7 @@ Elke app heeft z'n eigen privé repo. Als je iets wilt openmaken of archiveren: 
 |-----|-------------|------------------|------|
 | **CatchZaps** | Drop sats (mini-Bitcoin) op de kaart. Anderen lopen erheen en vangen ze op | /apps/catchzaps | github.com/Goosie/catchzaps |
 | **ZapHunt** | Bouw een quiz-speurtocht met AI-hulp. Prize pool via Lightning. Spelers verdienen sats per goed antwoord | /apps/zaphunt | github.com/Goosie/zaphunt |
-| **IDidHere** | Bucket list van wat je wil doen en waar. Bewijs wat je gedaan hebt als badge in je Nostr-identiteit | ididhere.goosielabs.com | github.com/Goosie/ididhere |
+| **IDidHere** | Bucket list van wat je wil doen en waar. Bewijs wat je gedaan hebt als badge in je Nostr-identiteit | goosielabs.com/apps/ididhere/ | github.com/Goosie/ididhere |
 | **ZinIn** | Als twee mensen op hetzelfde moment ergens zin in hebben zonder het van elkaar te weten, brengt deze app hen samen | /apps/zinin | github.com/Goosie/zinin-demo |
 | **LastWill** | Digitale nalatenschap op Nostr. Dead man's switch: druk regelmatig op "I'm still alive" anders worden je versleutelde acties uitgevoerd | /apps/lastwill | github.com/Goosie/lastwill |
 | **Dilemma** | Post een dilemma met een sat-bounty. Anderen geven advies, de gemeenschap stemt, jij kiest de winnaar — die de sats krijgt | /apps/dilemma | github.com/Goosie/dilemma |

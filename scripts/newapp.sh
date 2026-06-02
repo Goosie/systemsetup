@@ -15,10 +15,29 @@ python3 /home/deploy/create-app.py "$APPNAME"
 
 cd "$APPDIR" || { echo "❌ $APPDIR bestaat niet — create-app.py mislukt"; exit 1; }
 
+
+
+
 git init
 git config init.defaultBranch main
 gh repo create "Goosie/$APPNAME" --private --source=. --remote=origin &
 GH_PID=$!
+
+# Gitea repo aanmaken en remote toevoegen
+source ~/.goosie.env
+curl -s -X POST "http://$GITEA_HOST:$GITEA_PORT/api/v1/user/repos" \
+  -H "Authorization: token $GITEA_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"$APPNAME\",\"private\":true,\"auto_init\":false}" > /dev/null
+
+git remote add gitea "gitea:$GITEA_USER/$APPNAME.git"
+git remote set-url --add --push gitea "gitea:$GITEA_USER/$APPNAME.git"
+git remote set-url --add --push gitea "git@github.com:Goosie/$APPNAME.git"
+echo "✅ Gitea remote toegevoegd: gitea:perry/$APPNAME"
+
+
+
+
 
 # Node memory beperken — server heeft 1.9Gi RAM + 2GB swap
 export NODE_OPTIONS="--max-old-space-size=1024"
