@@ -27,8 +27,8 @@ Beide werelden draaien dezelfde apps uit `/var/www/goosielabs/apps/`. Content wo
 | nsite.goosielabs.com         | Nostr-native nsite gateway     | —     |
 | mint.goosielabs.com          | Cashu mint (Nutshell)          | 3338  |
 | lnbits.goosielabs.com        | LNbits                         | 5000  |
-| ididhere.goosielabs.com      | IDidHere app                   | —     |
-| api.ididhere.goosielabs.com  | IDidHere API                   | —     |
+| goosielabs.com/apps/ididhere/      | IDidHere app                   | —     |
+| api.goosielabs.com/apps/ididhere/  | IDidHere API                   | —     |
 
 ## Nostr & Bitcoin
 

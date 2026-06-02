@@ -215,8 +215,7 @@ tags: [infra, server]
 | nsite.goosielabs.com | Nostr-native nsite gateway | — |
 | mint.goosielabs.com | Cashu mint (Nutshell) | 3338 |
 | lnbits.goosielabs.com | LNbits | 5000 |
-| ididhere.goosielabs.com | IDidHere app | — |
-| api.ididhere.goosielabs.com | IDidHere API | — |
+| goosielabs.com/apps/ididhere/ | IDidHere app | — |
 
 ## Nostr
 - **Relay:** \`wss://goosielabs.com/relay\` (strfry 1.1.0)
@@ -420,7 +419,7 @@ EOF
 
 generate_app_note "ididhere" "IDidHere" "live" \
   "Tegenhanger van IWasHere: bucket list van wat je wil doen. Bewijs wat je hebt gedaan als NIP-58 badge in je Nostr-identiteit." \
-  "https://ididhere.goosielabs.com"
+  "https://goosielabs.com/apps/ididhere/"
 
 generate_app_note "zaphunt" "ZapHunt" "in-bouw" \
   "Maak je eigen speurtocht, AI helpt mee. Spelers verdienen sats voor ieder goed gegeven antwoord." \

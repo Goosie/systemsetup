@@ -130,7 +130,7 @@ Het session-id staat in de output als je Claude Code afsluit.
 | Routstr      | Nostr identiteitsinfrastructuur voor organisaties | LIVE        | goosielabs.com             |
 | CatchZaps    | Drop sats op kaart, anderen vangen ze op (map: zap-hunt, hernoeming bij rebuild) | IN BOUW | /apps/zap-hunt |
 | ZapHunt      | Maak je eigen speurtocht (laat AI je daarbij helpen), laat iedereen die wil en kan er een deposit op doen. Spelers verdienen sats voor ieder goed gegeven antwoord. | IN BOUW | /apps/zaphunt |
-| IDidHere     | Tegenhanger van IWasHere: bucket list van wat je wil doen en waar. Bewijs wat je hebt gedaan als NIP-58 badge in je Nostr identiteit — inspireert anderen hetzelfde te doen. | IN BOUW     | ididhere.goosielabs.com    |
+| ididhere     | Bucket list van wat je wil doen en waar. Bewijs wat je hebt gedaan als NIP-58 badge in je Nostr identiteit — inspireert anderen hetzelfde te doen. | IN BOUW     | /apps/ididhere             |
 | Sofia        | Nostr reisapp voor groepstrips — experiment klaar  | EXPERIMENT  | /apps/sofia                |
 | ProofOfMove  | Train je bewegingen: Je schaduw over een virtuele avatar corrigeert je in realtime — groen is goed, rood betekent dat je bepaald lichaamsdeel iets moet verplaatsen. Alle bewegingen correct? Verdien sats. Neem zelf trainingen op en verdien eraan. | EXPERIMENT | /apps/proofofmove |
 | ZinIn        | Als twee mensen op hetzelfde moment ergens zin in hebben zonder het van elkaar te weten, brengt deze app hen bij elkaar. Wandelen? Filosofisch gesprek? Spelletje? Geef het aan en je wordt mogelijk gematched. | IN BOUW | /apps/zinin |
@@ -175,8 +175,6 @@ goosielabs.com               → WordPress + homepage
 nsite.goosielabs.com         → Nostr-native nsite gateway
 mint.goosielabs.com          → Cashu mint (poort 3338)
 lnbits.goosielabs.com        → LNbits (poort 5000)
-ididhere.goosielabs.com      → IDidHere app
-api.ididhere.goosielabs.com  → IDidHere API
 
 ## ⚡ Openstaande Setup — Astrid voert dit uit bij eerste start
 

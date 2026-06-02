@@ -7,7 +7,7 @@ set -e
 ROOT="$(dirname "$(realpath "$0")")/.."
 
 # Nginx (alleen actieve sites in sites-enabled, geen .bak en geen default)
-for site in goosielabs.com api.ididhere.goosielabs.com ididhere.goosielabs.com lnbits.goosielabs.com mint.goosielabs.com; do
+for site in goosielabs.com lnbits.goosielabs.com mint.goosielabs.com; do
   src="/etc/nginx/sites-enabled/$site"
   if [ -e "$src" ]; then
     cp -L "$src" "$ROOT/nginx/sites-enabled/$site"

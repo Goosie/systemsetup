@@ -9,8 +9,8 @@
 | Bestand                       | Wat                          |
 |-------------------------------|------------------------------|
 | `goosielabs.com`              | Hoofddomein + relay + WordPress |
-| `api.ididhere.goosielabs.com` | IDidHere API                 |
-| `ididhere.goosielabs.com`     | IDidHere frontend            |
+| `api.goosielabs.com/apps/ididhere/` | IDidHere API                 |
+| `goosielabs.com/apps/ididhere/`     | IDidHere frontend            |
 | `lnbits.goosielabs.com`       | LNbits                       |
 | `mint.goosielabs.com`         | Cashu mint (Nutshell)        |
 

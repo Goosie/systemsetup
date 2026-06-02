@@ -7,7 +7,7 @@ Wat draait er, en waar. Alle apps draaien in twee werelden: via WordPress op `go
 | App     | Locatie                  | Subdomein           |
 |---------|--------------------------|---------------------|
 | Routstr | (WordPress / Nostr infra) | goosielabs.com      |
-| IDidHere | `/apps/ididhere`        | ididhere.goosielabs.com |
+| IDidHere | `/apps/ididhere`        | goosielabs.com/apps/ididhere/ |
 | Goosie Mint | (Nutshell)            | mint.goosielabs.com |
 | LNbits  | (apt service)            | lnbits.goosielabs.com |
 
