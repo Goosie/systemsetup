@@ -1,0 +1,19 @@
+[Unit]
+Description=Goose Runner — NIP-90 job dispatcher for Goosie Labs V-Formation
+After=network-online.target blocky.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/scripts/goose-runner
+ExecStart=/usr/bin/node index.mjs
+Restart=always
+RestartSec=15
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=goose-runner
+Environment=RELAY_URL=ws://127.0.0.1:7778
+
+[Install]
+WantedBy=multi-user.target

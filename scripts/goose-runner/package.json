@@ -1,0 +1,16 @@
+{
+  "name": "goose-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "NIP-90 job dispatcher — picks up Blocky's job requests and runs the right goose",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs"
+  },
+  "dependencies": {
+    "nostr-tools": "^2.23.3",
+    "websocket-polyfill": "^0.0.3",
+    "ws": "^8.18.0"
+  }
+}
