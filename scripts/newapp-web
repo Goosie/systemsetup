@@ -16,10 +16,9 @@
 #   --tile-desc="Korte zin"                  beschrijving voor de tegel
 
 NAME="$1"
-DESC="${2:-Een Nostr app: $NAME}"
 
 if [[ -z "$NAME" ]]; then
-    echo "Gebruik: newapp-web <naam> [\"beschrijving\"] [--update] [--login=...] [--theme=...] [--color=...]"
+    echo "Gebruik: newapp-web <naam> [beschrijving woorden] [--update] [--login=...] [--theme=...] [--color=...]"
     echo "  naam mag alleen a-z, 0-9 en - bevatten"
     exit 1
 fi
@@ -36,9 +35,11 @@ COLOR="#6366f1"
 MODE=""
 TILE="yes"
 TILE_DESC=""
+DESC_PARTS=()
 
-# Verwerk extra argumenten (vanaf $3)
-for arg in "${@:3}"; do
+# Verwerk alle argumenten vanaf $2:
+# niet-vlag woorden worden samengevoegd als beschrijving
+for arg in "${@:2}"; do
     case "$arg" in
         --update)       MODE="update" ;;
         --no-tile)      TILE="no" ;;
@@ -46,8 +47,16 @@ for arg in "${@:3}"; do
         --theme=*)      THEME="${arg#--theme=}" ;;
         --color=*)      COLOR="${arg#--color=}" ;;
         --tile-desc=*)  TILE_DESC="${arg#--tile-desc=}" ;;
+        --*)            ;;  # onbekende vlag, negeer
+        *)              DESC_PARTS+=("$arg") ;;
     esac
 done
+
+if [[ ${#DESC_PARTS[@]} -gt 0 ]]; then
+    DESC="${DESC_PARTS[*]}"
+else
+    DESC="Een Nostr app: $NAME"
+fi
 
 # Auto-detecteer update-mode als app-directory al bestaat
 if [[ -z "$MODE" ]] && [[ -d "/var/www/goosielabs/apps/$NAME" ]]; then
