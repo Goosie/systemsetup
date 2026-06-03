@@ -89,8 +89,12 @@ TILE_INFO="homepage=$TILE"
 [[ -n "$TILE_DESC" ]] && TILE_INFO="$TILE_INFO  tegel=\"$TILE_DESC\""
 echo "   login=$LOGIN  thema=$THEME  kleur=$COLOR  $TILE_INFO"
 echo ""
-# OSC 8 terminal-hyperlink: klikbaar in Konsole, iTerm2, GNOME Terminal etc.
-printf "👉 Open deze URL in je browser:\n"
-printf "   \033]8;;%s\033\\%s\033]8;;\033\\\n" "$URL" "$URL"
-printf "\n"
-printf "   Formulier is vooringevuld — klik op %s als je klaar bent.\n" "$KNOP"
+# OSC 8 terminal-hyperlink: klikbaar + blauw in Konsole, iTerm2, GNOME Terminal etc.
+ESC=$'\033'
+BLUE="${ESC}[94m${ESC}[4m"
+RESET="${ESC}[0m"
+LINK="${ESC}]8;;${URL}${ESC}\\${BLUE}${URL}${RESET}${ESC}]8;;${ESC}\\"
+echo "👉 Open deze URL in je browser:"
+echo "   ${LINK}"
+echo ""
+echo "   Formulier is vooringevuld — klik op $KNOP als je klaar bent."
