@@ -181,11 +181,12 @@ async function publishBlockAnnouncement(height) {
 // ── Block handler ─────────────────────────────────────────────────────────────
 
 async function onBlock(height) {
-  // On first block, record current height and wait — don't trigger everything at once.
+  // On first block: announce it (so dashboards stay in sync) but skip scheduling
+  // to avoid triggering all geese at once on restart.
   if (currentBlock === 0) {
     currentBlock = height;
-    lastBlockAt  = Math.floor(Date.now() / 1000);
     console.log(`\n⛏️  Starting at block ${height} — initialising last-run for new geese`);
+    await publishBlockAnnouncement(height);
 
     for (const goose of Object.keys(schedule)) {
       if (!lastRun[goose]) {
@@ -217,6 +218,19 @@ async function onBlock(height) {
 
 // ── mempool.space WebSocket ───────────────────────────────────────────────────
 
+async function fetchCurrentHeight() {
+  try {
+    const res = await fetch('https://mempool.space/api/blocks/tip/height');
+    const height = parseInt(await res.text());
+    if (height > 0) {
+      console.log(`📍 Current block height: ${height}`);
+      await onBlock(height);
+    }
+  } catch (e) {
+    console.log('⚠️  Could not fetch current block height:', e.message);
+  }
+}
+
 function connectMempool() {
   console.log(`\n🔗 Connecting to mempool.space...`);
   const ws = new WebSocket(MEMPOOL_WS);
@@ -224,6 +238,7 @@ function connectMempool() {
   ws.on('open', () => {
     console.log('✅ mempool.space connected');
     ws.send(JSON.stringify({ action: 'want', data: ['blocks'] }));
+    fetchCurrentHeight();
   });
 
   ws.on('message', async (data) => {

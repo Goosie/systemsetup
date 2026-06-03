@@ -37,6 +37,8 @@ const KEYS = {
   secury: loadKey('secury'),
   jurry:  loadKey('jurry'),
   haitje: loadKey('haitje'),
+  humany: loadKey('humany'),
+  // ── NEW GEESE ──
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -67,6 +69,24 @@ async function publishResult(pool, goose, jobEvent, content, status = 'success')
   console.log(`  📤 Result published (${status}) — id: ${event.id.slice(0, 16)}...`);
 }
 
+async function publishChat(pool, goose, content, toPubkey = null) {
+  const tags = [
+    ['t', 'vformation'],
+    ['t', 'vformation-chat'],
+  ];
+  if (toPubkey) tags.push(['p', toPubkey]);
+
+  const event = finalizeEvent({
+    kind: 1,
+    created_at: Math.floor(Date.now() / 1000),
+    tags,
+    content,
+  }, KEYS[goose]);
+
+  await Promise.allSettled(pool.publish([RELAY], event));
+  console.log(`  💬 Chat: ${content.slice(0, 60)}`);
+}
+
 async function runScript(args, timeoutMs = 60_000) {
   const { stdout, stderr } = await execFileAsync('node', args, {
     timeout: timeoutMs,
@@ -78,7 +98,10 @@ async function runScript(args, timeoutMs = 60_000) {
 // ── Tessa ────────────────────────────────────────────────────────────────────
 
 async function handleTessa(pool, jobEvent, command) {
+  const block = getParam(jobEvent.tags, 'trigger_block') ?? '?';
+
   if (command === 'run-all') {
+    await publishChat(pool, 'tessa', `Starting run-all at block ${block}...`, BLOCKY_PUBKEY);
     console.log('  🧪 Tessa: checking all apps...');
 
     const apps = readdirSync(APPS_DIR).filter(app => {
@@ -105,13 +128,13 @@ async function handleTessa(pool, jobEvent, command) {
 
     await publishResult(pool, 'tessa', jobEvent, content, ok === results.length ? 'success' : 'partial');
   } else {
-    // Single app: command is the app name, default to 'check'
     const [app, cmd = 'check'] = command.split(':');
     const script = resolve(APPS_DIR, app, 'scripts/tessa/index.js');
     if (!existsSync(script)) {
       await publishResult(pool, 'tessa', jobEvent, `No tessa script for app: ${app}`, 'error');
       return;
     }
+    await publishChat(pool, 'tessa', `Starting ${cmd} for ${app} at block ${block}...`, BLOCKY_PUBKEY);
     try {
       const output = await runScript([script, cmd], 30_000);
       await publishResult(pool, 'tessa', jobEvent, output);
@@ -124,7 +147,9 @@ async function handleTessa(pool, jobEvent, command) {
 // ── Secury / Jurry / Haitje ───────────────────────────────────────────────────
 
 async function handleScript(pool, goose, jobEvent, command) {
+  const block = getParam(jobEvent.tags, 'trigger_block') ?? '?';
   const scriptPath = resolve(SCRIPTS_DIR, goose, 'index.js');
+  await publishChat(pool, goose, `Starting ${command} at block ${block}...`, BLOCKY_PUBKEY);
   console.log(`  Running ${goose} ${command}...`);
   try {
     const output = await runScript([scriptPath, command], 120_000);
@@ -159,6 +184,8 @@ async function dispatch(pool, event) {
       case 'secury': await handleScript(pool, 'secury', event, command); break;
       case 'jurry':  await handleScript(pool, 'jurry',  event, command); break;
       case 'haitje': await handleScript(pool, 'haitje', event, command); break;
+      case 'humany': await handleScript(pool, 'humany', event, command); break;
+      // ── NEW CASES ──
     }
   } catch (e) {
     console.error(`  ❌ Error in ${goose}:`, e.message);

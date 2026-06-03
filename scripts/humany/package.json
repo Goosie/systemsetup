@@ -1,0 +1,10 @@
+{
+  "name": "humany",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "nostr-tools": "^2.23.3",
+    "websocket-polyfill": "^0.0.3",
+    "ws": "^8.18.0"
+  }
+}
