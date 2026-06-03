@@ -38,6 +38,7 @@ const KEYS = {
   jurry:  loadKey('jurry'),
   haitje: loadKey('haitje'),
   humany: loadKey('humany'),
+  gitty: loadKey('gitty'),
   // ── NEW GEESE ──
 };
 
@@ -185,6 +186,7 @@ async function dispatch(pool, event) {
       case 'jurry':  await handleScript(pool, 'jurry',  event, command); break;
       case 'haitje': await handleScript(pool, 'haitje', event, command); break;
       case 'humany': await handleScript(pool, 'humany', event, command); break;
+      case 'gitty': await handleScript(pool, 'gitty', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
