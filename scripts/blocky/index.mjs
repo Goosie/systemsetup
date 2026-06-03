@@ -38,6 +38,7 @@ let pool;
 let schedule  = { ...DEFAULT_SCHEDULE };
 let lastRun   = {};   // { goose: block_height }
 let currentBlock = 0;
+let lastBlockAt  = 0; // unix timestamp of previous block
 
 // ── Relay ────────────────────────────────────────────────────────────────────
 
@@ -154,12 +155,36 @@ async function triggerGoose(goose, blockHeight) {
   await persistLastRun();
 }
 
+// ── Block announcement ────────────────────────────────────────────────────────
+
+async function publishBlockAnnouncement(height) {
+  const now    = Math.floor(Date.now() / 1000);
+  const diffS  = lastBlockAt > 0 ? now - lastBlockAt : null;
+  const timing = diffS !== null
+    ? `${Math.floor(diffS / 60)}m${String(diffS % 60).padStart(2, '0')}s since last block`
+    : 'first block since startup';
+
+  lastBlockAt = now;
+
+  await publishEvent({
+    kind: 1,
+    created_at: now,
+    tags: [
+      ['t', 'vformation'],
+      ['t', 'block'],
+      ['block_height', String(height)],
+    ],
+    content: `⛏️ Block ${height} — ${timing}`,
+  });
+}
+
 // ── Block handler ─────────────────────────────────────────────────────────────
 
 async function onBlock(height) {
   // On first block, record current height and wait — don't trigger everything at once.
   if (currentBlock === 0) {
     currentBlock = height;
+    lastBlockAt  = Math.floor(Date.now() / 1000);
     console.log(`\n⛏️  Starting at block ${height} — initialising last-run for new geese`);
 
     for (const goose of Object.keys(schedule)) {
@@ -174,6 +199,7 @@ async function onBlock(height) {
 
   currentBlock = height;
   console.log(`\n⛏️  Block ${height}`);
+  await publishBlockAnnouncement(height);
 
   for (const [goose, config] of Object.entries(schedule)) {
     const last        = lastRun[goose] ?? 0;
