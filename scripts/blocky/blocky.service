@@ -1,0 +1,19 @@
+[Unit]
+Description=Blocky — Bitcoin block scheduler for Goosie Labs V-Formation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/scripts/blocky
+ExecStart=/usr/bin/node index.mjs
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=blocky
+Environment=RELAY_URL=ws://127.0.0.1:7778
+
+[Install]
+WantedBy=multi-user.target

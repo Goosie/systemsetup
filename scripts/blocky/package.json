@@ -1,0 +1,16 @@
+{
+  "name": "blocky",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Bitcoin block scheduler for the Goosie Labs V-Formation",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs"
+  },
+  "dependencies": {
+    "nostr-tools": "^2.23.3",
+    "websocket-polyfill": "^0.0.3",
+    "ws": "^8.18.0"
+  }
+}
