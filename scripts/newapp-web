@@ -12,6 +12,8 @@
 #   --login=both|extension-only|guest-only   (standaard: both)
 #   --theme=dark|light|both                  (standaard: dark)
 #   --color=#hexkleur                        (standaard: #6366f1)
+#   --no-tile                                niet op homepage plaatsen
+#   --tile-desc="Korte zin"                  beschrijving voor de tegel
 
 NAME="$1"
 DESC="${2:-Een Nostr app: $NAME}"
@@ -32,14 +34,18 @@ LOGIN="both"
 THEME="dark"
 COLOR="#6366f1"
 MODE=""
+TILE="yes"
+TILE_DESC=""
 
 # Verwerk extra argumenten (vanaf $3)
 for arg in "${@:3}"; do
     case "$arg" in
-        --update)   MODE="update" ;;
-        --login=*)  LOGIN="${arg#--login=}" ;;
-        --theme=*)  THEME="${arg#--theme=}" ;;
-        --color=*)  COLOR="${arg#--color=}" ;;
+        --update)       MODE="update" ;;
+        --no-tile)      TILE="no" ;;
+        --login=*)      LOGIN="${arg#--login=}" ;;
+        --theme=*)      THEME="${arg#--theme=}" ;;
+        --color=*)      COLOR="${arg#--color=}" ;;
+        --tile-desc=*)  TILE_DESC="${arg#--tile-desc=}" ;;
     esac
 done
 
@@ -58,6 +64,8 @@ URL="${URL}&description=$(urlencode "$DESC")"
 URL="${URL}&loginMethod=$(urlencode "$LOGIN")"
 URL="${URL}&theme=$(urlencode "$THEME")"
 URL="${URL}&primaryColor=$(urlencode "$COLOR")"
+URL="${URL}&addToHomepage=$(urlencode "$TILE")"
+[[ -n "$TILE_DESC" ]] && URL="${URL}&tileDescription=$(urlencode "$TILE_DESC")"
 
 if [[ "$MODE" == "update" ]]; then
     echo "✏️  Goosie Builder — update mode: $NAME"
@@ -68,7 +76,9 @@ else
     echo "   $DESC"
     KNOP="'Bouw app'"
 fi
-echo "   login=$LOGIN  thema=$THEME  kleur=$COLOR"
+TILE_INFO="homepage=$TILE"
+[[ -n "$TILE_DESC" ]] && TILE_INFO="$TILE_INFO  tegel=\"$TILE_DESC\""
+echo "   login=$LOGIN  thema=$THEME  kleur=$COLOR  $TILE_INFO"
 echo ""
 echo "👉 Open deze URL in je browser:"
 echo "   $URL"
