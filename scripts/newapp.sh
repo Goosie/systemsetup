@@ -30,10 +30,8 @@ curl -s -X POST "http://$GITEA_HOST:$GITEA_PORT/api/v1/user/repos" \
   -H "Content-Type: application/json" \
   -d "{\"name\":\"$APPNAME\",\"private\":true,\"auto_init\":false}" > /dev/null
 
-git remote add gitea "gitea:$GITEA_USER/$APPNAME.git"
-git remote set-url --add --push gitea "gitea:$GITEA_USER/$APPNAME.git"
-git remote set-url --add --push gitea "git@github.com:Goosie/$APPNAME.git"
-echo "✅ Gitea remote toegevoegd: gitea:perry/$APPNAME"
+git remote add gitea "http://$GITEA_HOST:$GITEA_PORT/$GITEA_USER/$APPNAME.git"
+echo "✅ Gitea remote toegevoegd: http://$GITEA_HOST:$GITEA_PORT/$GITEA_USER/$APPNAME"
 
 
 
