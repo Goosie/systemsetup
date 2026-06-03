@@ -39,6 +39,7 @@ const KEYS = {
   haitje: loadKey('haitje'),
   humany: loadKey('humany'),
   gitty: loadKey('gitty'),
+  gitea: loadKey('gitea'),
   // ── NEW GEESE ──
 };
 
@@ -145,11 +146,19 @@ async function handleTessa(pool, jobEvent, command) {
   }
 }
 
-// ── Secury / Jurry / Haitje ───────────────────────────────────────────────────
+// ── Secury / Jurry / Haitje / generic ────────────────────────────────────────
+
+function resolveScript(goose) {
+  for (const ext of ['js', 'mjs']) {
+    const p = resolve(SCRIPTS_DIR, goose, `index.${ext}`);
+    if (existsSync(p)) return p;
+  }
+  throw new Error(`No script found for goose "${goose}" in ${SCRIPTS_DIR}/${goose}/`);
+}
 
 async function handleScript(pool, goose, jobEvent, command) {
   const block = getParam(jobEvent.tags, 'trigger_block') ?? '?';
-  const scriptPath = resolve(SCRIPTS_DIR, goose, 'index.js');
+  const scriptPath = resolveScript(goose);
   await publishChat(pool, goose, `Starting ${command} at block ${block}...`, BLOCKY_PUBKEY);
   console.log(`  Running ${goose} ${command}...`);
   try {
@@ -187,6 +196,7 @@ async function dispatch(pool, event) {
       case 'haitje': await handleScript(pool, 'haitje', event, command); break;
       case 'humany': await handleScript(pool, 'humany', event, command); break;
       case 'gitty': await handleScript(pool, 'gitty', event, command); break;
+      case 'gitea': await handleScript(pool, 'gitea', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
