@@ -156,7 +156,7 @@ async function main() {
       console.log('     ' + apps.join('  '));
       blank();
     } else {
-      info('Available agents: assistenty danky finny haitje jurry ruby secury testy');
+      info('Available agents: assistenty ay danky finny jurry ruby secury testy');
       blank();
     }
     name = await ask(`Name of the ${type}?`);

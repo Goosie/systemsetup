@@ -59,7 +59,7 @@ bouwplannen, besluiten. Elke nota linkt naar andere noten. Dit is het startpunt.
 
 ## Het team
 - [[ganzen/v-formatie]] — Perry + de ganzen
-- [[ganzen/astrid]] · [[ganzen/jurry]] · [[ganzen/haitje]]
+- [[ganzen/assistenty]] · [[ganzen/jurry]] · [[ganzen/ay]]
 
 ## Gesprekken
 Zie map [[gesprekken/]] — elk gesprek met Claude is een nota.
@@ -277,32 +277,32 @@ plekken, en vliegt verder. De andere ganzen ruimen op en bewaken hun domein.
 | Gans | Rol | Status |
 |------|-----|--------|
 | Perry | Voorste gans — visie, experimenten | — |
-| [[ganzen/astrid\|Astrid]] | Persoonlijke lab-assistent | LIVE |
+| [[ganzen/assistenty\|Assistenty]] | Persoonlijke lab-assistent | LIVE |
 | [[ganzen/jurry\|Jurry]] | Juridisch agent | LIVE |
-| [[ganzen/haitje\|Haitje]] | AI-configuratie specialist | LIVE |
-| Tessy | QA — test alles, drukt op knoppen | LIVE |
+| [[ganzen/ay\|Ay]] | AI-configuratie specialist | LIVE |
+| [[ganzen/testy\|Testy]] | QA — test alles, drukt op knoppen | LIVE |
 | Danky | DevOps — git, backup, server | ROL |
 | Ruby | Chief Reality Officer | ROL |
 | Finny | Chief Financial Gans (sats) | ROL |
 EOF
 
-cat > "$VAULT/ganzen/astrid.md" << EOF
+cat > "$VAULT/ganzen/assistenty.md" << EOF
 ---
-tags: [gans, astrid]
+tags: [gans, assistenty]
 ---
 
-# Astrid — Persoonlijke Lab-Assistent
+# Assistenty — Persoonlijke Lab-Assistent
 
-Astrid kent Perry's werkwijze, zijn stack, zijn projecten en zijn chaos.
+Assistenty kent Perry's werkwijze, zijn stack, zijn projecten en zijn chaos.
 Ze houdt bij waar hij was, wat er open staat, en ruimt de troep op.
 
 **Config:** \`~/.claude/CLAUDE.md\` (op de server)
 **Rol:** Vertalen, opruimen, bijhouden, context bewaren.
 
 ## Triggers
-- "Astrid, ruim even op" → overzicht: LIVE/IN BOUW/GESTOPT
-- "Astrid, wat is er open?" → open todos per project
-- "Astrid, nieuw idee: X" → toevoegen aan ideeen-pipeline
+- "Assistenty, ruim even op" → overzicht: LIVE/IN BOUW/GESTOPT
+- "Assistenty, wat is er open?" → open todos per project
+- "Assistenty, nieuw idee: X" → toevoegen aan ideeen-pipeline
 
 ## Gerelateerd
 - [[ganzen/v-formatie]]
@@ -326,22 +326,22 @@ van alle apps.
 - [[ganzen/v-formatie]]
 EOF
 
-cat > "$VAULT/ganzen/haitje.md" << EOF
+cat > "$VAULT/ganzen/ay.md" << EOF
 ---
 tags: [gans, ai-config]
 ---
 
-# Haitje — AI-Configuratie Specialist
+# Ay — AI-Configuratie Specialist
 
 Checkt of alle ganzen-configuraties goed in elkaar grijpen.
-Geeft proactief advies aan Astrid.
+Geeft proactief advies aan Assistenty.
 
-**Locatie:** \`/home/deploy/scripts/haitje/\`
-**Aanroepen:** \`node /home/deploy/scripts/haitje/index.js [check|advies|overview]\`
+**Locatie:** \`/home/deploy/scripts/ay/\`
+**Aanroepen:** \`node /home/deploy/scripts/ay/index.js [check|advies|overview]\`
 
 ## Gerelateerd
 - [[ganzen/v-formatie]]
-- [[ganzen/astrid]]
+- [[ganzen/assistenty]]
 EOF
 
 cat > "$VAULT/ganzen/ruby.md" << EOF

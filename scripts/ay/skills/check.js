@@ -1,14 +1,14 @@
 /**
- * Haitje — check skill
+ * Ay — check skill
  * Controleert alle AI-configuratiebestanden op volledigheid en onderlinge samenhang.
- * Haitje mag alleen lezen en AI-gerelateerde .md bestanden wijzigen.
+ * Ay mag alleen lezen en AI-gerelateerde .md bestanden wijzigen.
  */
 
 import fs from 'fs';
 import path from 'path';
 
 // Welke ganzen verwachten we in de V-formatie?
-const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Testy', 'Jurry', 'Haitje'];
+const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Testy', 'Jurry', 'Ay'];
 
 // Welke secties verwachten we in de server CLAUDE.md?
 const EXPECTED_SERVER_SECTIONS = [
@@ -50,9 +50,9 @@ export async function checkConfig(paths) {
       if (content.includes(section)) ok(`Sectie "${section}" aanwezig`);
       else warn(`Sectie "${section}" ontbreekt`);
     }
-    // Check of Haitje al vermeld wordt
-    if (content.includes('Haitje')) ok('Haitje vermeld in globale CLAUDE.md');
-    else warn('Haitje nog niet vermeld in globale CLAUDE.md → toevoegen aan Actieve Projecten');
+    // Check of Ay al vermeld wordt
+    if (content.includes('Ay')) ok('Ay vermeld in globale CLAUDE.md');
+    else warn('Ay nog niet vermeld in globale CLAUDE.md aan Actieve Projecten');
   }
 
   // ── 2. Server CLAUDE.md ───────────────────────────────────────────────────
@@ -65,8 +65,8 @@ export async function checkConfig(paths) {
       if (content.toUpperCase().includes(section.toUpperCase())) ok(`Sectie "${section}" aanwezig`);
       else warn(`Sectie "${section}" ontbreekt of heeft andere naam`);
     }
-    if (content.includes('Haitje')) ok('Haitje vermeld in server CLAUDE.md');
-    else warn('Haitje nog niet vermeld in server CLAUDE.md → toevoegen');
+    if (content.includes('Ay')) ok('Ay vermeld in server CLAUDE.md');
+    else warn('Ay nog niet vermeld in server CLAUDE.md → toevoegen');
   }
 
   // ── 3. Memory-systeem ─────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ export async function checkConfig(paths) {
 
   // ── 4. Agent-scripts aanwezig? ────────────────────────────────────────────
   console.log(`\n🤖 Agent-scripts (${paths.scripts})`);
-  const expectedAgents = ['jurry', 'haitje'];
+  const expectedAgents = ['jurry', 'ay'];
   for (const agent of expectedAgents) {
     const agentIndex = path.join(paths.scripts, agent, 'index.js');
     if (fs.existsSync(agentIndex)) ok(`${agent}/index.js aanwezig`);

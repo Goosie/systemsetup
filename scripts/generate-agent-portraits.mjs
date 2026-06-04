@@ -47,7 +47,7 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a sharp black three-piece suit with a black top hat, monocle in one eye, holding a Bitcoin gold coin with one wing and a leather ledger in the other. Distinguished, wealthy, sharp-eyed financier.`,
   },
   {
-    name: 'haitje',
+    name: 'ay',
     prompt: `${BASE_STYLE}. Wearing a black academic mortarboard and dark university robes with a gold chain of office, holding a thick audit report. Authoritative professor, experienced examiner, sharp scrutinising expression.`,
   },
   {

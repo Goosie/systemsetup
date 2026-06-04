@@ -36,7 +36,7 @@ const KEYS = {
   testy:  loadKey('testy'),
   secury: loadKey('secury'),
   jurry:  loadKey('jurry'),
-  haitje: loadKey('haitje'),
+  ay: loadKey('ay'),
   humany: loadKey('humany'),
   gitty: loadKey('gitty'),
   gitea: loadKey('gitea'),
@@ -148,7 +148,7 @@ async function handleTesty(pool, jobEvent, command) {
   }
 }
 
-// ── Secury / Jurry / Haitje / generic ────────────────────────────────────────
+// ── Secury / Jurry / Ay / generic ────────────────────────────────────────────
 
 function resolveScript(goose) {
   for (const ext of ['js', 'mjs']) {
@@ -195,7 +195,7 @@ async function dispatch(pool, event) {
       case 'testy':  await handleTesty(pool, event, command); break;
       case 'secury': await handleScript(pool, 'secury', event, command); break;
       case 'jurry':  await handleScript(pool, 'jurry',  event, command); break;
-      case 'haitje': await handleScript(pool, 'haitje', event, command); break;
+      case 'ay': await handleScript(pool, 'ay', event, command); break;
       case 'humany': await handleScript(pool, 'humany', event, command); break;
       case 'gitty': await handleScript(pool, 'gitty', event, command); break;
       case 'gitea': await handleScript(pool, 'gitea', event, command); break;

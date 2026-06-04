@@ -15,7 +15,7 @@ AGENT_COLORS = {
     'assistenty':    '#6366f1',
     'danky':     '#0ea5e9',
     'finny':     '#10b981',
-    'haitje':    '#f59e0b',
+    'ay':    '#f59e0b',
     'jurry':     '#8b5cf6',
     'secury':    '#ef4444',
     'testy':     '#ec4899',
@@ -27,7 +27,7 @@ AGENT_COLORS = {
     'ruby':      '#e11d48',
 }
 
-ORDER = ['assistenty', 'danky', 'finny', 'haitje', 'jurry', 'secury', 'testy',
+ORDER = ['assistenty', 'danky', 'finny', 'ay', 'jurry', 'secury', 'testy',
          'checky', 'commy', 'designy', 'nosty', 'admission', 'ruby']
 
 agents = []

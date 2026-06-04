@@ -1,5 +1,5 @@
 /**
- * Haitje — advies skill
+ * Ay — advies skill
  * Geeft proactief advies over de V-formatie AI-configuratie.
  * Rapport is bedoeld voor Assistenty, die er todos van maakt voor Perry.
  */
@@ -19,24 +19,24 @@ export async function advies(paths) {
 
   const todos = [];
 
-  // ── Controleer of Haitje zelf beschreven is in CLAUDE.md's ───────────────
+  // ── Controleer of Ay zelf beschreven is in CLAUDE.md's ──────────────────
   if (fs.existsSync(paths.globalClaude)) {
     const global = fs.readFileSync(paths.globalClaude, 'utf8');
-    if (!global.includes('Haitje')) {
+    if (!global.includes('Ay')) {
       todos.push({
         prioriteit: '🔴',
-        actie: 'Voeg Haitje toe aan Actieve Projecten in ~/.claude/CLAUDE.md',
-        detail: 'Haitje is aangemaakt maar staat nog niet in de globale configuratie.',
+        actie: 'Voeg Ay toe aan Actieve Projecten in ~/.claude/CLAUDE.md',
+        detail: 'Ay is aangemaakt maar staat nog niet in de globale configuratie.',
       });
     }
   }
 
   if (fs.existsSync(paths.serverClaude)) {
     const server = fs.readFileSync(paths.serverClaude, 'utf8');
-    if (!server.includes('Haitje')) {
+    if (!server.includes('Ay')) {
       todos.push({
         prioriteit: '🔴',
-        actie: 'Voeg Haitje-sectie toe aan /home/deploy/CLAUDE.md',
+        actie: 'Voeg Ay-sectie toe aan /home/deploy/CLAUDE.md',
         detail: 'Vergelijkbaar met de Jurry-sectie: commando\'s, structuur, taken.',
       });
     }
@@ -109,7 +109,7 @@ export async function advies(paths) {
   if (todos.length === 0) {
     console.log(`\nGeen nieuwe adviezen — de formatie staat er goed voor. 🪿`);
   } else {
-    console.log(`\nHaitje geeft het volgende door aan Assistenty:\n`);
+    console.log(`\nAy geeft het volgende door aan Assistenty:\n`);
     todos.forEach((todo, i) => {
       console.log(`${todo.prioriteit} [${i + 1}] ${todo.actie}`);
       console.log(`     ${todo.detail}\n`);

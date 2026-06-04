@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Haitje — AI-configuratie agent voor Goosie Labs
- * Gebruik: node /home/deploy/scripts/haitje/index.js [commando]
+ * Ay — AI-configuratie agent voor Goosie Labs
+ * Gebruik: node /home/deploy/scripts/ay/index.js [commando]
  *
  * Commando's:
  *   check      → controleer alle AI-configuratiebestanden op volledigheid en samenhang
@@ -23,7 +23,7 @@ const PATHS = {
   appsDir: '/var/www/goosielabs/apps',
 };
 
-console.log(`\n🪿 Haitje — AI-configuratie agent Goosie Labs`);
+console.log(`\n🪿 Ay — AI-configuratie agent Goosie Labs`);
 console.log(`──────────────────────────────────────────────`);
 
 switch (command) {
@@ -45,4 +45,4 @@ switch (command) {
     process.exit(1);
 }
 
-console.log(`\n✅ Haitje klaar.\n`);
+console.log(`\n✅ Ay klaar.\n`);

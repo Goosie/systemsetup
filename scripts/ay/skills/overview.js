@@ -1,5 +1,5 @@
 /**
- * Haitje — overview skill
+ * Ay — overview skill
  * Geeft een totaalbeeld van de V-formatie: welke ganzen zijn er,
  * hoe zijn ze geconfigureerd, wat missen we nog.
  */
@@ -51,9 +51,9 @@ const GANZEN = [
     beschrijving: 'Licenties, privacy, betaalrecht, aansprakelijkheid. Draait op serverniveau.',
   },
   {
-    naam: 'Haitje',
+    naam: 'Ay',
     rol: 'AI-configuratie Specialist',
-    bestand: '/home/deploy/scripts/haitje/index.js',
+    bestand: '/home/deploy/scripts/ay/index.js',
     type: 'Script (server-level)',
     beschrijving: 'Bewaakt de kwaliteit van alle AI-configuratie. Zorgt dat de ganzen optimaal in hun kracht staan.',
   },
@@ -113,6 +113,6 @@ export async function overview(paths) {
   }
 
   console.log(`\n────────────────────────────────────────────`);
-  console.log(`Gebruik "haitje check" voor een diepgaande analyse.`);
-  console.log(`Gebruik "haitje advies" voor concrete verbeterpunten.\n`);
+  console.log(`Gebruik "ay check" voor een diepgaande analyse.`);
+  console.log(`Gebruik "ay advies" voor concrete verbeterpunten.\n`);
 }
