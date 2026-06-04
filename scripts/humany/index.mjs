@@ -104,7 +104,7 @@ function addToIconsGenerator(name) {
   let content = readFileSync(GENERATE_ICONS_MJS, 'utf8');
   if (content.includes(`name: '${name}'`)) return false;
   const label = capitalize(name);
-  const newEntry = `  { name: '${name}', bg: '#6366f1', symbol: 'uni2B50', label: '${label}' }, // indigo — ⭐ placeholder — update bg+symbol via @designy`;
+  const newEntry = `  { name: '${name}', bg: '#374151', symbol: 'uni2728', label: '${label}' }, // gray — ✨ placeholder — ask @designy for final bg+symbol`;
   content = content.replace(
     /(\{ name: 'admission'[^\n]+\n)/,
     `$1${newEntry}\n`
