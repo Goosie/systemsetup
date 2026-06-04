@@ -71,7 +71,7 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing sharp reading glasses, holding a magnifying glass in one hand and a clipboard with a checklist in the other. Sharp, analytical, no-nonsense expression.`,
   },
   {
-    name: 'communi',
+    name: 'commy',
     prompt: `${BASE_STYLE}. Holding a rose-pink professional microphone, standing tall with an open confident beak as if addressing a crowd. Charismatic, commanding presence.`,
   },
   {

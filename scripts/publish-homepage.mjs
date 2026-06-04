@@ -182,8 +182,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { astrid:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', communi:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
-  const AGENT_ORDER    = ['astrid','danky','finny','haitje','jurry','secury','tessa','checky','communi','designy','nosty','admission','ruby'];
+  const AGENT_COLORS   = { astrid:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
+  const AGENT_ORDER    = ['astrid','danky','finny','haitje','jurry','secury','tessa','checky','commy','designy','nosty','admission','ruby'];
 
   // Read tiles from tile.json directly
   const tiles = [];
