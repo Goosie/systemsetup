@@ -141,8 +141,17 @@ function generateIcon(name) {
   return false;
 }
 
+function getOpenAIKey() {
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+  try {
+    const rc = readFileSync('/home/deploy/.bashrc.local', 'utf8');
+    const m = rc.match(/export\s+OPENAI_API_KEY=([^\s\n]+)/);
+    return m ? m[1] : null;
+  } catch { return null; }
+}
+
 function generatePortrait(name) {
-  const key = process.env.OPENAI_API_KEY;
+  const key = getOpenAIKey();
   if (!key) return false;
   try {
     execSync(`OPENAI_API_KEY=${key} node ${GENERATE_PORTRAITS} ${name}`, { stdio: 'pipe' });
