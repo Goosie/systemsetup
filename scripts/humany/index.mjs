@@ -16,13 +16,22 @@ import { generateSecretKey, getPublicKey, finalizeEvent, SimplePool } from 'nost
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const RELAY          = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
+const EXTERNAL_RELAYS = ['wss://relay.damus.io', 'wss://relay.primal.net'];
+const ALL_RELAYS     = [RELAY, ...EXTERNAL_RELAYS];
 const AGENTS_DIR     = '/home/deploy/agents';
+const AGENTS_JSON    = `${AGENTS_DIR}/agents.json`;
+const NIP05_FILE     = '/var/www/goosielabs/.well-known/nostr.json';
 const SCRIPTS_DIR    = '/home/deploy/systemsetup/scripts';
 const WHITELIST_PATH = '/home/deploy/whitelist.json';
 const GOOSE_CONFIG   = '/var/www/goosielabs/apps/vformation/src/lib/gooseConfig.ts';
 const GOOSE_RUNNER   = `${SCRIPTS_DIR}/goose-runner/index.mjs`;
 const VFORMATION_DIR = '/var/www/goosielabs/apps/vformation';
 const PERRY_NPUB_HEX = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
+
+const astridKey  = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'astrid/nostr-key.json'), 'utf8'));
+const ASTRID_SK  = new Uint8Array(astridKey.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+const ASTRID_PK  = astridKey.pubkey;
+const BADGE_REF  = `30009:${ASTRID_PK}:vformation-member`;
 
 const keyData    = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'humany/nostr-key.json'), 'utf8'));
 const SECRET_KEY = new Uint8Array(keyData.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
@@ -45,21 +54,61 @@ async function publishChat(pool, content) {
   });
 }
 
-async function publishKind0ForGoose(pool, sk, name, emoji) {
+async function publishKind0ForGoose(pool, sk, name, about) {
+  const displayName = capitalize(name);
   const event = finalizeEvent({
     kind: 0,
     created_at: Math.floor(Date.now() / 1000),
     tags: [],
     content: JSON.stringify({
       name,
-      display_name: name,
-      about: `${emoji} V-Formation goose — ${name}. Part of Goosie Labs.`,
-      picture: `https://goosielabs.com/apps/vformation/icons/icon-192.png`,
+      display_name: displayName,
+      about,
+      picture: `https://goosielabs.com/agents/${name}/${name}.jpg`,
       website: 'https://goosielabs.com',
+      nip05: `${name}@goosielabs.com`,
+      bot: true,
     }),
   }, sk);
-  await Promise.allSettled(pool.publish([RELAY], event));
-  console.log(`  📛 Kind 0 published for ${name}`);
+  await Promise.allSettled(pool.publish(ALL_RELAYS, event));
+  console.log(`  📛 Kind 0 published for ${displayName} (${ALL_RELAYS.length} relays)`);
+}
+
+async function issueBadgeAward(pool, goosePubkey, name) {
+  const event = finalizeEvent({
+    kind: 8,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['a', BADGE_REF, 'wss://relay.goosielabs.com'],
+      ['p', goosePubkey, 'wss://relay.goosielabs.com'],
+    ],
+    content: '',
+  }, ASTRID_SK);
+  await Promise.allSettled(pool.publish(ALL_RELAYS, event));
+  console.log(`  🏅 NIP-58 badge awarded to ${name}`);
+}
+
+function addToNip05(name, pubkeyHex) {
+  const data = JSON.parse(readFileSync(NIP05_FILE, 'utf8'));
+  if (data.names[name] === pubkeyHex) return false;
+  data.names[name] = pubkeyHex;
+  writeFileSync(NIP05_FILE, JSON.stringify(data, null, 2) + '\n');
+  return true;
+}
+
+function addToAgentsJson(name, about) {
+  const data = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
+  if (data.agents.some(a => a.name === name)) return false;
+  data.agents.push({
+    name,
+    displayName: capitalize(name),
+    about,
+    nip05: `${name}@goosielabs.com`,
+    website: 'https://goosielabs.com',
+    picture: `https://goosielabs.com/agents/${name}/${name}.jpg`,
+  });
+  writeFileSync(AGENTS_JSON, JSON.stringify(data, null, 2) + '\n');
+  return true;
 }
 
 // ── newgoose ──────────────────────────────────────────────────────────────────
@@ -76,23 +125,37 @@ async function newGoose(name) {
 
   console.log(`\n🤝 Humany: onboarding "${name}"...\n`);
 
+  const about = `Goosie Labs V-formation agent — ${capitalize(name)}. Role: to be defined.`;
+
   // 1. Generate keypair
   const sk = generateSecretKey();
   const pk = getPublicKey(sk);
   const nsecHex = Buffer.from(sk).toString('hex');
+  const { nip19 } = await import('nostr-tools');
+  const npub = nip19.npubEncode(pk);
+  const nsec = nip19.nsecEncode(sk);
   console.log(`  🔑 Pubkey: ${pk}`);
+  console.log(`  🔑 Npub:   ${npub}`);
 
   // 2. Create agent directory
   mkdirSync(agentDir, { recursive: true });
   writeFileSync(
     resolve(agentDir, 'nostr-key.json'),
-    JSON.stringify({ pubkey: pk, nsecHex }, null, 2) + '\n'
+    JSON.stringify({ pubkey: pk, npub, nsec, nsecHex }, null, 2) + '\n'
   );
   writeFileSync(
     resolve(agentDir, `${name}.md`),
     `# ${capitalize(name)} — Role\n\n_Role description to be filled in._\n\n**Pubkey:** ${pk}\n`
   );
   console.log(`  📁 Agent directory created: ${agentDir}`);
+
+  // 2b. NIP-05 — add to nostr.json
+  const nip05Added = addToNip05(name, pk);
+  console.log(`  🌐 NIP-05: ${name}@goosielabs.com ${nip05Added ? 'added' : '(already exists)'}`);
+
+  // 2c. agents.json — add metadata entry
+  const agentsAdded = addToAgentsJson(name, about);
+  console.log(`  📋 agents.json: ${capitalize(name)} ${agentsAdded ? 'added' : '(already exists)'}`);
 
   // 3. Update whitelist.json
   const wl = JSON.parse(readFileSync(WHITELIST_PATH, 'utf8'));
@@ -143,7 +206,10 @@ async function newGoose(name) {
 
   // 6. Publish kind 0 metadata for the new goose
   const pool = new SimplePool();
-  await publishKind0ForGoose(pool, sk, capitalize(name), '🪿');
+  await publishKind0ForGoose(pool, sk, name, about);
+
+  // 6b. Issue NIP-58 formation badge from Astrid
+  await issueBadgeAward(pool, pk, capitalize(name));
 
   // 7. Rebuild vformation dashboard
   console.log(`  🏗️  Rebuilding vformation...`);
@@ -159,10 +225,15 @@ async function newGoose(name) {
   pool.close([RELAY]);
 
   console.log(`\n✅ ${capitalize(name)} is now part of the V-Formation!`);
+  console.log(`   NIP-05: ${name}@goosielabs.com`);
+  console.log(`   npub:   ${npub}`);
   console.log(`\n📝 Next steps:`);
   console.log(`   1. Edit ${agentDir}/${name}.md — add role description`);
-  console.log(`   2. Add a script at /home/deploy/scripts/${name}/index.js`);
-  console.log(`   3. Restart goose-runner: sudo systemctl restart goose-runner`);
+  console.log(`   2. Update about in ${AGENTS_JSON} once role is defined`);
+  console.log(`   3. Re-run: node /home/deploy/agents/publish-profiles.js ${name}`);
+  console.log(`   4. Add portrait: OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`);
+  console.log(`   5. Add a script at /home/deploy/scripts/${name}/index.js`);
+  console.log(`   6. Restart goose-runner: sudo systemctl restart goose-runner`);
 }
 
 // ── status ────────────────────────────────────────────────────────────────────
