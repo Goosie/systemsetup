@@ -21,12 +21,16 @@ const ALL_RELAYS     = [RELAY, ...EXTERNAL_RELAYS];
 const AGENTS_DIR     = '/home/deploy/agents';
 const AGENTS_JSON    = `${AGENTS_DIR}/agents.json`;
 const NIP05_FILE     = '/var/www/goosielabs/.well-known/nostr.json';
-const SCRIPTS_DIR    = '/home/deploy/systemsetup/scripts';
-const WHITELIST_PATH = '/home/deploy/whitelist.json';
-const GOOSE_CONFIG   = '/var/www/goosielabs/apps/vformation/src/lib/gooseConfig.ts';
-const GOOSE_RUNNER   = `${SCRIPTS_DIR}/goose-runner/index.mjs`;
-const VFORMATION_DIR = '/var/www/goosielabs/apps/vformation';
-const PERRY_NPUB_HEX = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
+const SCRIPTS_DIR        = '/home/deploy/systemsetup/scripts';
+const WHITELIST_PATH     = '/home/deploy/whitelist.json';
+const GOOSE_CONFIG       = '/var/www/goosielabs/apps/vformation/src/lib/gooseConfig.ts';
+const GOOSE_RUNNER       = `${SCRIPTS_DIR}/goose-runner/index.mjs`;
+const VFORMATION_DIR     = '/var/www/goosielabs/apps/vformation';
+const GOOSIELABS_DIR     = '/var/www/goosielabs';
+const GENERATE_ICONS_MJS = `${GOOSIELABS_DIR}/generate-agent-icons.mjs`;
+const GENERATE_PORTRAITS = '/home/deploy/scripts/generate-agent-portraits.mjs';
+const WEBROOT_AGENTS     = `${GOOSIELABS_DIR}/agents`;
+const PERRY_NPUB_HEX     = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 
 const astridKey  = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'astrid/nostr-key.json'), 'utf8'));
 const ASTRID_SK  = new Uint8Array(astridKey.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
@@ -96,6 +100,63 @@ function addToNip05(name, pubkeyHex) {
   return true;
 }
 
+function addToIconsGenerator(name) {
+  let content = readFileSync(GENERATE_ICONS_MJS, 'utf8');
+  if (content.includes(`name: '${name}'`)) return false;
+  const label = capitalize(name);
+  const newEntry = `  { name: '${name}', bg: '#6366f1', symbol: 'uni2B50', label: '${label}' }, // indigo — ⭐ placeholder — update bg+symbol via @designy`;
+  content = content.replace(
+    /(\{ name: 'admission'[^\n]+\n)/,
+    `$1${newEntry}\n`
+  );
+  writeFileSync(GENERATE_ICONS_MJS, content);
+  return true;
+}
+
+function addToPortraitsGenerator(name) {
+  let content = readFileSync(GENERATE_PORTRAITS, 'utf8');
+  if (content.includes(`name: '${name}'`)) return false;
+  const label = capitalize(name);
+  const newEntry =
+    `  {\n` +
+    `    name: '${name}',\n` +
+    `    prompt: \`\${BASE_STYLE}. Professional Goosie Labs agent — ${label}. Warm, capable, confident team player.\`,\n` +
+    `  },`;
+  content = content.replace(/^(\];)/m, `${newEntry}\n$1`);
+  writeFileSync(GENERATE_PORTRAITS, content);
+  return true;
+}
+
+function generateIcon(name) {
+  try {
+    execSync(`cd ${GOOSIELABS_DIR} && node generate-agent-icons.mjs 2>&1 | grep "✓ ${name}" || true`, { stdio: 'pipe' });
+    const src = `${AGENTS_DIR}/${name}/icon-192.png`;
+    const dst = `${WEBROOT_AGENTS}/${name}`;
+    if (existsSync(src)) {
+      mkdirSync(dst, { recursive: true });
+      execSync(`cp ${src} ${dst}/`);
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+function generatePortrait(name) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return false;
+  try {
+    execSync(`OPENAI_API_KEY=${key} node ${GENERATE_PORTRAITS} ${name}`, { stdio: 'pipe' });
+    const src = `${AGENTS_DIR}/${name}/${name}.jpg`;
+    const dst = `${WEBROOT_AGENTS}/${name}`;
+    if (existsSync(src)) {
+      mkdirSync(dst, { recursive: true });
+      execSync(`cp ${src} ${dst}/`);
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 function addToAgentsJson(name, about) {
   const data = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
   if (data.agents.some(a => a.name === name)) return false;
@@ -156,6 +217,29 @@ async function newGoose(name) {
   // 2c. agents.json — add metadata entry
   const agentsAdded = addToAgentsJson(name, about);
   console.log(`  📋 agents.json: ${capitalize(name)} ${agentsAdded ? 'added' : '(already exists)'}`);
+
+  // 2d. @Designy — agent icon (goose + symbol composite)
+  console.log(`  🎨 @Designy: generating icon for ${capitalize(name)}...`);
+  addToIconsGenerator(name);
+  const iconOk = generateIcon(name);
+  console.log(iconOk
+    ? `  🎨 Icon generated → /agents/${name}/icon-192.png (placeholder — update bg+symbol in generate-agent-icons.mjs)`
+    : `  ⚠️  Icon generation failed — run manually: cd /var/www/goosielabs && node generate-agent-icons.mjs`
+  );
+
+  // 2e. @Designy — portrait (AI-illustrated goose character)
+  addToPortraitsGenerator(name);
+  if (process.env.OPENAI_API_KEY) {
+    console.log(`  🎨 @Designy: generating portrait for ${capitalize(name)}...`);
+    const portraitOk = generatePortrait(name);
+    console.log(portraitOk
+      ? `  🎨 Portrait generated → /agents/${name}/${name}.jpg`
+      : `  ⚠️  Portrait generation failed — retry: OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`
+    );
+  } else {
+    console.log(`  🎨 Portrait: OPENAI_API_KEY not set — run when ready:`);
+    console.log(`     OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`);
+  }
 
   // 3. Update whitelist.json
   const wl = JSON.parse(readFileSync(WHITELIST_PATH, 'utf8'));
@@ -230,8 +314,8 @@ async function newGoose(name) {
   console.log(`\n📝 Next steps:`);
   console.log(`   1. Edit ${agentDir}/${name}.md — add role description`);
   console.log(`   2. Update about in ${AGENTS_JSON} once role is defined`);
-  console.log(`   3. Re-run: node /home/deploy/agents/publish-profiles.js ${name}`);
-  console.log(`   4. Add portrait: OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`);
+  console.log(`   3. Re-publish profile: node /home/deploy/agents/publish-profiles.js ${name}`);
+  console.log(`   4. Customise icon bg+symbol in ${GENERATE_ICONS_MJS} → @designy`);
   console.log(`   5. Add a script at /home/deploy/scripts/${name}/index.js`);
   console.log(`   6. Restart goose-runner: sudo systemctl restart goose-runner`);
 }
