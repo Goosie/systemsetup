@@ -18,7 +18,7 @@
  */
 
 import { createHash } from 'crypto';
-import { readFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, mkdirSync, copyFileSync } from 'fs';
 import path from 'path';
 import WebSocket from '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 
@@ -257,15 +257,35 @@ async function generateHomepage() {
       </div>`;
   }).join('\n\n');
 
+  // Sync agent portrait images to webroot so they're URL-accessible
+  const WEBROOT_AGENTS = '/var/www/goosielabs/agents';
+
   // Generate agent cards HTML
   const agentCardsHtml = agents.map(a => {
     const color    = AGENT_COLORS[a.name] ?? '#6366f1';
     const nsiteUrl = `https://nsite.goosielabs.com/${a.npub}/`;
-    const initial  = a.name[0].toUpperCase();
     const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
     const desc     = a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description;
+
+    // Use .jpg portrait → icon-192.png → 🪿 emoji fallback
+    const jpgSrc  = `${KEYS_DIR}/${a.name}/${a.name}.jpg`;
+    const iconSrc = `${KEYS_DIR}/${a.name}/icon-192.png`;
+    const destDir = `${WEBROOT_AGENTS}/${a.name}`;
+    let avatar;
+    if (existsSync(jpgSrc)) {
+      mkdirSync(destDir, { recursive: true });
+      copyFileSync(jpgSrc, `${destDir}/${a.name}.jpg`);
+      avatar = `<div class="agent-avatar"><img src="/agents/${a.name}/${a.name}.jpg" alt="${title}"></div>`;
+    } else if (existsSync(iconSrc)) {
+      mkdirSync(destDir, { recursive: true });
+      copyFileSync(iconSrc, `${destDir}/icon-192.png`);
+      avatar = `<div class="agent-avatar"><img src="/agents/${a.name}/icon-192.png" alt="${title}"></div>`;
+    } else {
+      avatar = `<div class="agent-avatar" style="background:${color}">🪿</div>`;
+    }
+
     const inner = `
-        <div class="agent-avatar" style="background:${color}">${initial}</div>
+        ${avatar}
         <div class="agent-info">
           <div class="agent-name">${title}</div>
           <div class="agent-desc">${desc}</div>

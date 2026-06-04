@@ -40,6 +40,7 @@ const KEYS = {
   humany: loadKey('humany'),
   gitty: loadKey('gitty'),
   gitea: loadKey('gitea'),
+  directory: loadKey('directory'),
   // ── NEW GEESE ──
 };
 
@@ -197,6 +198,7 @@ async function dispatch(pool, event) {
       case 'humany': await handleScript(pool, 'humany', event, command); break;
       case 'gitty': await handleScript(pool, 'gitty', event, command); break;
       case 'gitea': await handleScript(pool, 'gitea', event, command); break;
+      case 'directory': await handleScript(pool, 'directory', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
