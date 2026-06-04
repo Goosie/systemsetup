@@ -26,7 +26,7 @@ const PUBKEY     = keyData.pubkey;
 // Default schedule — used when no relay config exists yet.
 // All intervals in Bitcoin blocks (~10 min each).
 const DEFAULT_SCHEDULE = {
-  tessa:  { interval_blocks: 144,  command: 'run-all',  description: '~1 day'   },
+  testy:  { interval_blocks: 144,  command: 'run-all',  description: '~1 day'   },
   secury: { interval_blocks: 1008, command: 'check',    description: '~1 week'  },
   jurry:  { interval_blocks: 4032, command: 'overview', description: '~4 weeks' },
   haitje: { interval_blocks: 2016, command: 'check',    description: '~2 weeks' },

@@ -39,7 +39,7 @@ const GANZEN = [
   {
     naam: 'Tessy',
     rol: 'QA Gans',
-    bestand: 'scripts/tessa/index.js (per app)',
+    bestand: 'scripts/testy/index.js (per app)',
     type: 'Script (per app)',
     beschrijving: 'Test alles, drukt op alle knoppen, geeft apps testdata.',
   },

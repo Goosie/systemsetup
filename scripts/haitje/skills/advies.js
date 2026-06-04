@@ -42,7 +42,7 @@ export async function advies(paths) {
     }
   }
 
-  // ── Check Tessa-dekking ───────────────────────────────────────────────────
+  // ── Check Testy-dekking ───────────────────────────────────────────────────
   const appsDir = paths.appsDir;
   if (fs.existsSync(appsDir)) {
     const apps = fs.readdirSync(appsDir, { withFileTypes: true })
@@ -50,13 +50,13 @@ export async function advies(paths) {
       .map(d => d.name);
 
     const zonderTessa = apps.filter(app =>
-      !fs.existsSync(path.join(appsDir, app, 'scripts/tessa/index.js'))
+      !fs.existsSync(path.join(appsDir, app, 'scripts/testy/index.js'))
     );
 
     if (zonderTessa.length > 0) {
       todos.push({
         prioriteit: '🟡',
-        actie: `Tessa toevoegen aan: ${zonderTessa.join(', ')}`,
+        actie: `Testy toevoegen aan: ${zonderTessa.join(', ')}`,
         detail: 'Deze apps hebben nog geen test-agent. Zie CLAUDE.md TODO-sectie.',
       });
     }

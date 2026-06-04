@@ -7,7 +7,7 @@ function goosie() {
     echo "  deleteapp <naam>   App volledig verwijderen (nginx, tmux, GitHub, tiles)"
     echo "  listapps           Alle apps tonen"
     echo "  startmytmux        tmux sessie per actieve app"
-    echo "  goosie <name> ...  Run a goose with log (jurry/haitje/tessa/secury/humany/gitty/gitea)"
+    echo "  goosie <name> ...  Run a goose with log (jurry/haitje/testy/secury/humany/gitty/gitea)"
     echo "  goosie-log <name>  View last log of a goose"
     echo ""
     echo "🛡️  Secury — security goose"

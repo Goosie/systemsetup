@@ -33,7 +33,7 @@ function loadKey(goose) {
 }
 
 const KEYS = {
-  tessa:  loadKey('tessa'),
+  testy:  loadKey('testy'),
   secury: loadKey('secury'),
   jurry:  loadKey('jurry'),
   haitje: loadKey('haitje'),
@@ -99,25 +99,25 @@ async function runScript(args, timeoutMs = 60_000) {
   return (stdout + stderr).trim();
 }
 
-// ── Tessa ────────────────────────────────────────────────────────────────────
+// ── Testy ────────────────────────────────────────────────────────────────────
 
-async function handleTessa(pool, jobEvent, command) {
+async function handleTesty(pool, jobEvent, command) {
   const block = getParam(jobEvent.tags, 'trigger_block') ?? '?';
 
   if (command === 'run-all') {
-    await publishChat(pool, 'tessa', `Starting run-all at block ${block}...`, BLOCKY_PUBKEY);
-    console.log('  🧪 Tessa: checking all apps...');
+    await publishChat(pool, 'testy', `Starting run-all at block ${block}...`, BLOCKY_PUBKEY);
+    console.log('  🧪 Testy: checking all apps...');
 
     const apps = readdirSync(APPS_DIR).filter(app => {
       if (existsSync(resolve(APPS_DIR, app, '.archived'))) return false;
-      return existsSync(resolve(APPS_DIR, app, 'scripts/tessa/index.js'));
+      return existsSync(resolve(APPS_DIR, app, 'scripts/testy/index.js'));
     });
 
     const results = [];
 
     for (const app of apps) {
       try {
-        await runScript([resolve(APPS_DIR, app, 'scripts/tessa/index.js'), 'check'], 30_000);
+        await runScript([resolve(APPS_DIR, app, 'scripts/testy/index.js'), 'check'], 30_000);
         results.push({ app, ok: true });
         console.log(`  ✅ ${app}`);
       } catch (e) {
@@ -128,22 +128,22 @@ async function handleTessa(pool, jobEvent, command) {
 
     const ok    = results.filter(r => r.ok).length;
     const lines = results.map(r => `${r.ok ? '✅' : '❌'} ${r.app}${r.error ? `: ${r.error}` : ''}`);
-    const content = `Tessa run-all — ${ok}/${results.length} apps reachable\n\n${lines.join('\n')}`;
+    const content = `Testy run-all — ${ok}/${results.length} apps reachable\n\n${lines.join('\n')}`;
 
-    await publishResult(pool, 'tessa', jobEvent, content, ok === results.length ? 'success' : 'partial');
+    await publishResult(pool, 'testy', jobEvent, content, ok === results.length ? 'success' : 'partial');
   } else {
     const [app, cmd = 'check'] = command.split(':');
-    const script = resolve(APPS_DIR, app, 'scripts/tessa/index.js');
+    const script = resolve(APPS_DIR, app, 'scripts/testy/index.js');
     if (!existsSync(script)) {
-      await publishResult(pool, 'tessa', jobEvent, `No tessa script for app: ${app}`, 'error');
+      await publishResult(pool, 'testy', jobEvent, `No testy script for app: ${app}`, 'error');
       return;
     }
-    await publishChat(pool, 'tessa', `Starting ${cmd} for ${app} at block ${block}...`, BLOCKY_PUBKEY);
+    await publishChat(pool, 'testy', `Starting ${cmd} for ${app} at block ${block}...`, BLOCKY_PUBKEY);
     try {
       const output = await runScript([script, cmd], 30_000);
-      await publishResult(pool, 'tessa', jobEvent, output);
+      await publishResult(pool, 'testy', jobEvent, output);
     } catch (e) {
-      await publishResult(pool, 'tessa', jobEvent, e.message, 'error');
+      await publishResult(pool, 'testy', jobEvent, e.message, 'error');
     }
   }
 }
@@ -192,7 +192,7 @@ async function dispatch(pool, event) {
 
   try {
     switch (goose) {
-      case 'tessa':  await handleTessa(pool, event, command); break;
+      case 'testy':  await handleTesty(pool, event, command); break;
       case 'secury': await handleScript(pool, 'secury', event, command); break;
       case 'jurry':  await handleScript(pool, 'jurry',  event, command); break;
       case 'haitje': await handleScript(pool, 'haitje', event, command); break;

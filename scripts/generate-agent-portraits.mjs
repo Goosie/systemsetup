@@ -59,7 +59,7 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a deep red turtleneck and a bold red plaid scarf, arms crossed, looking directly at you with a raised eyebrow and a no-nonsense expression. The goose who asks the hard questions.`,
   },
   {
-    name: 'tessa',
+    name: 'testy',
     prompt: `${BASE_STYLE}. Wearing large round tortoiseshell glasses and a white QA engineer polo shirt, holding a tablet showing a test report with red and green indicators. Focused, methodical, nothing escapes her.`,
   },
   {

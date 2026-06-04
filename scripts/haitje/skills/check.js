@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Welke ganzen verwachten we in de V-formatie?
-const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Tessa', 'Jurry', 'Haitje'];
+const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Testy', 'Jurry', 'Haitje'];
 
 // Welke secties verwachten we in de server CLAUDE.md?
 const EXPECTED_SERVER_SECTIONS = [
@@ -115,13 +115,13 @@ export async function checkConfig(paths) {
     else warn(`${agent}/index.js ontbreekt!`);
   }
 
-  // Tessa: per-app, check de meest actieve apps
+  // Testy: per-app, check de meest actieve apps
   const tessaApps = ['lastwill', 'zap-hunt', 'dilemma'];
-  console.log(`\n🧪 Tessa per-app check`);
+  console.log(`\n🧪 Testy per-app check`);
   for (const app of tessaApps) {
-    const tessaIndex = path.join(paths.appsDir, app, 'scripts/tessa/index.js');
-    if (fs.existsSync(tessaIndex)) ok(`${app}: Tessa aanwezig`);
-    else warn(`${app}: Tessa ontbreekt (scripts/tessa/index.js)`);
+    const tessaIndex = path.join(paths.appsDir, app, 'scripts/testy/index.js');
+    if (fs.existsSync(tessaIndex)) ok(`${app}: Testy aanwezig`);
+    else warn(`${app}: Testy ontbreekt (scripts/testy/index.js)`);
   }
 
   // ── 5. Samenhang: ganzen in CLAUDE.md? ───────────────────────────────────
