@@ -23,7 +23,7 @@ const GANZEN = [
     beschrijving: 'Git, backup, updates — doet het gewoon.',
   },
   {
-    naam: 'Ruby',
+    naam: 'Transy',
     rol: 'Chief Reality Officer',
     bestand: 'Geïmpliceerd in server CLAUDE.md',
     type: 'Rol',

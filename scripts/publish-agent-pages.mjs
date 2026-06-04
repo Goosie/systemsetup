@@ -50,7 +50,7 @@ const AGENT_COLORS = {
   assistenty: '#6366f1', danky: '#0ea5e9', finny: '#10b981', ay: '#f59e0b',
   jurry: '#8b5cf6', secury: '#ef4444', testy: '#ec4899', checky: '#14b8a6',
   commy: '#f97316', designy: '#a855f7', nosty: '#06b6d4', docy: '#64748b',
-  ruby: '#e11d48',
+  transy: '#e11d48',
 };
 
 function hexToRgb(hex) {

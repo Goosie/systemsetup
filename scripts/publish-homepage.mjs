@@ -182,8 +182,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { assistenty:'#6366f1', danky:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', ruby:'#e11d48' };
-  const AGENT_ORDER    = ['assistenty','danky','finny','ay','jurry','secury','testy','checky','commy','designy','nosty','docy','ruby'];
+  const AGENT_COLORS   = { assistenty:'#6366f1', danky:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48' };
+  const AGENT_ORDER    = ['assistenty','danky','finny','ay','jurry','secury','testy','checky','commy','designy','nosty','docy','transy'];
 
   // Read tiles from tile.json directly
   const tiles = [];
@@ -523,7 +523,7 @@ function generateAboutEn() {
         <div class="formation-grid">
           <div class="goose-card"><div class="goose-card-name">🪿 Assistenty</div><div class="goose-card-role">Primary orchestrator</div><div class="goose-card-desc">Overview, todos, memory. Keeps track of where Perry was and what's still open.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Danky</div><div class="goose-card-role">DevOps Goose</div><div class="goose-card-desc">Git committed. Backup done. Danky doesn't ask — Danky just does it.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Ruby</div><div class="goose-card-role">Chief Reality Officer</div><div class="goose-card-desc">Sober. Direct. Honks up with the question you'd have regretted not asking six weeks from now.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Transy</div><div class="goose-card-role">Chief Reality Officer</div><div class="goose-card-desc">Sober. Direct. Honks up with the question you'd have regretted not asking six weeks from now.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Finny</div><div class="goose-card-role">Chief Financial Goose</div><div class="goose-card-desc">Guards the sats. Keeps track of all income and expenses. Always keeping an overview.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Testy</div><div class=\"goose-card-role\">QA Goose</div><div class="goose-card-desc">Tests everything that moves and everything that doesn't. Presses all the buttons.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Jurry</div><div class="goose-card-role">Legal Advisor</div><div class="goose-card-desc">Knows exactly what's legal and what isn't. The goose you don't want to miss.</div></div>

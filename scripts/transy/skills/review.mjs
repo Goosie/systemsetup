@@ -288,7 +288,7 @@ function checkJuridisch(changedFiles) {
   return findings
 }
 
-// ── Ruby's standaard realiteitsvragen ────────────────────────────────────────
+// ── Transy's standaard realiteitsvragen ────────────────────────────────────────
 const REALITY_QUESTIONS = [
   'Is elke feature in deze branch echt nodig, of is het feature creep?',
   'Wat kan er misgaan als dit live gaat — en wat kost het om dat te fixen?',
@@ -354,9 +354,9 @@ function buildMarkdown(branch, base, stats, changedFiles, findings) {
   const warnings = findings.filter(f => f.level === 'warning')
 
   const lines = [
-    `# Ruby Review — ${branch}`,
+    `# Transy Review — ${branch}`,
     `> Gegenereerd op ${date} | basis: ${base}`,
-    `> Ruby is de Chief Reality Officer — ze stelt de vragen die je later blij mee bent.`,
+    `> Transy is de Chief Reality Officer — ze stelt de vragen die je later blij mee bent.`,
     '',
     `## Samenvatting`,
     '',
@@ -392,7 +392,7 @@ function buildMarkdown(branch, base, stats, changedFiles, findings) {
   }
 
   lines.push(
-    `## 🤔 Ruby's realiteitsvragen`,
+    `## 🤔 Transy's realiteitsvragen`,
     '',
     ...REALITY_QUESTIONS.map(q => `- [ ] ${q}`),
     '',
