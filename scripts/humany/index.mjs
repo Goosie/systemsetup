@@ -39,6 +39,9 @@ const GOOSIELABS_DIR     = '/var/www/goosielabs';
 const GENERATE_ICONS_MJS = `${GOOSIELABS_DIR}/generate-agent-icons.mjs`;
 const GENERATE_PORTRAITS = '/home/deploy/scripts/generate-agent-portraits.mjs';
 const PUBLISH_HOMEPAGE   = `${SCRIPTS_DIR}/publish-homepage.mjs`;
+const PUBLISH_AGENT_PAGES = `${SCRIPTS_DIR}/publish-agent-pages.mjs`;
+const GENERATE_AGENTS_HTML = `${SCRIPTS_DIR}/generate-agents-html.py`;
+const HOMEPAGE_BASE      = `${SCRIPTS_DIR}/pages/homepage_base.html`;
 const WEBROOT_AGENTS     = `${GOOSIELABS_DIR}/agents`;
 const LNBITS_URL         = 'http://127.0.0.1:5000';
 const PERRY_NPUB_HEX     = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
@@ -546,6 +549,46 @@ async function renameGoose(oldName, newName) {
     .replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
   writeFileSync(PUBLISH_HOMEPAGE, homepage);
   console.log(`  ✅ publish-homepage.mjs updated`);
+
+  // ── Step 10b: Update publish-agent-pages.mjs ───────────────────────────────
+  if (existsSync(PUBLISH_AGENT_PAGES)) {
+    let agentPages = readFileSync(PUBLISH_AGENT_PAGES, 'utf8');
+    agentPages = agentPages.replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
+    writeFileSync(PUBLISH_AGENT_PAGES, agentPages);
+    console.log(`  ✅ publish-agent-pages.mjs updated`);
+  }
+
+  // ── Step 10c: Update generate-agents-html.py ───────────────────────────────
+  if (existsSync(GENERATE_AGENTS_HTML)) {
+    let genHtml = readFileSync(GENERATE_AGENTS_HTML, 'utf8');
+    genHtml = genHtml.replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
+    writeFileSync(GENERATE_AGENTS_HTML, genHtml);
+    console.log(`  ✅ generate-agents-html.py updated`);
+  }
+
+  // ── Step 10d: Update pages/homepage_base.html ──────────────────────────────
+  if (existsSync(HOMEPAGE_BASE)) {
+    let base = readFileSync(HOMEPAGE_BASE, 'utf8');
+    base = base
+      .replace(new RegExp(oldDisplay, 'g'), newDisplay)
+      .replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
+    writeFileSync(HOMEPAGE_BASE, base);
+    console.log(`  ✅ pages/homepage_base.html updated`);
+  }
+
+  // ── Step 10e: Update other agent .md files that reference the old name ──────
+  // e.g. agents/designy/designy.md has a color table listing all agent names
+  for (const agentName of readdirSync(AGENTS_DIR)) {
+    const mdPath = join(AGENTS_DIR, agentName, `${agentName}.md`);
+    if (!existsSync(mdPath)) continue;
+    const mdContent = readFileSync(mdPath, 'utf8');
+    if (!mdContent.includes(oldDisplay) && !mdContent.includes(oldName)) continue;
+    const updated = mdContent
+      .replace(new RegExp(oldDisplay, 'g'), newDisplay)
+      .replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
+    writeFileSync(mdPath, updated);
+    console.log(`  ✅ agents/${agentName}/${agentName}.md updated`);
+  }
 
   // ── Step 11: Move webroot portrait copy ────────────────────────────────────
   const oldWebroot = join(WEBROOT_AGENTS, oldName);
