@@ -289,7 +289,7 @@ async function generateHomepage() {
     }
 
     const promptLink = a.hasNsite
-      ? `\n        <div class="agent-links"><a href="${nsiteUrl}" class="agent-link" target="_blank" rel="noopener">Prompt</a></div>`
+      ? `\n        <div class="agent-links"><a href="${nsiteUrl}" class="agent-link" target="_blank" rel="noopener">&#62;_ Prompt</a></div>`
       : '';
     const inner = `
         ${avatar}
