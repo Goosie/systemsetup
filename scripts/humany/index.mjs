@@ -640,6 +640,17 @@ async function renameGoose(oldName, newName) {
   });
   console.log(`  ✅ Dashboard rebuilt`);
 
+  // ── Step 13b: Re-publish agent nsite page ──────────────────────────────────
+  // publish-agent-pages.mjs regenerates the HTML from .claude/agents/<name>.md
+  // and uploads it to Blossom — this is what shows when clicking the agent card
+  console.log(`  🌐 Re-publishing nsite agent page for ${newDisplay}...`);
+  try {
+    execSync(`node ${SCRIPTS_DIR}/publish-agent-pages.mjs --agent ${newName}`, { stdio: 'pipe' });
+    console.log(`  ✅ Nsite agent page updated`);
+  } catch {
+    console.log(`  ⚠️  Agent page publish failed — run: node ${SCRIPTS_DIR}/publish-agent-pages.mjs --agent ${newName}`);
+  }
+
   console.log(`  🏠 Updating homepage tiles...`);
   try {
     execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
