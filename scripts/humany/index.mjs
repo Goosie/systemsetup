@@ -562,6 +562,21 @@ async function renameGoose(oldName, newName) {
     console.log(`  🖼️  Webroot portrait moved: /agents/${oldName} → /agents/${newName}`);
   }
 
+  // ── Step 11b: Rename .claude/agents/<name>.md ─────────────────────────────
+  // This file holds the agent's role description used by publish-homepage.mjs
+  const CLAUDE_AGENTS_DIR = '/home/deploy/.claude/agents';
+  const oldClaudeMd = join(CLAUDE_AGENTS_DIR, `${oldName}.md`);
+  const newClaudeMd = join(CLAUDE_AGENTS_DIR, `${newName}.md`);
+  if (existsSync(oldClaudeMd)) {
+    let mdContent = readFileSync(oldClaudeMd, 'utf8');
+    mdContent = mdContent
+      .replace(new RegExp(`^name: ${oldName}$`, 'm'), `name: ${newName}`)
+      .replace(new RegExp(`# ${oldDisplay}`, 'g'), `# ${newDisplay}`);
+    writeFileSync(newClaudeMd, mdContent);
+    rmSync(oldClaudeMd);
+    console.log(`  📄 .claude/agents/${oldName}.md → ${newName}.md`);
+  }
+
   // ── Step 12: Re-publish kind:0 with new name/nip05/lud16 ──────────────────
   // Mirror of newGoose step 6 (publishKind0ForGoose)
   const keyFile = join(newDir, 'nostr-key.json');
