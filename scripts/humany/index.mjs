@@ -120,7 +120,8 @@ function addToPortraitsGenerator(name) {
   const newEntry =
     `  {\n` +
     `    name: '${name}',\n` +
-    `    prompt: \`\${BASE_STYLE}. Professional Goosie Labs agent — ${label}. Warm, capable, confident team player.\`,\n` +
+    `    // TODO: replace outfit description with something role-specific\n` +
+    `    prompt: \`\${BASE_STYLE}. ${label} — V-formation agent. Wearing a neat professional outfit that fits their role.\`,\n` +
     `  },`;
   content = content.replace(/^(\];)/m, `${newEntry}\n$1`);
   writeFileSync(GENERATE_PORTRAITS, content);

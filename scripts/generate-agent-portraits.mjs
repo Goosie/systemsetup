@@ -2,18 +2,20 @@
 /**
  * generate-agent-portraits.mjs
  *
- * Generates cartoon goose character portraits for V-formation agents
- * using DALL-E 3 (OpenAI API).
+ * Generates flat 2D cartoon goose portraits for V-formation agents
+ * using gpt-image-1 (OpenAI API).
  *
- * Style: cute cartoon goose illustration, vector art style, soft neutral
- * background, full body, white goose with orange beak and feet, expressive
- * eyes — same style as astrid.jpg, danky.jpg etc.
+ * Style: flat 2D cartoon, thick black outlines, cel shading — same look
+ * as astrid.jpg, danky.jpg, finny.jpg etc. BASE_STYLE enforces this.
+ * Do NOT change BASE_STYLE without regenerating all portraits.
  *
  * Usage:
- *   OPENAI_API_KEY=sk-... node generate-agent-portraits.mjs
- *   OPENAI_API_KEY=sk-... node generate-agent-portraits.mjs secury
+ *   node generate-agent-portraits.mjs              # all agents
+ *   node generate-agent-portraits.mjs directory    # single agent
+ *   (OPENAI_API_KEY is auto-loaded from ~/.bashrc.local if not in env)
  *
- * Output: /home/deploy/agents/<name>/<name>.jpg
+ * Output: /home/deploy/agents/<name>/<name>.jpg  (+ adult_<name>.jpg)
+ * Deploy: update-tiles.sh copies portraits to webroot automatically.
  */
 
 import { writeFileSync, mkdirSync } from 'fs';
@@ -180,6 +182,4 @@ for (const { name, prompt } of targets) {
   }
 }
 
-console.log('\nDone. Next steps:');
-console.log('  1. Copy portraits to webroot: for each agent: cp /home/deploy/agents/<name>/<name>.jpg /var/www/goosielabs/agents/<name>/');
-console.log('  2. Republish homepage: bash /home/deploy/update-tiles.sh');
+console.log('\nDone. Run: bash /home/deploy/update-tiles.sh  (copies portraits to webroot + republishes homepage)');
