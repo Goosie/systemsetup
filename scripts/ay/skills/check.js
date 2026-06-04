@@ -13,7 +13,7 @@ const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Testy', 'Jurry
 // Welke secties verwachten we in de server CLAUDE.md?
 const EXPECTED_SERVER_SECTIONS = [
   'JURRY',
-  'TESSA',
+  'Testy',
   'Stack',
   'Apps',
   'NIP',
