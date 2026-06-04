@@ -213,12 +213,16 @@ async function generateHomepage() {
         const key = JSON.parse(readFileSync(keyFile, 'utf8'));
         if (!key.npub) continue;
         let description = '';
+        let quote = '';
         const mdFile = path.join(CLAUDE_DIR, `${name}.md`);
         if (existsSync(mdFile)) {
-          const m = readFileSync(mdFile, 'utf8').match(/^description:\s*(.+)$/m);
+          const src = readFileSync(mdFile, 'utf8');
+          const m = src.match(/^description:\s*(.+)$/m);
           if (m) description = m[1].trim().replace(/^['"]|['"]$/g, '');
+          const q = src.match(/^quote:\s*(.+)$/m);
+          if (q) quote = q[1].trim().replace(/^['"]|['"]$/g, '');
         }
-        agents.push({ name, npub: key.npub, description });
+        agents.push({ name, npub: key.npub, description, quote });
       } catch {}
     }
   } catch {}
@@ -265,7 +269,7 @@ async function generateHomepage() {
     const color    = AGENT_COLORS[a.name] ?? '#6366f1';
     const nsiteUrl = `https://nsite.goosielabs.com/${a.npub}/`;
     const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
-    const desc     = a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description;
+    const tileText = a.quote || (a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description);
 
     // Use .jpg portrait → icon-192.png → 🪿 emoji fallback
     const jpgSrc  = `${KEYS_DIR}/${a.name}/${a.name}.jpg`;
@@ -284,15 +288,16 @@ async function generateHomepage() {
       avatar = `<div class="agent-avatar" style="background:${color}">🪿</div>`;
     }
 
+    const promptLink = a.hasNsite
+      ? `\n        <div class="agent-links"><a href="${nsiteUrl}" class="agent-link" target="_blank" rel="noopener">Prompt</a></div>`
+      : '';
     const inner = `
         ${avatar}
         <div class="agent-info">
           <div class="agent-name">${title}</div>
-          <div class="agent-desc">${desc}</div>
-        </div>`;
-    return a.hasNsite
-      ? `      <a href="${nsiteUrl}" class="agent-card" target="_blank" rel="noopener">${inner}\n      </a>`
-      : `      <div class="agent-card">${inner}\n      </div>`;
+          <div class="agent-desc">${tileText}</div>
+        </div>${promptLink}`;
+    return `      <div class="agent-card">${inner}\n      </div>`;
   }).join('\n');
 
   // Use WP export as base (carries full CSS + layout), then patch all Dutch text
