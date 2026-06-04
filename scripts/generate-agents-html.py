@@ -12,7 +12,7 @@ KEYS_DIR   = '/home/deploy/agents'
 CLAUDE_DIR = '/home/deploy/.claude/agents'
 
 AGENT_COLORS = {
-    'astrid':    '#6366f1',
+    'assistenty':    '#6366f1',
     'danky':     '#0ea5e9',
     'finny':     '#10b981',
     'haitje':    '#f59e0b',
@@ -27,7 +27,7 @@ AGENT_COLORS = {
     'ruby':      '#e11d48',
 }
 
-ORDER = ['astrid', 'danky', 'finny', 'haitje', 'jurry', 'secury', 'tessa',
+ORDER = ['assistenty', 'danky', 'finny', 'haitje', 'jurry', 'secury', 'tessa',
          'checky', 'commy', 'designy', 'nosty', 'admission', 'ruby']
 
 agents = []

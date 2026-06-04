@@ -46,9 +46,9 @@ const WEBROOT_AGENTS     = `${GOOSIELABS_DIR}/agents`;
 const LNBITS_URL         = 'http://127.0.0.1:5000';
 const PERRY_NPUB_HEX     = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 
-const astridKey  = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'astrid/nostr-key.json'), 'utf8'));
-const ASTRID_SK  = new Uint8Array(astridKey.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
-const ASTRID_PK  = astridKey.pubkey;
+const assistentyKey = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'assistenty/nostr-key.json'), 'utf8'));
+const ASTRID_SK  = new Uint8Array(assistentyKey.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+const ASTRID_PK  = assistentyKey.pubkey;
 const BADGE_REF  = `30009:${ASTRID_PK}:vformation-member`;
 
 const keyData    = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'humany/nostr-key.json'), 'utf8'));

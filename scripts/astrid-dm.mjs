@@ -19,7 +19,7 @@ import { createInterface } from 'readline';
 
 const NOSTR_TOOLS = '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
 const WS_PATH     = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
-const ASTRID_KEY  = '/home/deploy/agents/astrid/nostr-key.json';
+const ASTRID_KEY  = '/home/deploy/agents/assistenty/nostr-key.json';
 const WHITELIST   = '/home/deploy/whitelist.json';
 const RELAY       = 'ws://127.0.0.1:7778';
 

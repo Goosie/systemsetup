@@ -182,8 +182,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { astrid:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
-  const AGENT_ORDER    = ['astrid','danky','finny','haitje','jurry','secury','tessa','checky','commy','designy','nosty','admission','ruby'];
+  const AGENT_COLORS   = { assistenty:'#6366f1', danky:'#0ea5e9', finny:'#10b981', haitje:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', tessa:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', admission:'#64748b', ruby:'#e11d48' };
+  const AGENT_ORDER    = ['assistenty','danky','finny','haitje','jurry','secury','tessa','checky','commy','designy','nosty','admission','ruby'];
 
   // Read tiles from tile.json directly
   const tiles = [];
@@ -521,7 +521,7 @@ function generateAboutEn() {
         <h2 class="about-h2">The V-Formation</h2>
         <p class="about-sub">Geese fly in V-formation because each goose reduces air resistance for the next. They switch positions. No one always leads. The whole is faster than the sum of its parts.</p>
         <div class="formation-grid">
-          <div class="goose-card"><div class="goose-card-name">🪿 Astrid</div><div class="goose-card-role">Primary orchestrator</div><div class="goose-card-desc">Overview, todos, memory. Keeps track of where Perry was and what's still open.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Assistenty</div><div class="goose-card-role">Primary orchestrator</div><div class="goose-card-desc">Overview, todos, memory. Keeps track of where Perry was and what's still open.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Danky</div><div class="goose-card-role">DevOps Goose</div><div class="goose-card-desc">Git committed. Backup done. Danky doesn't ask — Danky just does it.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Ruby</div><div class="goose-card-role">Chief Reality Officer</div><div class="goose-card-desc">Sober. Direct. Honks up with the question you'd have regretted not asking six weeks from now.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Finny</div><div class="goose-card-role">Chief Financial Goose</div><div class="goose-card-desc">Guards the sats. Keeps track of all income and expenses. Always keeping an overview.</div></div>
@@ -529,8 +529,8 @@ function generateAboutEn() {
           <div class="goose-card"><div class="goose-card-name">🪿 Jurry</div><div class="goose-card-role">Legal Advisor</div><div class="goose-card-desc">Knows exactly what's legal and what isn't. The goose you don't want to miss.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Haitje</div><div class="goose-card-role">Config Auditor</div><div class="goose-card-desc">Checks all agent configurations and keeps the formation tight.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Secury</div><div class="goose-card-role">Security Goose</div><div class="goose-card-desc">Watches nginx logs, fail2ban, open ports and npm vulnerabilities.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Checky</div><div class="goose-card-role">Quality Controller</div><div class="goose-card-desc">Routes new ideas and anomalies to the right specialist. Escalates to Astrid.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Communi</div><div class="goose-card-role">Community Goose</div><div class="goose-card-desc">Posts about shipped features on Nostr and Twitter. Tells the Goosie Labs story.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Checky</div><div class="goose-card-role">Quality Controller</div><div class="goose-card-desc">Routes new ideas and anomalies to the right specialist. Escalates to Assistenty.</div></div>
+          <div class="goose-card"><div class="goose-card-name">🪿 Commy</div><div class="goose-card-role">Community Goose</div><div class="goose-card-desc">Posts about shipped features on Nostr and Twitter. Tells the Goosie Labs story.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Designy</div><div class="goose-card-role">Interface Builder</div><div class="goose-card-desc">Designs interfaces and keeps visual consistency across all apps.</div></div>
           <div class="goose-card"><div class="goose-card-name">🪿 Nosty</div><div class="goose-card-role">Nostr Identity Manager</div><div class="goose-card-desc">Manages keypairs, key rotation and signing authority.</div></div>
         </div>
@@ -545,7 +545,7 @@ function generateAboutEn() {
         <div class="steps">
           <div class="step"><div class="step-num">01</div><div class="step-title">Session at the garden shed</div><div class="step-desc">We sketch it out on the wall. What do you want? What should it do? Who uses it?</div></div>
           <div class="step"><div class="step-num">02</div><div class="step-title">Stack started</div><div class="step-desc">React, Vite, Nostr-tools — within thirty minutes something is running you can actually touch.</div></div>
-          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Astrid keeps the overview. Danky manages the code. Finny guards the sats. Tessa tests everything.</div></div>
+          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Assistenty keeps the overview. Danky manages the code. Finny guards the sats. Tessa tests everything.</div></div>
           <div class="step"><div class="step-num">04</div><div class="step-title">You get something real</div><div class="step-desc">A working prototype, or clear insight into what you want to build — and how.</div></div>
         </div>
       </div>

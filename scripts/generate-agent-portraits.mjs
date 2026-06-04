@@ -31,11 +31,11 @@ if (!OPENAI_KEY) {
   process.exit(1);
 }
 
-const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Astrid the lab-coat goose, Danky the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
+const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Assistenty the lab-coat goose, Danky the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
 
 const agents = [
   {
-    name: 'astrid',
+    name: 'assistenty',
     prompt: `${BASE_STYLE}. Wearing a neat white lab coat with a stethoscope, holding a leather-bound clipboard, reading glasses perched on beak. Wise, composed, the senior researcher who has seen it all.`,
   },
   {
