@@ -144,7 +144,7 @@ Het session-id staat in de output als je Claude Code afsluit.
 | Astrid       | Deze assistent — fase 1 is dit bestand            | FASE 1 LIVE | ~/.claude/CLAUDE.md        |
 | Jurry        | Juridisch agent — bewaakt licenties, privacy, betaalregelgeving en aansprakelijkheid van alle apps | LIVE | /home/deploy/scripts/jurry/ |
 | Haitje       | AI-configuratie specialist — checkt of alle ganzen-configuraties goed in elkaar grijpen, geeft proactief advies aan Astrid | LIVE | /home/deploy/scripts/haitje/ |
-| Danky        | DevOps Gans — git, backup, updates, server-onderhoud. Doet het gewoon. | ROL | V-Formatie |
+| Devy        | DevOps Gans — git, backup, updates, server-onderhoud. Doet het gewoon. | ROL | V-Formatie |
 | Ruby         | Chief Reality Officer — stelt de kritische vragen die je later blij mee bent. | ROL | V-Formatie |
 | Finny        | Chief Financial Gans — bewaakt inkomsten, uitgaven en satoshis. | ROL | V-Formatie |
 | Tessy        | QA Gans — test alles, drukt op alle knoppen, geeft apps testdata. Script per app. | LIVE | /apps/*/scripts/tessa/ |

@@ -182,8 +182,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { assistenty:'#6366f1', danky:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48' };
-  const AGENT_ORDER    = ['assistenty','danky','finny','ay','jurry','secury','testy','checky','commy','designy','nosty','docy','transy'];
+  const AGENT_COLORS   = { assistenty:'#6366f1', devy:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48' };
+  const AGENT_ORDER    = ['assistenty','devy','finny','ay','jurry','secury','testy','checky','commy','designy','nosty','docy','transy'];
 
   // Read tiles from tile.json directly
   const tiles = [];
@@ -549,7 +549,7 @@ function generateAboutEn() {
         <div class="steps">
           <div class="step"><div class="step-num">01</div><div class="step-title">Session at the garden shed</div><div class="step-desc">We sketch it out on the wall. What do you want? What should it do? Who uses it?</div></div>
           <div class="step"><div class="step-num">02</div><div class="step-title">Stack started</div><div class="step-desc">React, Vite, Nostr-tools — within thirty minutes something is running you can actually touch.</div></div>
-          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Assistenty keeps the overview. Danky manages the code. Finny guards the sats. Testy tests everything.</div></div>
+          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Assistenty keeps the overview. Devy manages the code. Finny guards the sats. Testy tests everything.</div></div>
           <div class="step"><div class="step-num">04</div><div class="step-title">You get something real</div><div class="step-desc">A working prototype, or clear insight into what you want to build — and how.</div></div>
         </div>
       </div>

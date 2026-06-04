@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Welke ganzen verwachten we in de V-formatie?
-const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Transy', 'Finny', 'Testy', 'Jurry', 'Ay'];
+const EXPECTED_GANZEN = ['Assistenty', 'Devy', 'Transy', 'Finny', 'Testy', 'Jurry', 'Ay'];
 
 // Welke secties verwachten we in de server CLAUDE.md?
 const EXPECTED_SERVER_SECTIONS = [

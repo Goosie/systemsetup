@@ -6,7 +6,7 @@
  * using gpt-image-1 (OpenAI API).
  *
  * Style: flat 2D cartoon, thick black outlines, cel shading — same look
- * as assistenty.jpg, danky.jpg, finny.jpg etc. BASE_STYLE enforces this.
+ * as assistenty.jpg, devy.jpg, finny.jpg etc. BASE_STYLE enforces this.
  * Do NOT change BASE_STYLE without regenerating all portraits.
  *
  * Usage:
@@ -31,7 +31,7 @@ if (!OPENAI_KEY) {
   process.exit(1);
 }
 
-const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Assistenty the lab-coat goose, Danky the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
+const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Assistenty the lab-coat goose, Devy the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
 
 const agents = [
   {
@@ -39,7 +39,7 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a neat white lab coat with a stethoscope, holding a leather-bound clipboard, reading glasses perched on beak. Wise, composed, the senior researcher who has seen it all.`,
   },
   {
-    name: 'danky',
+    name: 'devy',
     prompt: `${BASE_STYLE}. Wearing a worn orange hard hat and a tool belt loaded with wrenches and screwdrivers, holding a large wrench. Gruff, capable, sleeves rolled up — the engineer who ships things.`,
   },
   {

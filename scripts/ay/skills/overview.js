@@ -16,7 +16,7 @@ const GANZEN = [
     beschrijving: 'Houdt overzicht, ruimt op, maakt todos, kent Perry en zijn werkwijze.',
   },
   {
-    naam: 'Danky',
+    naam: 'Devy',
     rol: 'DevOps Gans',
     bestand: 'Geïmpliceerd in server CLAUDE.md',
     type: 'Rol',

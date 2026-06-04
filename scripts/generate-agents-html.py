@@ -13,7 +13,7 @@ CLAUDE_DIR = '/home/deploy/.claude/agents'
 
 AGENT_COLORS = {
     'assistenty':    '#6366f1',
-    'danky':     '#0ea5e9',
+    'devy':     '#0ea5e9',
     'finny':     '#10b981',
     'ay':    '#f59e0b',
     'jurry':     '#8b5cf6',
@@ -27,7 +27,7 @@ AGENT_COLORS = {
     'transy':      '#e11d48',
 }
 
-ORDER = ['assistenty', 'danky', 'finny', 'ay', 'jurry', 'secury', 'testy',
+ORDER = ['assistenty', 'devy', 'finny', 'ay', 'jurry', 'secury', 'testy',
          'checky', 'commy', 'designy', 'nosty', 'docy', 'transy']
 
 agents = []

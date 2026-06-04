@@ -11,7 +11,7 @@ Wie vliegt waar in de Goosielabs V-formatie.
 | Haitje | AI-configuratie specialist             | LIVE   | `scripts/haitje/` |
 | Tessy  | QA — test alles, drukt op knoppen     | LIVE   | `/apps/*/scripts/tessa/` |
 | Ruby   | Chief Reality Officer                  | LIVE   | `scripts/ruby/` |
-| Danky  | DevOps — git, backup, server-onderhoud | ROL    | — |
+| Devy  | DevOps — git, backup, server-onderhoud | ROL    | — |
 | Finny  | Chief Financial Gans (sats)            | ROL    | — |
 
 ## Hoe werkt de V?
@@ -61,7 +61,7 @@ Exit code 1 als er blockers zijn.
 **Locatie:** `scripts/tessa/` in de betreffende app.
 **Aanroepen:** per app, zie de app's eigen README.
 
-### Danky *(rol, nog niet gebouwd)*
+### Devy *(rol, nog niet gebouwd)*
 **Trigger:** git operaties, server-updates, backup-controle.
 **Taken:** git discipline bewaken, backup verifiëren, npm updates draaien.
 
