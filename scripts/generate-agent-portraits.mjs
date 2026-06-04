@@ -94,6 +94,10 @@ const agents = [
     name: 'directory',
     prompt: `${BASE_STYLE}. Wearing a sharp navy-blue tailored suit with a crisp white shirt and a subtle compass-rose tie pin, holding a leather portfolio under one wing and a golden compass in the other. Distinguished, approachable, the visionary director who sees the big horizon — a goose you would call for a serious conversation.`,
   },
+  {
+    name: 'supporty',
+    prompt: `${BASE_STYLE}. Wearing a light blue polo shirt with a small headset on one ear and a friendly open-winged pose as if welcoming someone. Holds a clipboard with a checklist. Warm, approachable smile — the goose who always has time for your question.`,
+  },
 ];
 
 async function generateImage(prompt) {
