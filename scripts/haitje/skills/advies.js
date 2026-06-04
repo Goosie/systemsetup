@@ -1,7 +1,7 @@
 /**
  * Haitje — advies skill
  * Geeft proactief advies over de V-formatie AI-configuratie.
- * Rapport is bedoeld voor Astrid, die er todos van maakt voor Perry.
+ * Rapport is bedoeld voor Assistenty, die er todos van maakt voor Perry.
  */
 
 import fs from 'fs';
