@@ -3,14 +3,23 @@
  * Humany — Formation HR & Onboarding goose
  *
  * Commands:
- *   newgoose <name>   Onboard a new goose into the V-Formation
- *   status            Formation health overview
+ *   newgoose <name>         Onboard a new goose into the V-Formation
+ *   renamegoose <old> <new> Rename an existing goose across all systems
+ *   status                  Formation health overview
+ *
+ * ── MAINTENANCE NOTE ────────────────────────────────────────────────────────
+ * When adding a new step to newGoose() that stores or embeds the goose name,
+ * you MUST also add the corresponding rename step in renameGoose() below.
+ * Both functions are kept in sync intentionally — they are mirrors of each other.
+ * Search for "// ── RENAME MIRROR ──" comments to find the rename equivalents.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import 'websocket-polyfill';
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, renameSync, copyFileSync, rmSync } from 'fs';
+import { resolve, join } from 'path';
 import { execSync } from 'child_process';
+import http from 'http';
 import { generateSecretKey, getPublicKey, finalizeEvent, SimplePool } from 'nostr-tools';
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -29,7 +38,9 @@ const VFORMATION_DIR     = '/var/www/goosielabs/apps/vformation';
 const GOOSIELABS_DIR     = '/var/www/goosielabs';
 const GENERATE_ICONS_MJS = `${GOOSIELABS_DIR}/generate-agent-icons.mjs`;
 const GENERATE_PORTRAITS = '/home/deploy/scripts/generate-agent-portraits.mjs';
+const PUBLISH_HOMEPAGE   = `${SCRIPTS_DIR}/publish-homepage.mjs`;
 const WEBROOT_AGENTS     = `${GOOSIELABS_DIR}/agents`;
+const LNBITS_URL         = 'http://127.0.0.1:5000';
 const PERRY_NPUB_HEX     = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 
 const astridKey  = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'astrid/nostr-key.json'), 'utf8'));
@@ -201,6 +212,12 @@ function addToAgentsJson(name, about) {
 // ── newgoose ──────────────────────────────────────────────────────────────────
 
 async function newGoose(name) {
+  // ── MAINTENANCE NOTE ──────────────────────────────────────────────────────
+  // When adding a new step here that stores or embeds the goose name,
+  // add the corresponding rename step in renameGoose() and tag it with
+  // "// Mirror of newGoose step N" so the two functions stay in sync.
+  // ─────────────────────────────────────────────────────────────────────────
+
   if (!/^[a-z][a-z0-9-]*$/.test(name)) {
     throw new Error(`Invalid name "${name}" — use lowercase letters, digits, hyphens only`);
   }
@@ -371,6 +388,221 @@ async function newGoose(name) {
   console.log(`   7. Restart goose-runner: sudo systemctl restart goose-runner`);
 }
 
+// ── renamegoose ───────────────────────────────────────────────────────────────
+
+function lnbitsRenameWallet(adminkey, newDisplayName) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({
+      hostname: '127.0.0.1',
+      port: 5000,
+      path: `/api/v1/wallet/${encodeURIComponent(newDisplayName)}`,
+      method: 'PUT',
+      headers: { 'X-Api-Key': adminkey },
+    }, (res) => {
+      let buf = '';
+      res.on('data', c => buf += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(buf)); } catch { resolve(null); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function renameGoose(oldName, newName) {
+  // ── MAINTENANCE NOTE ──────────────────────────────────────────────────────
+  // This function is the rename mirror of newGoose().
+  // When you add a new name-bearing step to newGoose(), add a rename step here.
+  // Each step below is tagged with the corresponding newGoose step number.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  if (!/^[a-z][a-z0-9-]*$/.test(newName)) {
+    throw new Error(`Invalid new name "${newName}" — use lowercase letters, digits, hyphens only`);
+  }
+
+  const oldDir = resolve(AGENTS_DIR, oldName);
+  const newDir = resolve(AGENTS_DIR, newName);
+
+  if (!existsSync(oldDir)) throw new Error(`Goose "${oldName}" not found at ${oldDir}`);
+  if (existsSync(newDir))  throw new Error(`A goose named "${newName}" already exists at ${newDir}`);
+
+  const oldDisplay = capitalize(oldName);
+  const newDisplay = capitalize(newName);
+
+  console.log(`\n🔄 Humany: renaming "${oldName}" → "${newName}"...\n`);
+
+  // ── Step 1: Rename agent directory ─────────────────────────────────────────
+  // Mirror of newGoose step 2 (create agent directory)
+  renameSync(oldDir, newDir);
+  console.log(`  📁 Directory renamed: agents/${oldName} → agents/${newName}`);
+
+  // Rename files inside the directory that embed the old name
+  for (const file of readdirSync(newDir)) {
+    if (file.includes(oldName)) {
+      const newFile = file.replace(new RegExp(oldName, 'g'), newName);
+      renameSync(join(newDir, file), join(newDir, newFile));
+    }
+  }
+  console.log(`  📄 Files renamed (portraits, .md)`);
+
+  // ── Step 2: Update lnbits-wallet.json ──────────────────────────────────────
+  // Mirror of newGoose step 2f (createLnbitsWallet)
+  const walletFile = join(newDir, 'lnbits-wallet.json');
+  let wallet = null;
+  if (existsSync(walletFile)) {
+    wallet = JSON.parse(readFileSync(walletFile, 'utf8'));
+    wallet.name             = newName;
+    wallet.displayName      = newDisplay;
+    wallet.lightning_address = `${newName}@goosielabs.com`;
+    writeFileSync(walletFile, JSON.stringify(wallet, null, 2) + '\n');
+    console.log(`  ⚡ lnbits-wallet.json updated → ${newName}@goosielabs.com`);
+
+    // Rename wallet in LNbits live
+    try {
+      await lnbitsRenameWallet(wallet.adminkey, newDisplay);
+      console.log(`  ⚡ LNbits wallet renamed to "${newDisplay}"`);
+    } catch (e) {
+      console.log(`  ⚠️  LNbits API rename failed: ${e.message}`);
+    }
+
+    // Restart lnaddress so it picks up the new name mapping
+    try {
+      execSync('sudo systemctl restart lnaddress', { stdio: 'pipe' });
+      console.log(`  ⚡ lnaddress restarted — ${newName}@goosielabs.com is live`);
+    } catch {
+      console.log(`  ⚠️  lnaddress restart failed — run: sudo systemctl restart lnaddress`);
+    }
+  }
+
+  // ── Step 3: Update NIP-05 nostr.json ───────────────────────────────────────
+  // Mirror of newGoose step 2b (addToNip05)
+  const nip05 = JSON.parse(readFileSync(NIP05_FILE, 'utf8'));
+  if (nip05.names[oldName]) {
+    nip05.names[newName] = nip05.names[oldName];
+    delete nip05.names[oldName];
+    writeFileSync(NIP05_FILE, JSON.stringify(nip05, null, 2) + '\n');
+    console.log(`  🌐 NIP-05: ${oldName}@goosielabs.com → ${newName}@goosielabs.com`);
+  }
+
+  // ── Step 4: Update agents.json ─────────────────────────────────────────────
+  // Mirror of newGoose step 2c (addToAgentsJson)
+  const agentsData = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
+  const agentEntry = agentsData.agents.find(a => a.name === oldName);
+  if (agentEntry) {
+    agentEntry.name         = newName;
+    agentEntry.displayName  = newDisplay;
+    agentEntry.nip05        = `${newName}@goosielabs.com`;
+    agentEntry.picture      = `https://goosielabs.com/agents/${newName}/${newName}.jpg`;
+    writeFileSync(AGENTS_JSON, JSON.stringify(agentsData, null, 2) + '\n');
+    console.log(`  📋 agents.json updated`);
+  }
+
+  // ── Step 5: Update whitelist.json ──────────────────────────────────────────
+  // Mirror of newGoose step 3 (whitelist)
+  const wl = JSON.parse(readFileSync(WHITELIST_PATH, 'utf8'));
+  if (wl[oldName]) {
+    wl[newName] = wl[oldName];
+    delete wl[oldName];
+    writeFileSync(WHITELIST_PATH, JSON.stringify(wl, null, 2) + '\n');
+    console.log(`  ✅ whitelist.json updated`);
+  }
+
+  // ── Step 6: Update goose-runner ────────────────────────────────────────────
+  // Mirror of newGoose step 4 (goose-runner)
+  let runner = readFileSync(GOOSE_RUNNER, 'utf8');
+  runner = runner.replace(new RegExp(`\\b${oldName}\\b`, 'g'), newName);
+  writeFileSync(GOOSE_RUNNER, runner);
+  console.log(`  ✅ goose-runner updated`);
+
+  // ── Step 7: Update gooseConfig.ts ──────────────────────────────────────────
+  // Mirror of newGoose step 5 (gooseConfig.ts)
+  let config = readFileSync(GOOSE_CONFIG, 'utf8');
+  config = config
+    .replace(new RegExp(`name: '${oldDisplay}'`, 'g'), `name: '${newDisplay}'`);
+  writeFileSync(GOOSE_CONFIG, config);
+  console.log(`  ✅ gooseConfig.ts updated`);
+
+  // ── Step 8: Update generate-agent-icons.mjs ────────────────────────────────
+  // Mirror of newGoose step 2d (addToIconsGenerator)
+  let icons = readFileSync(GENERATE_ICONS_MJS, 'utf8');
+  icons = icons
+    .replace(new RegExp(`name: '${oldName}'`, 'g'), `name: '${newName}'`)
+    .replace(new RegExp(`label: '${oldDisplay}'`, 'g'), `label: '${newDisplay}'`);
+  writeFileSync(GENERATE_ICONS_MJS, icons);
+  console.log(`  ✅ generate-agent-icons.mjs updated`);
+
+  // ── Step 9: Update generate-agent-portraits.mjs ────────────────────────────
+  // Mirror of newGoose step 2e (addToPortraitsGenerator)
+  let portraits = readFileSync(GENERATE_PORTRAITS, 'utf8');
+  portraits = portraits.replace(new RegExp(`name: '${oldName}'`, 'g'), `name: '${newName}'`);
+  writeFileSync(GENERATE_PORTRAITS, portraits);
+  console.log(`  ✅ generate-agent-portraits.mjs updated`);
+
+  // ── Step 10: Update publish-homepage.mjs ───────────────────────────────────
+  // Mirror of publish-homepage AGENT_COLORS + AGENT_ORDER maps
+  let homepage = readFileSync(PUBLISH_HOMEPAGE, 'utf8');
+  homepage = homepage
+    .replace(new RegExp(`(?<![a-z])${oldName}(?![a-z])`, 'g'), newName);
+  writeFileSync(PUBLISH_HOMEPAGE, homepage);
+  console.log(`  ✅ publish-homepage.mjs updated`);
+
+  // ── Step 11: Move webroot portrait copy ────────────────────────────────────
+  const oldWebroot = join(WEBROOT_AGENTS, oldName);
+  const newWebroot = join(WEBROOT_AGENTS, newName);
+  if (existsSync(oldWebroot)) {
+    renameSync(oldWebroot, newWebroot);
+    // Rename portrait files in webroot too
+    for (const file of readdirSync(newWebroot)) {
+      if (file.includes(oldName)) {
+        const newFile = file.replace(new RegExp(oldName, 'g'), newName);
+        renameSync(join(newWebroot, file), join(newWebroot, newFile));
+      }
+    }
+    console.log(`  🖼️  Webroot portrait moved: /agents/${oldName} → /agents/${newName}`);
+  }
+
+  // ── Step 12: Re-publish kind:0 with new name/nip05/lud16 ──────────────────
+  // Mirror of newGoose step 6 (publishKind0ForGoose)
+  const keyFile = join(newDir, 'nostr-key.json');
+  const pool = new SimplePool();
+  if (existsSync(keyFile)) {
+    const keyData = JSON.parse(readFileSync(keyFile, 'utf8'));
+    const sk = new Uint8Array(keyData.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const about = agentEntry?.about ?? `Goosie Labs V-formation agent — ${newDisplay}.`;
+    await publishKind0ForGoose(pool, sk, newName, about);
+  }
+
+  // ── Step 13: Rebuild vformation + homepage ─────────────────────────────────
+  // Mirror of newGoose step 7 + 7b
+  console.log(`  🏗️  Rebuilding vformation...`);
+  execSync('NODE_OPTIONS=--max-old-space-size=1024 npm run build', {
+    cwd: VFORMATION_DIR,
+    stdio: 'pipe',
+  });
+  console.log(`  ✅ Dashboard rebuilt`);
+
+  console.log(`  🏠 Updating homepage tiles...`);
+  try {
+    execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
+    console.log(`  ✅ Homepage tiles updated`);
+  } catch {
+    console.log(`  ⚠️  Tiles update failed — run manually: bash /home/deploy/update-tiles.sh`);
+  }
+
+  pool.close([RELAY]);
+
+  console.log(`\n✅ Rename complete: "${oldName}" is now "${newName}"`);
+  console.log(`   NIP-05: ${newName}@goosielabs.com`);
+  console.log(`   Lightning: ${newName}@goosielabs.com`);
+  console.log(`\n⚠️  Manual follow-up:`);
+  console.log(`   • Old NIP-05 ${oldName}@goosielabs.com is dead — notify clients if used externally`);
+  console.log(`   • Old Lightning Address ${oldName}@goosielabs.com is dead — update any saved addresses`);
+  console.log(`   • Update CLAUDE.md (personal + project) — agent name in tables`);
+  console.log(`   • Update ${newDir}/${newName}.md if it mentions the old name`);
+  console.log(`   • Rebuild agent icons if needed: cd /var/www/goosielabs && node generate-agent-icons.mjs ${newName}`);
+}
+
 // ── status ────────────────────────────────────────────────────────────────────
 
 function status() {
@@ -418,11 +650,18 @@ switch (cmd) {
     await newGoose(name);
     break;
   }
+  case 'renamegoose': {
+    const [oldName, newName] = args;
+    if (!oldName || !newName) { console.error('Usage: humany renamegoose <oldname> <newname>'); process.exit(1); }
+    await renameGoose(oldName, newName);
+    break;
+  }
   case 'status':
     status();
     break;
   default:
     console.log('Commands:');
-    console.log('  newgoose <name>   Onboard a new goose into the V-Formation');
-    console.log('  status            Formation health overview');
+    console.log('  newgoose <old> <new>  Onboard a new goose into the V-Formation');
+    console.log('  renamegoose <old> <new>  Rename a goose across all systems');
+    console.log('  status                Formation health overview');
 }
