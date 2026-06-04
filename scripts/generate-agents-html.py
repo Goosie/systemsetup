@@ -23,12 +23,12 @@ AGENT_COLORS = {
     'commy':     '#f97316',
     'designy':   '#a855f7',
     'nosty':     '#06b6d4',
-    'admission': '#64748b',
+    'docy': '#64748b',
     'ruby':      '#e11d48',
 }
 
 ORDER = ['assistenty', 'danky', 'finny', 'ay', 'jurry', 'secury', 'testy',
-         'checky', 'commy', 'designy', 'nosty', 'admission', 'ruby']
+         'checky', 'commy', 'designy', 'nosty', 'docy', 'ruby']
 
 agents = []
 for name in os.listdir(KEYS_DIR):

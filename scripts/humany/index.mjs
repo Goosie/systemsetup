@@ -136,7 +136,7 @@ function addToIconsGenerator(name) {
   const label = capitalize(name);
   const newEntry = `  { name: '${name}', bg: '#374151', symbol: 'uni2728', label: '${label}' }, // gray — ✨ placeholder — ask @designy for final bg+symbol`;
   content = content.replace(
-    /(\{ name: 'admission'[^\n]+\n)/,
+    /(\{ name: 'docy'[^\n]+\n)/,
     `$1${newEntry}\n`
   );
   writeFileSync(GENERATE_ICONS_MJS, content);

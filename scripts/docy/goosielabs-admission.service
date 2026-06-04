@@ -1,11 +1,11 @@
 [Unit]
-Description=Goosie Labs Admission DVM
+Description=Goosie Labs Docy DVM
 After=network.target
 
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/home/deploy/scripts/admission
+WorkingDirectory=/home/deploy/scripts/docy
 ExecStart=/usr/bin/node index.js
 Restart=on-failure
 RestartSec=5

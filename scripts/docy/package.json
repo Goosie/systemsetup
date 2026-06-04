@@ -1,8 +1,8 @@
 {
-  "name": "goosielabs-admission",
+  "name": "goosielabs-docy",
   "version": "1.0.0",
   "type": "module",
-  "description": "Admission DVM — beheert toegang tot de Goosie Labs relay",
+  "description": "Docy DVM — beheert toegang en onboarding voor Goosie Labs",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
