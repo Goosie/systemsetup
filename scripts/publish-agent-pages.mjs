@@ -389,11 +389,11 @@ function loadOrCreateKey(name) {
 
 // ── Add pubkey to relay whitelist ────────────────────────────────────────────
 function ensureWhitelisted(pubkey) {
-  const list = JSON.parse(readFileSync(WHITELIST, 'utf8'));
-  if (list.includes(pubkey)) return false;
-  list.push(pubkey);
-  writeFileSync(WHITELIST, JSON.stringify(list, null, 4));
-  return true;
+  const wl = JSON.parse(readFileSync(WHITELIST, 'utf8'));
+  const values = Object.values(wl);
+  if (values.includes(pubkey)) return false;
+  // whitelist.json is a name→pubkey object — don't auto-add unknown keys
+  return false;
 }
 
 // ── Add pubkey to Blossom config ──────────────────────────────────────────────
