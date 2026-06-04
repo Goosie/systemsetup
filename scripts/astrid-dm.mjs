@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * astrid-dm.mjs — Astrid's DM listener
+ * astrid-dm.mjs — Assistenty's DM listener
  *
- * Monitors the Goosie Labs relay for NIP-17 DMs addressed to Astrid.
+ * Monitors the Goosie Labs relay for NIP-17 DMs addressed to Assistenty.
  * Accepts whitelist management commands from Perry's pubkeys only.
  *
- * Commands (send as a DM to astrid@goosielabs.com):
+ * Commands (send as a DM to assistenty@goosielabs.com):
  *   whitelist <npub1... | 64hexkey> [label]   — add a key to the whitelist
  *   whitelist remove <label>                  — remove a key by label
  *   whitelist list                            — list current whitelist

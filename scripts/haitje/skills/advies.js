@@ -14,7 +14,7 @@ export async function advies(paths) {
   // Voer eerst de check uit om data te verzamelen
   const { warnings } = await checkConfig(paths);
 
-  console.log(`\n📋 Adviesrapport voor Astrid`);
+  console.log(`\n📋 Adviesrapport voor Assistenty`);
   console.log(`════════════════════════════════════════════`);
 
   const todos = [];
@@ -109,12 +109,12 @@ export async function advies(paths) {
   if (todos.length === 0) {
     console.log(`\nGeen nieuwe adviezen — de formatie staat er goed voor. 🪿`);
   } else {
-    console.log(`\nHaitje geeft het volgende door aan Astrid:\n`);
+    console.log(`\nHaitje geeft het volgende door aan Assistenty:\n`);
     todos.forEach((todo, i) => {
       console.log(`${todo.prioriteit} [${i + 1}] ${todo.actie}`);
       console.log(`     ${todo.detail}\n`);
     });
-    console.log(`Astrid: verwerk bovenstaande als todos voor Perry.`);
+    console.log(`Assistenty: verwerk bovenstaande als todos voor Perry.`);
   }
 
   return todos;

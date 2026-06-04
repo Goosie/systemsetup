@@ -6,7 +6,7 @@
  * Usage:
  *   node /home/deploy/scripts/create-nostr-account.mjs
  *   node /home/deploy/scripts/create-nostr-account.mjs app catchzaps
- *   node /home/deploy/scripts/create-nostr-account.mjs agent astrid
+ *   node /home/deploy/scripts/create-nostr-account.mjs agent assistenty
  */
 
 import { createInterface } from 'readline/promises';
@@ -156,7 +156,7 @@ async function main() {
       console.log('     ' + apps.join('  '));
       blank();
     } else {
-      info('Available agents: astrid danky finny haitje jurry ruby secury tessa');
+      info('Available agents: assistenty danky finny haitje jurry ruby secury tessa');
       blank();
     }
     name = await ask(`Name of the ${type}?`);

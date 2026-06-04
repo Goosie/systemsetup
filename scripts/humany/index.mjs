@@ -353,7 +353,7 @@ async function newGoose(name) {
   const pool = new SimplePool();
   await publishKind0ForGoose(pool, sk, name, about);
 
-  // 6b. Issue NIP-58 formation badge from Astrid
+  // 6b. Issue NIP-58 formation badge from Assistenty
   await issueBadgeAward(pool, pk, capitalize(name));
 
   // 7. Rebuild vformation dashboard

@@ -3,7 +3,7 @@
  * lnaddress — Lightning Address service for Goosie Labs V-formation agents
  *
  * Implements LNURL-pay protocol so each agent has a Lightning Address:
- *   astrid@goosielabs.com, danky@goosielabs.com, etc.
+ *   assistenty@goosielabs.com, danky@goosielabs.com, etc.
  *
  * Endpoints (proxied by nginx from goosielabs.com):
  *   GET /.well-known/lnurlp/:name        → LNURL-pay metadata

@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Welke ganzen verwachten we in de V-formatie?
-const EXPECTED_GANZEN = ['Astrid', 'Danky', 'Ruby', 'Finny', 'Tessy', 'Jurry', 'Haitje'];
+const EXPECTED_GANZEN = ['Assistenty', 'Danky', 'Ruby', 'Finny', 'Tessy', 'Jurry', 'Haitje'];
 
 // Welke secties verwachten we in de server CLAUDE.md?
 const EXPECTED_SERVER_SECTIONS = [
@@ -140,7 +140,7 @@ export async function checkConfig(paths) {
   if (warnings === 0) {
     console.log(`Alle ganzen vliegen in perfecte V-formatie. 🪿`);
   } else {
-    console.log(`\nGeef dit door aan Astrid voor de todolijst.`);
+    console.log(`\nGeef dit door aan Assistenty voor de todolijst.`);
   }
 
   return { oks, warnings };

@@ -9,7 +9,7 @@ import path from 'path';
 
 const GANZEN = [
   {
-    naam: 'Astrid',
+    naam: 'Assistenty',
     rol: 'Persoonlijke lab-assistent',
     bestand: '~/.claude/CLAUDE.md',
     type: 'CLAUDE.md (globaal)',

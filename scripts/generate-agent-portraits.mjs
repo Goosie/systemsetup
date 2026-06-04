@@ -6,7 +6,7 @@
  * using gpt-image-1 (OpenAI API).
  *
  * Style: flat 2D cartoon, thick black outlines, cel shading — same look
- * as astrid.jpg, danky.jpg, finny.jpg etc. BASE_STYLE enforces this.
+ * as assistenty.jpg, danky.jpg, finny.jpg etc. BASE_STYLE enforces this.
  * Do NOT change BASE_STYLE without regenerating all portraits.
  *
  * Usage:
