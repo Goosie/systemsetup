@@ -29,7 +29,7 @@ if (!OPENAI_KEY) {
   process.exit(1);
 }
 
-const BASE_STYLE = 'cartoon goose character illustration, vector art style, soft neutral background, full body, adult goose with mature confident features, white feathers, orange beak and orange feet, professional demeanor, high quality. Not a baby or chick — a full grown adult goose';
+const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Astrid the lab-coat goose, Danky the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
 
 const agents = [
   {
