@@ -303,6 +303,15 @@ async function newGoose(name) {
   });
   console.log(`  ✅ Dashboard rebuilt`);
 
+  // 7b. Update nsite homepage tiles
+  console.log(`  🏠 Updating homepage tiles...`);
+  try {
+    execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
+    console.log(`  ✅ Homepage tiles updated`);
+  } catch (e) {
+    console.log(`  ⚠️  Tiles update failed — run manually: bash /home/deploy/update-tiles.sh`);
+  }
+
   // 8. Announce in formation chat
   await publishChat(pool, `🎉 New goose onboarded: ${capitalize(name)}\nPubkey: ${pk.slice(0, 16)}...\nAdd role description to: ${agentDir}/${name}.md`);
 
