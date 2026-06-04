@@ -58,8 +58,23 @@ async function publishChat(pool, content) {
   });
 }
 
+function createLnbitsWallet(name, displayName) {
+  try {
+    const result = execSync(
+      `python3 /home/deploy/scripts/create-wallet.py "${name}" "${displayName}"`,
+      { encoding: 'utf8' }
+    );
+    return JSON.parse(result.trim());
+  } catch (e) {
+    console.error('  ⚠️  Wallet creation failed:', e.message);
+    return null;
+  }
+}
+
 async function publishKind0ForGoose(pool, sk, name, about) {
   const displayName = capitalize(name);
+  const walletFile  = `${AGENTS_DIR}/${name}/lnbits-wallet.json`;
+  const lud16       = existsSync(walletFile) ? `${name}@goosielabs.com` : undefined;
   const event = finalizeEvent({
     kind: 0,
     created_at: Math.floor(Date.now() / 1000),
@@ -71,11 +86,12 @@ async function publishKind0ForGoose(pool, sk, name, about) {
       picture: `https://goosielabs.com/agents/${name}/${name}.jpg`,
       website: 'https://goosielabs.com',
       nip05: `${name}@goosielabs.com`,
+      lud16,
       bot: true,
     }),
   }, sk);
   await Promise.allSettled(pool.publish(ALL_RELAYS, event));
-  console.log(`  📛 Kind 0 published for ${displayName} (${ALL_RELAYS.length} relays)`);
+  console.log(`  📛 Kind 0 published for ${displayName} (${ALL_RELAYS.length} relays)${lud16 ? ' ⚡ ' + lud16 : ''}`);
 }
 
 async function issueBadgeAward(pool, goosePubkey, name) {
@@ -298,7 +314,22 @@ async function newGoose(name) {
   writeFileSync(GOOSE_CONFIG, config);
   console.log(`  ✅ Registered in gooseConfig.ts`);
 
-  // 6. Publish kind 0 metadata for the new goose
+  // 2f. LNbits wallet + Lightning Address
+  console.log(`  ⚡ Creating LNbits wallet for ${capitalize(name)}...`);
+  const wallet = createLnbitsWallet(name, capitalize(name));
+  if (wallet) {
+    console.log(`  ⚡ Wallet created: ${wallet.wallet_id.slice(0, 8)}… → ⚡ ${name}@goosielabs.com`);
+    try {
+      execSync('sudo systemctl restart lnaddress', { stdio: 'pipe' });
+      console.log(`  ⚡ lnaddress service restarted — Lightning Address live`);
+    } catch {
+      console.log(`  ⚠️  lnaddress restart failed — run: sudo systemctl restart lnaddress`);
+    }
+  } else {
+    console.log(`  ⚠️  Wallet skipped — run manually: python3 /home/deploy/scripts/create-wallet.py ${name} "${capitalize(name)}"`);
+  }
+
+  // 6. Publish kind 0 metadata for the new goose (includes lud16 if wallet exists)
   const pool = new SimplePool();
   await publishKind0ForGoose(pool, sk, name, about);
 
@@ -335,8 +366,9 @@ async function newGoose(name) {
   console.log(`   2. Update about in ${AGENTS_JSON} once role is defined`);
   console.log(`   3. Re-publish profile: node /home/deploy/agents/publish-profiles.js ${name}`);
   console.log(`   4. Customise icon bg+symbol in ${GENERATE_ICONS_MJS} → @designy`);
-  console.log(`   5. Add a script at /home/deploy/scripts/${name}/index.js`);
-  console.log(`   6. Restart goose-runner: sudo systemctl restart goose-runner`);
+  console.log(`   5. Update portrait prompt in /home/deploy/scripts/generate-agent-portraits.mjs → re-run for ${name}`);
+  console.log(`   6. Add a script at /home/deploy/scripts/${name}/index.js`);
+  console.log(`   7. Restart goose-runner: sudo systemctl restart goose-runner`);
 }
 
 // ── status ────────────────────────────────────────────────────────────────────
