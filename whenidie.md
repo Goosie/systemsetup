@@ -533,21 +533,27 @@ Als je dit werk wilt voortzetten: volg je instinct, leer al doende, en wees niet
 | nsec | In LastPass (never stored on server) |
 | NIP-05 identities | perry@goosielabs.com, goosie@goosielabs.com, zoomer@goosielabs.com |
 
-**Agent keys (AI team — each goose has its own Nostr identity)**
+**Drie sleutelcategorieën**
 
-All agent keypairs live at `/home/deploy/agents/<name>/nostr-key.json` on the server.
-Each file contains: `pubkey`, `npub`, `nsec` (bech32), `nsecHex`.
+**Categorie 1 — Admins/Generaals** (menselijke identiteiten, niet in agents/)
+Perry's eigen keys staan in zijn wachtwoordmanager. Op de server alleen de pubkeys in `whitelist.json`.
 
-| Agent | File | npub |
-|---|---|---|
-| Astrid | /home/deploy/agents/astrid/nostr-key.json | npub1qz9qf8pk8ys9ej2ej3ak7a9tvglkst2qcah5evvnf9ppfn60yrhqjfpx5k |
-| Danky  | /home/deploy/agents/danky/nostr-key.json  | npub1pnfwvr2z9w2gsl4f82k9wz224gmf6u2ts5qtxnm4s3kh44r0xtxqzr56kh |
-| Finny  | /home/deploy/agents/finny/nostr-key.json  | npub196pvegw4k7kzeygnktd3eemgsxtpvz28g96unhseysju46vjl3askgsk8h |
-| Haitje | /home/deploy/agents/haitje/nostr-key.json | npub128sgwsfduc63up0yj23a9tuqknsrd0keer74r2pyejqdc788qyhq9yzpzh |
-| Jurry  | /home/deploy/agents/jurry/nostr-key.json  | npub17tkzrur9am9qxtpf7x68t4qwcs6w5gafew6p2fz76f3rsf7pdeasyv9wrh |
-| Ruby   | /home/deploy/agents/ruby/nostr-key.json   | npub1gxl3vc6k5epchrqxkn0nhu7jfdqd2qvjgukwluupayck8a8t6ycsvawp7q |
-| Secury | /home/deploy/agents/secury/nostr-key.json | npub16r8xu03cpv9l3a654f0ksf6dpuxwt0a68cy7wwqypd5nvyjpez9qvmhtkz |
-| Tessa  | /home/deploy/agents/tessa/nostr-key.json  | npub1tpahjraqf46w89ukcllf7cq9uyq6nj885glf76g5tfp03vq6f6xqee06cc |
+**Categorie 2 — Ganzen** (AI-agents, allemaal gelijk behandeld)
+Elk keypaar: `/home/deploy/agents/<naam>/nostr-key.json`
+Bevat: `pubkey`, `npub`, `nsec` (bech32), `nsecHex`
+
+Live overzicht van alle ganzen en hun actuele npubs:
+```bash
+jq -r '.agents[] | "\(.name): \(.npub)"' /home/deploy/agents/agents.json
+```
+
+Of via NIP-05: elke gans is bereikbaar als `<naam>@goosielabs.com`
+
+⚠️ De tabel hieronder is bewust NIET bijgehouden — keys kunnen roteren.
+Gebruik altijd `agents.json` als actuele bron, nooit deze statische tabel.
+
+**Categorie 3 — Apps/Projecten** (TBD)
+Nog te bepalen: eigen projectgans per app of alleen Lightning-adres via LNbits.
 
 ---
 
