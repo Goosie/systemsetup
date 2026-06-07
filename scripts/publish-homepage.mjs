@@ -174,7 +174,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     <a href="https://nsite.goosielabs.com">nsite</a>
     <span class="nsite-badge">nsite</span> ·
     <a href="nostr:perry@goosielabs.com">Nostr DM</a> ·
-    <a href="lightning:perry@goosielabs.com">⚡ perry@goosielabs.com</a>
+    <a href="lightning:perry@goosielabs.com">⚡ perry@goosielabs.com</a> ·
+    <a href="https://goosielabs.com/perry.html">Perry Smit</a>
   </footer>
 </body>
 </html>`;
