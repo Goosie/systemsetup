@@ -330,7 +330,7 @@ async function generateHomepage() {
   html = html.replace('Een open lab voor Bitcoin, Nostr en AI', 'An open lab for Bitcoin, Nostr and AI');
   html = html.replace(
     /Ganzen vliegen in V-formatie[^<]+/,
-    'Geese fly in V-formation — the lead changes so no one gets exhausted, and they circle back for stragglers. Goosie Labs works the same way: ideas are tested in the open, the lead rotates, and no one has to finish anything alone. Perry loves landing in new places, exploring technology that makes the world fairer, and building experiments others can reuse, build on, or pick up and finish together.'
+    'Geese fly in V-formation — the lead changes so no one gets exhausted, and they circle back for stragglers. Goosie Labs works the same way: ideas are tested in the open, the lead rotates, and no one has to finish anything alone. Perry loves landing in new places, exploring technology that makes the world fairer, and building experiments others can reuse, build on, or pick up and finish together. We also work in a different time dimension: Bitcoin block time. Every mined block moves us one step further — in our work and in our lives. Blocky is our specialist goose for this. Blocky sets the time. It is currently block <span id="blocky-block" style="font-weight:600;font-variant-numeric:tabular-nums">…</span>. Each of our geese has a block lifespan of 121,000 blocks. They all carry a lastwill — you can add your key to it if you want to be remembered. Every 5 years (~262,800 blocks) the geese make donations to causes they care about.'
   );
   html = html.replace(
     'Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.',
