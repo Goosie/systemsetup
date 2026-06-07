@@ -40,6 +40,14 @@
   .hero-sub { font-size:1.15rem; font-weight:300; color:var(--blue-200); margin-bottom:2rem; letter-spacing:0.01em; }
   .hero-text { font-size:1.05rem; line-height:1.8; color:rgba(255,255,255,0.8); max-width:620px; margin-bottom:1rem; }
   .hero-text em { color:var(--blue-200); font-style:italic; }
+  .hero-cols { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:2rem 0 1rem; }
+  .hero-col { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:0.75rem; padding:1.25rem 1.5rem; }
+  .hero-col-label { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--blue-200); margin-bottom:0.5rem; }
+  .hero-col-title { font-size:1rem; font-weight:600; color:var(--white); margin-bottom:0.5rem; line-height:1.4; }
+  .hero-col ul { list-style:none; padding:0; margin:0; }
+  .hero-col ul li { font-size:0.8rem; color:rgba(255,255,255,0.65); padding:0.2rem 0; padding-left:1rem; position:relative; line-height:1.5; }
+  .hero-col ul li::before { content:'→'; position:absolute; left:0; color:var(--blue-300,#85B7EB); }
+  @media(max-width:640px){ .hero-cols { grid-template-columns:1fr; } }
   .hero-cta { margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap; }
   .btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--white); color:var(--blue-800); font-family:var(--font-body); font-size:15px; font-weight:600; padding:13px 26px; border-radius:8px; text-decoration:none; transition:all 0.2s; }
   .btn-primary:hover { background:var(--blue-100); }
@@ -167,6 +175,31 @@
     <p class="hero-text">
       Ganzen vliegen in V-formatie — de voorste wisselt zodat niemand uitgeput raakt, en ze komen terug voor achterblijvers. Zo werkt Goosie Labs ook: ideeën worden in de open lucht getest, de leiding wisselt, en niemand hoeft het alleen af te maken. Perry landt graag op nieuwe plekken, onderzoekt technologie die de wereld eerlijker maakt, en bouwt experimenten die anderen kunnen hergebruiken, verder bouwen, of oppakken om samen af te ronden.
     </p>
+    <div class="hero-cols">
+      <div class="hero-col">
+        <div class="hero-col-label">For business professionals</div>
+        <div class="hero-col-title">Real problems. No middleman required.</div>
+        <ul>
+          <li>Get the honest feedback people were too polite to give — respondents stay anonymous and get rewarded in Bitcoin</li>
+          <li>Prove you actually did it — permanently recorded as timestamps in Bitcoin blocks. No institution can revoke it, no platform can delete it.</li>
+          <li>Two people, one agreement, sats in the middle — pays out automatically when conditions are met, no lawyer or bank required</li>
+          <li>Your digital life, your final wishes — delivered automatically when you're gone. No notary, no executor, no institution in the middle</li>
+          <li>Bet on anything, winner paid instantly — no bookie</li>
+        </ul>
+      </div>
+      <div class="hero-col">
+        <div class="hero-col-label">For protocol builders</div>
+        <div class="hero-col-title">The full stack, open and running.</div>
+        <ul>
+          <li>strfry relay, Nutshell Cashu mint, LNbits with NWC</li>
+          <li>NIP-05 domain verification, NIP-58 badge issuance, NIP-44 encrypted vaults</li>
+          <li>All apps use the Goosie Labs Nostr Boilerplate</li>
+          <li>AI agents with real npubs, wallets, and Nostr identities</li>
+          <li>Taproot Assets via tapd v0.7.1 on Umbrel</li>
+          <li>Every repo public on GitHub — fork anything</li>
+        </ul>
+      </div>
+    </div>
     <div class="hero-cta">
       <a href="#projecten" class="btn-primary">Bekijk de experimenten</a>
       <a href="#meedoen" class="btn-ghost">Mee vliegen?</a>
