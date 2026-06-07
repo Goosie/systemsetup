@@ -230,6 +230,7 @@ async function generateHomepage() {
     const ai = AGENT_ORDER.indexOf(a.name), bi = AGENT_ORDER.indexOf(b.name);
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
   });
+  agents.splice(0, agents.length, ...agents.filter(a => AGENT_ORDER.includes(a.name)));
 
   // Check which agents have a published nsite
   await Promise.all(agents.map(async a => {
@@ -351,13 +352,6 @@ async function generateHomepage() {
     /<!-- APPS-TILES-START -->[\s\S]*?<!-- APPS-TILES-END -->/,
     `<!-- APPS-TILES-START -->\n${tilesHtml}\n      <!-- APPS-TILES-END -->`
   );
-
-  // Mint card (hardcoded after APPS-TILES-END in WP page)
-  html = html.replace(
-    'Eigen Cashu ecash mint van Goosie Labs — anoniem betalen met Bitcoin. Wordt gebruikt in de apps zoals ZapHunt, CatchZaps en ProofOfMove.',
-    'Goosie Labs own Cashu ecash mint — anonymous Bitcoin payments. Used in apps like ZapHunt, CatchZaps and ProofOfMove.'
-  );
-  html = html.replace(/>Open mint<\/a>/g, '>Open mint</a>');
 
   // V-Formation section
   html = html.replace('>V-Formatie<', '>V-Formation<');
