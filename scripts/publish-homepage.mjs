@@ -341,7 +341,7 @@ async function generateHomepage() {
   );
   html = html.replace(
     'Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.',
-    'This is not a product. This is a lab. Everything here is in development — use it, build on it, or reach out.'
+    ''
   );
   html = html.replace('>Bekijk de experimenten<', '>View experiments<');
   html = html.replace(/>Mee vliegen\?(<\/a>)/, '>Fly along?$1');
