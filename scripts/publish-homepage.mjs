@@ -120,7 +120,6 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
   const navLinks = [
     { href: './',           label: 'Home',    key: 'home' },
     { href: 'about.html',   label: 'About',   key: 'about' },
-    { href: 'contact.html', label: 'Contact', key: 'contact' },
     { href: '/perry.html',  label: 'Perry',   key: 'perry' },
   ];
   const nav = navLinks.map(l =>
@@ -329,7 +328,7 @@ async function generateHomepage() {
   html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
   html = html.replace(/>Over ons<\/a>/, '>About</a>');
   html = html.replace(/href="\/over-ons\/"/g, 'href="about.html"');
-  html = html.replace(/href="\/contact\/"/, 'href="contact.html"');
+  html = html.replace(/href="\/contact\/"/, 'href="/perry.html"');
   html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
   html = html.replace(/id="projecten"/g, 'id="projects"');
 
@@ -627,7 +626,6 @@ console.log('Generating pages…\n');
 const pages = {
   '/index.html':      Buffer.from(await generateHomepage(), 'utf8'),
   '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
-  '/contact.html':    Buffer.from(generateContactEn(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle(`${PAGES_DIR}/mcp_en.html`, 'What is MCP?', 'en'), 'utf8'),
   '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
 };
