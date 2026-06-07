@@ -222,7 +222,7 @@ async function generateHomepage() {
           const q = src.match(/^quote:\s*(.+)$/m);
           if (q) quote = q[1].trim().replace(/^['"]|['"]$/g, '');
         }
-        agents.push({ name, npub: key.npub, description, quote });
+        agents.push({ name, npub: key.npub, description, quote, blockbirth: key.blockbirth || null });
       } catch {}
     }
   } catch {}
@@ -292,13 +292,17 @@ async function generateHomepage() {
     const promptLink = a.hasNsite
       ? `\n        <div class="agent-links"><a href="${nsiteUrl}" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>`
       : '';
+    const birthLine = a.blockbirth
+      ? `<div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ Blockbirthnr #${a.blockbirth.toLocaleString('en')} · Age <span class="goose-age">…</span> blocks</div>`
+      : '';
     const inner = `
         ${avatar}
         <div class="agent-info">
           <div class="agent-name">${title}</div>
           <div class="agent-desc">${tileText}</div>
+          ${birthLine}
         </div>${promptLink}`;
-    return `      <div class="agent-card">${inner}\n      </div>`;
+    return `      <div class="agent-card" data-blockbirth="${a.blockbirth || ''}">${inner}\n      </div>`;
   }).join('\n');
 
   // Use WP export as base (carries full CSS + layout), then patch all Dutch text
