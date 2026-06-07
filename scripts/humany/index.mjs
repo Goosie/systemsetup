@@ -245,11 +245,14 @@ async function newGoose(name) {
   console.log(`  🔑 Npub:   ${npub}`);
 
   // 2. Create agent directory
+  const blockbirth = Math.floor(Math.random() * 100000) + 721000;
+
   mkdirSync(agentDir, { recursive: true });
   writeFileSync(
     resolve(agentDir, 'nostr-key.json'),
-    JSON.stringify({ pubkey: pk, npub, nsec, nsecHex }, null, 2) + '\n'
+    JSON.stringify({ pubkey: pk, npub, nsec, nsecHex, blockbirth }, null, 2) + '\n'
   );
+  console.log(`  ⛏  Blockbirth: #${blockbirth.toLocaleString()}`);
   writeFileSync(
     resolve(agentDir, `${name}.md`),
     `# ${capitalize(name)} — Role\n\n_Role description to be filled in._\n\n**Pubkey:** ${pk}\n`
