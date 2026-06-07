@@ -121,6 +121,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     { href: './',           label: 'Home',    key: 'home' },
     { href: 'about.html',   label: 'About',   key: 'about' },
     { href: 'contact.html', label: 'Contact', key: 'contact' },
+    { href: '/perry.html',  label: 'Perry',   key: 'perry' },
   ];
   const nav = navLinks.map(l =>
     `<a href="${l.href}" class="nav-link${activePage===l.key?' nav-link-active':''}">${l.label}</a>`
@@ -172,7 +173,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     <a href="https://goosielabs.com">goosielabs.com</a> ·
     <a href="https://nsite.goosielabs.com">nsite</a>
     <span class="nsite-badge">nsite</span> ·
-    Nostr · Blossom · Bitcoin
+    <a href="nostr:perry@goosielabs.com">Nostr DM</a> ·
+    <a href="lightning:perry@goosielabs.com">⚡ perry@goosielabs.com</a>
   </footer>
 </body>
 </html>`;
@@ -401,8 +403,8 @@ function generateContactNl() {
       <div class="contact-nostr">
         <p>Stuur een DM op Nostr of een Lightning zap. We bellen terug.</p>
         <div class="contact-badges">
-          <a href="https://njump.me/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc" class="contact-badge">🟣 Nostr DM</a>
-          <a href="lightning:zoomer@getalby.com" class="contact-badge">⚡ zoomer@getalby.com</a>
+          <a href="nostr:perry@goosielabs.com" class="contact-badge">🟣 Nostr DM</a>
+          <a href="lightning:perry@goosielabs.com" class="contact-badge">⚡ perry@goosielabs.com</a>
         </div>
       </div>
       <style>
@@ -427,8 +429,8 @@ function generateContactEn() {
       <div class="contact-nostr">
         <p>Send a Nostr DM or a Lightning zap. We'll call you back.</p>
         <div class="contact-badges">
-          <a href="https://njump.me/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc" class="contact-badge">🟣 Nostr DM</a>
-          <a href="lightning:zoomer@getalby.com" class="contact-badge">⚡ zoomer@getalby.com</a>
+          <a href="nostr:perry@goosielabs.com" class="contact-badge">🟣 Nostr DM</a>
+          <a href="lightning:perry@goosielabs.com" class="contact-badge">⚡ perry@goosielabs.com</a>
         </div>
       </div>
       <style>
