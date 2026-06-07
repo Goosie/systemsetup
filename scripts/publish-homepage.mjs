@@ -249,6 +249,7 @@ async function generateHomepage() {
     if (t.url) links.push(`<a href="${t.url}" class="project-link">Open app</a>`);
     if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>`);
     if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>`);
+    if (t.lnbits_inkey) links.push(`<button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="${t.lnbits_inkey}" data-app="${t.title ?? ''}">⚡ Donate</button>`);
     const linksHtml = links.length ? `\n        <div class="project-links">\n          ${links.join('\n          ')}\n        </div>` : '';
     const titleHtml = t.icon
       ? `<div class="project-card-title"><img class="project-icon" src="${t.icon}" alt="${t.title ?? ''}" width="40" height="40"><div class="project-name">${t.title ?? ''}</div></div>`
