@@ -22,6 +22,7 @@ const DROPLET_ID = process.env.DO_DROPLET_ID ?? '';
 const HONK       = '/home/deploy/.local/bin/honk';
 const AGENTS_DIR = '/home/deploy/agents';
 
+const STARTUP_TS    = Math.floor(Date.now() / 1000);
 const PERRY_PUBKEY  = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 const BLOCKY_PUBKEY = 'd4e2e205c8e1437b40b635a88ca85c44f5f4b18539e8c09551d9ce0f200ff71b';
 
@@ -229,9 +230,11 @@ function connect() {
 
   ws.on('open', () => {
     console.log(`[Backy] ✓ Verbonden — luistert naar DMs (${BACKY_PUBKEY.slice(0, 8)}…)`);
+    // since: startup time — ignore old messages on the relay
     ws.send(JSON.stringify(['REQ', 'backy-inbox', {
       kinds: [1059],
       '#p': [BACKY_PUBKEY],
+      since: STARTUP_TS,
     }]));
   });
 
