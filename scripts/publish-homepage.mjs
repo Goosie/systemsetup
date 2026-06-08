@@ -132,6 +132,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} — Goosie Labs</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -224,7 +225,7 @@ async function generateHomepage() {
           const q = src.match(/^quote:\s*(.+)$/m);
           if (q) quote = q[1].trim().replace(/^['"]|['"]$/g, '');
         }
-        agents.push({ name, npub: key.npub, description, quote, blockbirth: key.blockbirth || null });
+        agents.push({ name, npub: key.npub, pubkey: key.pubkey || '', description, quote, blockbirth: key.blockbirth || null });
       } catch {}
     }
   } catch {}
@@ -361,10 +362,11 @@ async function generateHomepage() {
   );
 
   // ── Geese live feed — inject before V-Formation section ─────────────────────
-  const goosePubkeys = agents.map(a => a.npub);
-  const gooseNames   = Object.fromEntries(agents.map(a => [a.npub, a.name.charAt(0).toUpperCase() + a.name.slice(1)]));
-  const gooseAvatars = Object.fromEntries(agents.map(a => [a.npub, `/agents/${a.name}/${a.name}.jpg`]));
-  const AGENT_COLORS_JS = JSON.stringify(Object.fromEntries(agents.map(a => [a.npub, AGENT_COLORS[a.name] ?? '#6366f1'])));
+  // Relay requires hex pubkeys in authors filter — npubs are silently ignored
+  const goosePubkeys = agents.filter(a => a.pubkey).map(a => a.pubkey);
+  const gooseNames   = Object.fromEntries(agents.filter(a => a.pubkey).map(a => [a.pubkey, a.name.charAt(0).toUpperCase() + a.name.slice(1)]));
+  const gooseAvatars = Object.fromEntries(agents.filter(a => a.pubkey).map(a => [a.pubkey, `/agents/${a.name}/${a.name}.jpg`]));
+  const gooseColors  = Object.fromEntries(agents.filter(a => a.pubkey).map(a => [a.pubkey, AGENT_COLORS[a.name] ?? '#6366f1']));
 
   const geeseFeedHtml = `
 <section class="geese-live" id="geese-live">
@@ -402,68 +404,10 @@ async function generateHomepage() {
     </div>
   </div>
   <script>
-  (function(){
-    var PUBKEYS=${JSON.stringify(goosePubkeys)};
-    var NAMES=${JSON.stringify(gooseNames)};
-    var AVATARS=${JSON.stringify(gooseAvatars)};
-    var COLORS=${AGENT_COLORS_JS};
-    var RELAY='wss://relay.goosielabs.com';
-    var feed=document.getElementById('geese-feed');
-    var posts=[];
-    var MAX=40;
-
-    function relTime(ts){
-      var s=Math.floor(Date.now()/1000)-ts;
-      if(s<60)return s+'s ago';
-      if(s<3600)return Math.floor(s/60)+'m ago';
-      if(s<86400)return Math.floor(s/3600)+'h ago';
-      return Math.floor(s/86400)+'d ago';
-    }
-
-    function render(){
-      if(!posts.length){ feed.innerHTML='<div class="geese-feed-empty">No posts yet…</div>'; return; }
-      feed.innerHTML=posts.map(function(p){
-        var name=NAMES[p.pubkey]||'Goose';
-        var color=COLORS[p.pubkey]||'#6366f1';
-        var avatar=AVATARS[p.pubkey]?'<img class="geese-post-avatar" src="'+AVATARS[p.pubkey]+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" alt="'+name+'"><span class="geese-post-avatar-fallback" style="background:'+color+';display:none">'+name[0]+'</span>':'<span class="geese-post-avatar-fallback" style="background:'+color+'">'+name[0]+'</span>';
-        var content=p.content.replace(/nostr:npub[a-z0-9]+/g,function(m){var n=NAMES[m.replace('nostr:','')];return n?'@'+n:m;});
-        content=content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return '<div class="geese-post">'+avatar+'<div class="geese-post-body"><div class="geese-post-meta"><span class="geese-post-name">'+name+'</span><span class="geese-post-time">'+relTime(p.created_at)+'</span></div><div class="geese-post-content">'+content+'</div></div></div>';
-      }).join('');
-    }
-
-    function addPost(e){
-      if(posts.some(function(p){return p.id===e.id;}))return;
-      posts.unshift(e);
-      posts.sort(function(a,b){return b.created_at-a.created_at;});
-      if(posts.length>MAX)posts.length=MAX;
-      render();
-    }
-
-    function connect(){
-      var ws;
-      try{ ws=new WebSocket(RELAY); }catch(e){ feed.innerHTML='<div class="geese-feed-empty">Could not connect to relay.</div>'; return; }
-      ws.onopen=function(){
-        feed.innerHTML='<div class="geese-feed-empty">Loading…</div>';
-        ws.send(JSON.stringify(['REQ','geese-feed',{kinds:[1],authors:PUBKEYS,limit:20}]));
-      };
-      ws.onmessage=function(ev){
-        try{
-          var msg=JSON.parse(ev.data);
-          if(msg[0]==='EVENT'&&msg[2])addPost(msg[2]);
-          if(msg[0]==='EOSE'){
-            render();
-            // update relative times every 30s
-            setInterval(render,30000);
-          }
-        }catch(e){}
-      };
-      ws.onclose=function(){ setTimeout(connect,10000); };
-      ws.onerror=function(){ ws.close(); };
-    }
-    connect();
-  })();
+  window.GEESE_DATA=${JSON.stringify({ pubkeys: goosePubkeys, names: gooseNames, avatars: gooseAvatars, colors: gooseColors })};
   </script>
+  <script src="/geese-feed.js?v=${Date.now()}" defer></script>
+  <!-- inline script intentionally minimal — logic lives in /geese-feed.js -->
 </section>
 `;
 

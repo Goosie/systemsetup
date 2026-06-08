@@ -42,6 +42,8 @@ const KEYS = {
   gitea: loadKey('gitea'),
   directory: loadKey('directory'),
   supporty: loadKey('supporty'),
+  weathery: loadKey('weathery'),
+  healthy: loadKey('healthy'),
   // ── NEW GEESE ──
 };
 
@@ -201,6 +203,8 @@ async function dispatch(pool, event) {
       case 'gitea': await handleScript(pool, 'gitea', event, command); break;
       case 'directory': await handleScript(pool, 'directory', event, command); break;
       case 'supporty': await handleScript(pool, 'supporty', event, command); break;
+      case 'weathery': await handleScript(pool, 'weathery', event, command); break;
+      case 'healthy': await handleScript(pool, 'healthy', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
