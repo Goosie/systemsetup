@@ -445,14 +445,29 @@ Jurry heeft alle apps beoordeeld (laatste check: 21 mei 2026).
 
 ---
 
-## Relay-ganzen (draaien op de server, gekoppeld aan de Nostr relay)
+## Achtergrondprocessen (draaien altijd op de server)
 
-Naast de AI-agenten zijn er ganzen die als achtergrondprocessen op de server draaien en direct met de Nostr relay communiceren.
+Naast de AI-agenten zijn er processen die als systemd services draaien en direct met de relay en Bitcoin-netwerk communiceren.
 
-| Gans | Status | Wat |
-|------|--------|-----|
-| **Reed** | LIVE — draait als systemd service (`reed.service`) | Poortwachter van de relay. Beheert de whitelist van pubkeys die naar de relay mogen schrijven. Je stuurt haar versleutelde DMs via een Nostr client. |
-| **Honky** | IDEE — niet gebouwd | Matchmaker. Koppelt #iwant en #ihave events op de relay en stuurt een versleutelde intro tussen de twee partijen. |
+| Service | Commando | Wat |
+|---------|----------|-----|
+| **Blocky** | `sudo systemctl status blocky` | De klok. Luistert naar Bitcoin-blokken en triggert alle ganzen via NIP-90. **Als Blocky stopt, stopt de hele V-formatie.** |
+| **Backy** | `sudo systemctl status backy` | Maakt automatisch server-snapshots op Blocky's signaal via DigitalOcean API. |
+| **Healthy** | `goosie healthy check` | Server health monitor. Stuurt Perry elke ~30 min een DM. Als Perry geen DMs meer krijgt: iets is mis. |
+| **Goose-runner** | `sudo systemctl status goose-runner` | Luistert op de relay naar NIP-90 job requests van Blocky en voert de juiste gans uit. |
+| **Assistenty DM** | `sudo systemctl status astrid-dm` | Luistert naar DM-commando's van Perry voor whitelist-beheer. |
+
+**Schema bekijken (wie doet wat wanneer):**
+```bash
+goosie blocky schedule
+```
+
+**Als iets niet meer werkt:**
+```bash
+sudo systemctl restart blocky
+sudo systemctl restart goose-runner
+sudo systemctl restart backy
+```
 
 ### Reed aansturen
 
