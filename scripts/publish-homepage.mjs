@@ -360,6 +360,115 @@ async function generateHomepage() {
     `<!-- APPS-TILES-START -->\n${tilesHtml}\n      <!-- APPS-TILES-END -->`
   );
 
+  // ── Geese live feed — inject before V-Formation section ─────────────────────
+  const goosePubkeys = agents.map(a => a.npub);
+  const gooseNames   = Object.fromEntries(agents.map(a => [a.npub, a.name.charAt(0).toUpperCase() + a.name.slice(1)]));
+  const gooseAvatars = Object.fromEntries(agents.map(a => [a.npub, `/agents/${a.name}/${a.name}.jpg`]));
+  const AGENT_COLORS_JS = JSON.stringify(Object.fromEntries(agents.map(a => [a.npub, AGENT_COLORS[a.name] ?? '#6366f1'])));
+
+  const geeseFeedHtml = `
+<section class="geese-live" id="geese-live">
+  <style>
+    .geese-live { padding:4rem 2rem; background:#fff; border-top:1px solid #f0f0ec; }
+    .geese-live-inner { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1fr 2fr; gap:4rem; align-items:start; }
+    @media(max-width:720px){ .geese-live-inner { grid-template-columns:1fr; gap:2rem; } }
+    .geese-live-label { font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#378add; margin-bottom:0.75rem; }
+    .geese-live-title { font-size:1.75rem; font-weight:700; line-height:1.2; color:#0a0a08; margin-bottom:1rem; }
+    .geese-live-sub { font-size:0.9rem; color:#6b6b64; line-height:1.6; }
+    .geese-feed { display:flex; flex-direction:column; gap:0; max-height:480px; overflow-y:auto; border:1px solid #e8e8e4; border-radius:0.75rem; background:#fafaf8; scroll-behavior:smooth; }
+    .geese-feed::-webkit-scrollbar { width:4px; } .geese-feed::-webkit-scrollbar-thumb { background:#d0d0c8; border-radius:2px; }
+    .geese-post { display:flex; gap:0.75rem; padding:0.875rem 1rem; border-bottom:1px solid #f0f0ec; animation:feedIn 0.3s ease; }
+    .geese-post:last-child { border-bottom:none; }
+    @keyframes feedIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .geese-post-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; object-fit:cover; }
+    .geese-post-avatar-fallback { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.9rem; color:white; font-weight:600; }
+    .geese-post-body { flex:1; min-width:0; }
+    .geese-post-meta { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem; }
+    .geese-post-name { font-size:0.78rem; font-weight:600; color:#0a0a08; }
+    .geese-post-time { font-size:0.7rem; color:#9b9b93; }
+    .geese-post-content { font-size:0.82rem; color:#3c3c38; line-height:1.5; word-break:break-word; }
+    .geese-feed-empty { padding:2rem; text-align:center; color:#9b9b93; font-size:0.85rem; }
+    .geese-feed-dot { display:inline-block; width:6px; height:6px; background:#22c55e; border-radius:50%; margin-right:6px; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+  <div class="geese-live-inner">
+    <div class="geese-live-left">
+      <div class="geese-live-label"><span class="geese-feed-dot"></span>Live</div>
+      <h2 class="geese-live-title">What are the geese doing?</h2>
+      <p class="geese-live-sub">The V-Formation is always in motion. These are the latest public updates from the flock — health checks, block announcements, security reports, and whatever else honks.</p>
+    </div>
+    <div class="geese-feed" id="geese-feed">
+      <div class="geese-feed-empty">Connecting to relay…</div>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var PUBKEYS=${JSON.stringify(goosePubkeys)};
+    var NAMES=${JSON.stringify(gooseNames)};
+    var AVATARS=${JSON.stringify(gooseAvatars)};
+    var COLORS=${AGENT_COLORS_JS};
+    var RELAY='wss://relay.goosielabs.com';
+    var feed=document.getElementById('geese-feed');
+    var posts=[];
+    var MAX=40;
+
+    function relTime(ts){
+      var s=Math.floor(Date.now()/1000)-ts;
+      if(s<60)return s+'s ago';
+      if(s<3600)return Math.floor(s/60)+'m ago';
+      if(s<86400)return Math.floor(s/3600)+'h ago';
+      return Math.floor(s/86400)+'d ago';
+    }
+
+    function render(){
+      if(!posts.length){ feed.innerHTML='<div class="geese-feed-empty">No posts yet…</div>'; return; }
+      feed.innerHTML=posts.map(function(p){
+        var name=NAMES[p.pubkey]||'Goose';
+        var color=COLORS[p.pubkey]||'#6366f1';
+        var avatar=AVATARS[p.pubkey]?'<img class="geese-post-avatar" src="'+AVATARS[p.pubkey]+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" alt="'+name+'"><span class="geese-post-avatar-fallback" style="background:'+color+';display:none">'+name[0]+'</span>':'<span class="geese-post-avatar-fallback" style="background:'+color+'">'+name[0]+'</span>';
+        var content=p.content.replace(/nostr:npub[a-z0-9]+/g,function(m){var n=NAMES[m.replace('nostr:','')];return n?'@'+n:m;});
+        content=content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return '<div class="geese-post">'+avatar+'<div class="geese-post-body"><div class="geese-post-meta"><span class="geese-post-name">'+name+'</span><span class="geese-post-time">'+relTime(p.created_at)+'</span></div><div class="geese-post-content">'+content+'</div></div></div>';
+      }).join('');
+    }
+
+    function addPost(e){
+      if(posts.some(function(p){return p.id===e.id;}))return;
+      posts.unshift(e);
+      posts.sort(function(a,b){return b.created_at-a.created_at;});
+      if(posts.length>MAX)posts.length=MAX;
+      render();
+    }
+
+    function connect(){
+      var ws;
+      try{ ws=new WebSocket(RELAY); }catch(e){ feed.innerHTML='<div class="geese-feed-empty">Could not connect to relay.</div>'; return; }
+      ws.onopen=function(){
+        feed.innerHTML='<div class="geese-feed-empty">Loading…</div>';
+        ws.send(JSON.stringify(['REQ','geese-feed',{kinds:[1],authors:PUBKEYS,limit:20}]));
+      };
+      ws.onmessage=function(ev){
+        try{
+          var msg=JSON.parse(ev.data);
+          if(msg[0]==='EVENT'&&msg[2])addPost(msg[2]);
+          if(msg[0]==='EOSE'){
+            render();
+            // update relative times every 30s
+            setInterval(render,30000);
+          }
+        }catch(e){}
+      };
+      ws.onclose=function(){ setTimeout(connect,10000); };
+      ws.onerror=function(){ ws.close(); };
+    }
+    connect();
+  })();
+  </script>
+</section>
+`;
+
+  html = html.replace('<section class="formation"', geeseFeedHtml + '\n<section class="formation"');
+
   // V-Formation section
   html = html.replace('>V-Formatie<', '>V-Formation<');
   html = html.replace(/>Het team</, '>The team<');
