@@ -160,6 +160,21 @@ function resolveScript(goose) {
   throw new Error(`No script found for goose "${goose}" in ${SCRIPTS_DIR}/${goose}/`);
 }
 
+function buildPublicSummary(goose, command, output, ok) {
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const lines = output.split('\n').filter(l => l.trim());
+  // Count status indicators in output
+  const checks  = (output.match(/[✔✓]/g) || []).length;
+  const warnings = (output.match(/⚠/g) || []).length;
+  const fails   = (output.match(/[✘✗]/g) || []).length;
+  let status = ok ? '✅' : '❌';
+  let detail = '';
+  if (checks || warnings || fails) {
+    detail = ` — ${checks} ok${warnings ? `, ${warnings} warnings` : ''}${fails ? `, ${fails} issues` : ''}`;
+  }
+  return `🪿 ${cap(goose)} ran \`${command}\`${detail} | https://goosielabs.com #vformation`;
+}
+
 async function handleScript(pool, goose, jobEvent, command) {
   const block = getParam(jobEvent.tags, 'trigger_block') ?? '?';
   const scriptPath = resolveScript(goose);
@@ -168,8 +183,10 @@ async function handleScript(pool, goose, jobEvent, command) {
   try {
     const output = await runScript([scriptPath, command], 120_000);
     await publishResult(pool, goose, jobEvent, output);
+    await publishChat(pool, goose, buildPublicSummary(goose, command, output, true));
   } catch (e) {
     await publishResult(pool, goose, jobEvent, e.stderr || e.message, 'error');
+    await publishChat(pool, goose, buildPublicSummary(goose, command, e.stderr || e.message, false));
   }
 }
 

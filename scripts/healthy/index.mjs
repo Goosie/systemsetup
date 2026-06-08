@@ -123,7 +123,7 @@ function buildPublicNote(emoji, prevEmoji, issues) {
 
   if (prevEmoji === null) {
     // Eerste run
-    return { text: `${emoji} Goosie Labs server health: ${statusLabel(emoji)}. Online and watching 🪿`, tags };
+    return { text: `${emoji} Goosie Labs server health: ${statusLabel(emoji)}. Online and watching 🪿 | https://goosielabs.com #vformation`, tags };
   }
 
   const wasOk  = prevEmoji === '🟢';
@@ -133,7 +133,7 @@ function buildPublicNote(emoji, prevEmoji, issues) {
 
   if (!wasOk && isOk) {
     return {
-      text: `🟢 Server is healthy again! All systems green. Thanks ${dirMention} for acting fast 🪿`,
+      text: `🟢 Server is healthy again! All systems green. Thanks ${dirMention} for acting fast 🪿 | https://goosielabs.com #vformation`,
       tags,
     };
   }
@@ -141,14 +141,14 @@ function buildPublicNote(emoji, prevEmoji, issues) {
   if (wasOk && !isOk) {
     const summary = issues.length > 0 ? `Issues: ${issues.join(', ')}` : 'Check details in private report.';
     return {
-      text: `${emoji} Server health alert at Goosie Labs. ${summary} — ${dirMention} heads up 🪿`,
+      text: `${emoji} Server health alert at Goosie Labs. ${summary} — ${dirMention} heads up 🪿 | https://goosielabs.com #vformation`,
       tags,
     };
   }
 
   // 🟡 → 🔴 of andersom
   return {
-    text: `${emoji} Server status changed: ${statusLabel(prevEmoji)} → ${statusLabel(emoji)} 🪿`,
+    text: `${emoji} Server status changed: ${statusLabel(prevEmoji)} → ${statusLabel(emoji)} 🪿 | https://goosielabs.com #vformation`,
     tags,
   };
 }
