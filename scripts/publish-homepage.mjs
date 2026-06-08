@@ -225,7 +225,13 @@ async function generateHomepage() {
           const q = src.match(/^quote:\s*(.+)$/m);
           if (q) quote = q[1].trim().replace(/^['"]|['"]$/g, '');
         }
-        agents.push({ name, npub: key.npub, pubkey: key.pubkey || '', description, quote, blockbirth: key.blockbirth || null });
+        // Read LNbits inkey for balance display (read-only key, safe to expose)
+        let inkey = '';
+        const walletFile = path.join(KEYS_DIR, name, 'lnbits-wallet.json');
+        if (existsSync(walletFile)) {
+          try { inkey = JSON.parse(readFileSync(walletFile, 'utf8')).inkey ?? ''; } catch {}
+        }
+        agents.push({ name, npub: key.npub, pubkey: key.pubkey || '', description, quote, blockbirth: key.blockbirth || null, inkey });
       } catch {}
     }
   } catch {}
@@ -297,7 +303,13 @@ async function generateHomepage() {
       ? `\n        <div class="agent-links"><a href="${nsiteUrl}" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>`
       : '';
     const birthLine = a.blockbirth
-      ? `<div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ Blockbirthnr #${a.blockbirth.toLocaleString('en')} · Age <span class="goose-age">…</span> blocks</div>`
+      ? `<div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ #${a.blockbirth.toLocaleString('en')} · Age <span class="goose-age">…</span> blocks</div>`
+      : '';
+    const walletLine = a.inkey
+      ? `<div class="agent-wallet" data-inkey="${a.inkey}">
+          <span class="agent-balance">⚡ <span class="balance-sats">…</span> sats</span>
+          <a href="lightning:${a.name}@goosielabs.com" class="agent-donate" title="Donate sats to ${title}">donate</a>
+         </div>`
       : '';
     const inner = `
         ${avatar}
@@ -305,6 +317,7 @@ async function generateHomepage() {
           <div class="agent-name">${title}</div>
           <div class="agent-desc">${tileText}</div>
           ${birthLine}
+          ${walletLine}
         </div>${promptLink}`;
     return `      <div class="agent-card" data-blockbirth="${a.blockbirth || ''}">${inner}\n      </div>`;
   }).join('\n');
@@ -436,6 +449,18 @@ async function generateHomepage() {
   // Footer
   html = html.replace('open experimenten in Bitcoin, Nostr en AI', 'open experiments in Bitcoin, Nostr and AI');
   html = html.replace('Alles hier mag worden hergebruikt.', 'Everything here is free to reuse.');
+
+  // Wallet balance CSS + JS — fetches balances live from LNbits
+  html = html.replace('</style>\n    <div class="agents-grid">', `</style>
+    <style>
+      .agent-wallet { display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem; }
+      .agent-balance { font-size:0.7rem; color:#f7931a; font-weight:600; }
+      .agent-donate { font-size:0.65rem; color:#378add; text-decoration:none; border:1px solid #b5d4f4; border-radius:4px; padding:1px 6px; transition:background 0.15s; }
+      .agent-donate:hover { background:#e6f1fb; }
+    </style>
+    <div class="agents-grid">`);
+
+  html = html.replace(/<\/body>/, `<script src="/goose-balances.js" defer></script>\n</body>`);
 
   // nsite marker
   html = html.replace(
