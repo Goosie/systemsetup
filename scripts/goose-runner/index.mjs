@@ -45,6 +45,7 @@ const KEYS = {
   weathery: loadKey('weathery'),
   healthy: loadKey('healthy'),
   coachy: loadKey('coachy'),
+  gander: loadKey('gander'),
   // ── NEW GEESE ──
 };
 
@@ -224,6 +225,7 @@ async function dispatch(pool, event) {
       case 'weathery': await handleScript(pool, 'weathery', event, command); break;
       case 'healthy': await handleScript(pool, 'healthy', event, command); break;
       case 'coachy': await handleScript(pool, 'coachy', event, command); break;
+      case 'gander': await handleScript(pool, 'gander', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
