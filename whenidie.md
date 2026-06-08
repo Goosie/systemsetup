@@ -286,12 +286,17 @@ npm run build
 
 **Laag 1 — Automatische wekelijkse server-snapshot (primair)**
 
-Blocky (Bitcoin block scheduler) stuurt elke ~1000 blokken (~1 week) een Nostr DM naar Backy.
-Backy ontvangt dit, belt de DigitalOcean API en maakt een volledige server-snapshot.
+Blocky (Bitcoin block scheduler) triggert elke ~1000 blokken (~1 week) een backup via Backy.
+Backy belt de DigitalOcean API en maakt een volledige server-snapshot.
 Het resultaat komt terug als DM naar Perry — zichtbaar in het Swarm dashboard.
 
 ```
-Blocky (~1000 blokken) → DM → Backy → DO snapshot API → DM resultaat → Perry
+Blocky (~1000 blokken) → NIP-90 job → Backy → DO snapshot API → DM resultaat → Perry
+```
+
+Blocky is ook de timer voor alle andere ganzen (QA, security, juridisch, health). Het volledige overzicht:
+```bash
+goosie blocky schedule
 ```
 
 Handmatig een snapshot triggeren:
