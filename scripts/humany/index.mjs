@@ -870,6 +870,115 @@ function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// ── deleteGoose ───────────────────────────────────────────────────────────────
+
+async function deleteGoose(name) {
+  const agentDir  = resolve(AGENTS_DIR, name);
+  const VFORMATION_DIR = '/var/www/goosielabs/apps/vformation';
+  const CLAUDE_AGENTS_DIR = '/home/deploy/.claude/agents';
+  const BLOCKY_SCRIPT = resolve(SCRIPTS_DIR, 'blocky/index.mjs');
+
+  if (!existsSync(agentDir)) {
+    console.error(`Goose "${name}" not found at ${agentDir}`);
+    process.exit(1);
+  }
+
+  console.log(`\n🗑️  Humany: deleting "${name}"...\n`);
+
+  // 1. agents/<name>/ directory
+  rmSync(agentDir, { recursive: true, force: true });
+  console.log(`  🗑️  agents/${name}/ removed`);
+
+  // 2. agents.json
+  const agentsData = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
+  agentsData.agents = agentsData.agents.filter(a => a.name !== name);
+  writeFileSync(AGENTS_JSON, JSON.stringify(agentsData, null, 2) + '\n');
+  console.log(`  📋 agents.json: ${name} removed`);
+
+  // 3. NIP-05 nostr.json
+  const nip05Path = '/var/www/goosielabs/.well-known/nostr.json';
+  if (existsSync(nip05Path)) {
+    const nip05 = JSON.parse(readFileSync(nip05Path, 'utf8'));
+    delete nip05.names[name];
+    writeFileSync(nip05Path, JSON.stringify(nip05, null, 2) + '\n');
+    console.log(`  🌐 nostr.json: ${name}@goosielabs.com removed`);
+  }
+
+  // 4. whitelist.json
+  const wlPath = '/home/deploy/whitelist.json';
+  const wl = JSON.parse(readFileSync(wlPath, 'utf8'));
+  const wlKey = Object.keys(wl).find(k => k === name || k === `${name}_goose`);
+  if (wlKey) { delete wl[wlKey]; writeFileSync(wlPath, JSON.stringify(wl, null, 2) + '\n'); }
+  console.log(`  🔑 whitelist.json: ${name} removed`);
+
+  // 5. generate-agent-icons.mjs
+  const iconsPath = `${GOOSIELABS_DIR}/generate-agent-icons.mjs`;
+  if (existsSync(iconsPath)) {
+    let icons = readFileSync(iconsPath, 'utf8');
+    icons = icons.replace(new RegExp(`\\s*\\{\\s*name:\\s*'${name}'[^}]+\\},?[^\\n]*\\n`, 'g'), '\n');
+    writeFileSync(iconsPath, icons);
+    console.log(`  🎨 generate-agent-icons.mjs: ${name} removed`);
+  }
+
+  // 6. publish-homepage.mjs — AGENT_ORDER + AGENT_COLORS
+  let homepage = readFileSync(PUBLISH_HOMEPAGE, 'utf8');
+  homepage = homepage
+    .replace(new RegExp(`,\\s*${name}:'[^']*'`, 'g'), '')
+    .replace(new RegExp(`'${name}',?`, 'g'), '');
+  writeFileSync(PUBLISH_HOMEPAGE, homepage);
+  console.log(`  🃏 publish-homepage.mjs: ${name} removed from AGENT_ORDER`);
+
+  // 7. goose-runner/index.mjs
+  const grPath = resolve(SCRIPTS_DIR, 'goose-runner/index.mjs');
+  if (existsSync(grPath)) {
+    let gr = readFileSync(grPath, 'utf8');
+    gr = gr
+      .replace(new RegExp(`\\s*${name}:\\s*loadKey\\('${name}'\\),\\n`, 'g'), '\n')
+      .replace(new RegExp(`\\s*case '${name}':[^\\n]+\\n`, 'g'), '\n');
+    writeFileSync(grPath, gr);
+    console.log(`  🏃 goose-runner: ${name} removed`);
+  }
+
+  // 8. ~/.claude/agents/<name>.md
+  const claudeMd = resolve(CLAUDE_AGENTS_DIR, `${name}.md`);
+  if (existsSync(claudeMd)) { rmSync(claudeMd); console.log(`  📄 .claude/agents/${name}.md removed`); }
+
+  // 9. Blocky DEFAULT_SCHEDULE
+  if (existsSync(BLOCKY_SCRIPT)) {
+    let blocky = readFileSync(BLOCKY_SCRIPT, 'utf8');
+    blocky = blocky.replace(new RegExp(`\\s*${name}:\\s*\\{[^}]+\\},?[^\\n]*\\n`, 'g'), '\n');
+    writeFileSync(BLOCKY_SCRIPT, blocky);
+    console.log(`  ⏱  blocky: ${name} removed from DEFAULT_SCHEDULE`);
+    // clean-relay to sync relay schedule
+    try {
+      execSync(`node ${BLOCKY_SCRIPT} clean-relay`, { stdio: 'pipe' });
+      console.log(`  ✅ Relay schedule updated`);
+    } catch {}
+  }
+
+  // 10. Update ## The Flock in remaining agent prompts
+  try {
+    updateFlockSectionInAll(null);
+    console.log(`  📚 Agent prompts: flock section updated`);
+  } catch {}
+
+  // 11. Rebuild vformation + homepage
+  console.log(`  🏗️  Rebuilding vformation...`);
+  try { execSync('NODE_OPTIONS=--max-old-space-size=1024 npm run build', { cwd: VFORMATION_DIR, stdio: 'pipe' }); } catch {}
+  try {
+    execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
+    console.log(`  ✅ Homepage updated`);
+  } catch {}
+
+  // 12. Restart goose-runner + blocky
+  try { execSync('sudo systemctl restart goose-runner blocky', { stdio: 'pipe' }); console.log(`  🔄 Services restarted`); } catch {}
+
+  console.log(`\n✅ ${capitalize(name)} has left the V-Formation.\n`);
+  console.log(`📝 Manual cleanup:`);
+  console.log(`   - LNbits wallet still exists (deactivate manually in LNbits if needed)`);
+  console.log(`   - nsite page still on relay (publishes from goose key — expires naturally)`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -890,12 +999,19 @@ switch (cmd) {
     await renameGoose(oldName, newName);
     break;
   }
+  case 'deletegoose': {
+    const name = args[0];
+    if (!name) { console.error('Usage: humany deletegoose <name>'); process.exit(1); }
+    await deleteGoose(name);
+    break;
+  }
   case 'status':
     status();
     break;
   default:
     console.log('Commands:');
-    console.log('  newgoose <old> <new>  Onboard a new goose into the V-Formation');
-    console.log('  renamegoose <old> <new>  Rename a goose across all systems');
-    console.log('  status                Formation health overview');
+    console.log('  newgoose <name>           Onboard a new goose into the V-Formation');
+    console.log('  renamegoose <old> <new>   Rename a goose across all systems');
+    console.log('  deletegoose <name>        Remove a goose from the V-Formation');
+    console.log('  status                    Formation health overview');
 }
