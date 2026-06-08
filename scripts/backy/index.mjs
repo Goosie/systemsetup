@@ -227,14 +227,17 @@ async function handleMessage(fromPubkey, content) {
 function connect() {
   console.log(`[Backy] Verbinden met relay...`);
   const ws = new WebSocket(RELAY_WS);
+  // Only process events that arrive AFTER EOSE — those are truly new/live.
+  // Events before EOSE are historical replays from the relay and are skipped.
+  let liveMode = false;
 
   ws.on('open', () => {
     console.log(`[Backy] ✓ Verbonden — luistert naar DMs (${BACKY_PUBKEY.slice(0, 8)}…)`);
-    // since: startup time — ignore old messages on the relay
+    // 2-day window covers NIP-17 gift wrap timestamp randomization
     ws.send(JSON.stringify(['REQ', 'backy-inbox', {
       kinds: [1059],
       '#p': [BACKY_PUBKEY],
-      since: STARTUP_TS,
+      since: STARTUP_TS - 172800,
     }]));
   });
 
@@ -242,8 +245,13 @@ function connect() {
     let msg;
     try { msg = JSON.parse(raw); } catch { return; }
     if (!Array.isArray(msg)) return;
-    if (msg[0] === 'EOSE') { console.log(`[Backy] EOSE ontvangen — live modus actief`); return; }
+    if (msg[0] === 'EOSE') {
+      liveMode = true;
+      console.log(`[Backy] EOSE ontvangen — live modus actief`);
+      return;
+    }
     if (msg[0] !== 'EVENT') return;
+    if (!liveMode) return;  // skip historical events before EOSE
 
     const event = msg[2];
     if (!event?.id) return;
