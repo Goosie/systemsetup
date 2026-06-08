@@ -69,17 +69,22 @@ async function handlePing({ reply }) {
 }
 
 async function handleSnapshot({ reply }) {
+  console.log(`[Backy] handleSnapshot: DO_TOKEN=${!!DO_TOKEN} DO_DROPLET_ID=${!!DROPLET_ID}`);
   if (!DO_TOKEN || !DROPLET_ID) {
+    console.log('[Backy] handleSnapshot: tokens ontbreken');
     reply('✗ DO_API_TOKEN of DO_DROPLET_ID ontbreekt — check .goosie.env');
     return;
   }
+  console.log('[Backy] handleSnapshot: snapshot starten...');
   reply('📦 Snapshot gestart — DigitalOcean aan het werk...');
   try {
     const result = await createSnapshot();
+    console.log(`[Backy] handleSnapshot: snapshot klaar: ${result.name}`);
     reply(`✓ Snapshot klaar: ${result.name}\nAction ID: ${result.actionId} | Status: ${result.status}`);
     honk('backy', `✓ Snapshot gestart: ${result.name}`, 'blocky');
     await publishNote(`📦 Backy: server snapshot created successfully — https://goosielabs.com #vformation`);
   } catch (err) {
+    console.error(`[Backy] handleSnapshot fout: ${err.message}`);
     reply(`✗ Snapshot mislukt: ${err.message}`);
     await publishNote(`⚠️ Backy: snapshot failed — https://goosielabs.com #vformation`);
   }
@@ -266,7 +271,9 @@ function connect() {
       return;
     }
 
-    await handleMessage(fromPubkey, content);
+    await handleMessage(fromPubkey, content).catch(e =>
+      console.error('[Backy] handleMessage fout:', e.message)
+    );
   });
 
   ws.on('close', () => {
