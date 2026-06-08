@@ -15,6 +15,7 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
+import { execFileSync } from 'child_process';
 
 const DRY_RUN    = process.argv.includes('--dry-run');
 const [cmd, ...rawArgs] = process.argv.slice(2).filter(a => a !== '--dry-run');
@@ -182,13 +183,11 @@ async function publishEvent(kind, content, tags = []) {
   });
 }
 
-function honk(message, to) {
-  const { execFileSync } = await import('child_process');
+function honk(message, to, noCC = false) {
+  const args = ['from', '@gander', message, 'to', `@${to}`];
+  if (noCC) args.push('--no-cc');
   try {
-    execFileSync(HONK, ['from', '@gander', message, 'to', `@${to}`], {
-      timeout: 30_000,
-      env: { ...process.env },
-    });
+    execFileSync(HONK, args, { timeout: 30_000, env: { ...process.env } });
   } catch (e) {
     console.error(`[Gander] honk failed: ${e.message}`);
   }
@@ -198,7 +197,7 @@ function honk(message, to) {
 
 if (cmd !== 'scout' || !topic) {
   console.log('Usage:');
-  console.log('  gander scout "topic"           — research + publish + DM Directory');
+  console.log('  gander scout "topic"           — research + publish + DM Perry + Directory');
   console.log('  gander scout "topic" --dry-run — preview only');
   process.exit(0);
 }
@@ -256,22 +255,19 @@ const noteContent = `🪿 Gander scouted: "${topic}"\n\n${teaser}\n\nFull briefi
 await publishEvent(1, noteContent, [['t', 'vformation'], ['t', 'gander']]);
 console.log(`[Gander] Teaser note published`);
 
-// 5. DM 3 ideas to Directory
-if (DIRECTORY?.pubkey) {
-  const ideasText = `🪿 Gander intelligence briefing: "${topic}"\n\n${ideas.map((idea, i) =>
-    `**Idea ${i + 1}: ${idea.title}**\n${idea.description}`
-  ).join('\n\n')}\n\nFull article: nostr:${articleEvent.id}`;
+// 5. DM 3 ideas to Perry + Directory
+const ideasText = `🪿 Gander intelligence briefing: "${topic}"\n\n${ideas.map((idea, i) =>
+  `**Idea ${i + 1}: ${idea.title}**\n${idea.description}`
+).join('\n\n')}\n\nFull article: nostr:${articleEvent.id}`;
 
-  const { execFileSync } = await import('child_process');
-  try {
-    execFileSync(HONK, ['from', '@gander', ideasText, 'to', '@directory'], {
-      timeout: 30_000,
-      env: { ...process.env },
-    });
-    console.log(`[Gander] Ideas sent to Directory`);
-  } catch (e) {
-    console.error(`[Gander] DM to Directory failed: ${e.message}`);
-  }
+// Always send to Perry
+honk(ideasText, 'perry', true);
+console.log(`[Gander] Ideas sent to Perry`);
+
+// Also send to Directory
+if (DIRECTORY?.pubkey) {
+  honk(ideasText, 'directory', true);
+  console.log(`[Gander] Ideas also sent to Directory`);
 }
 
-console.log(`\n✅ Gander done.\n   Topic: ${topic}\n   Article: ${articleEvent.id.slice(0, 16)}...\n   Ideas sent to >>Directory\n`);
+console.log(`\n✅ Gander done.\n   Topic: ${topic}\n   Article: ${articleEvent.id.slice(0, 16)}...\n   Ideas sent to Perry + Directory\n`);
