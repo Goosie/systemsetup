@@ -37,6 +37,22 @@ for (const dir of SCAN_DIRS) {
   }
 }
 
+// Also load apps from tile.json lnbits_inkey (apps don't have wallet dirs)
+const APPS_DIR = '/var/www/goosielabs/apps';
+if (existsSync(APPS_DIR)) {
+  for (const name of readdirSync(APPS_DIR)) {
+    const tf = join(APPS_DIR, name, 'tile.json');
+    const archived = join(APPS_DIR, name, '.archived');
+    if (!existsSync(tf) || existsSync(archived)) continue;
+    try {
+      const t = JSON.parse(readFileSync(tf, 'utf8'));
+      if (t.lnbits_inkey) {
+        wallets[name] = { inkey: t.lnbits_inkey, displayName: t.title ?? name };
+      }
+    } catch {}
+  }
+}
+
 console.log(`⚡ lnaddress: loaded ${Object.keys(wallets).length} wallets`);
 console.log(`   Names: ${Object.keys(wallets).sort().join(', ')}`);
 
