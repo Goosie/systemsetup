@@ -253,9 +253,10 @@ async function newGoose(name) {
     JSON.stringify({ pubkey: pk, npub, nsec, nsecHex, blockbirth }, null, 2) + '\n'
   );
   console.log(`  ⛏  Blockbirth: #${blockbirth.toLocaleString()}`);
+  // agents/<name>/<name>.md — role description with description: frontmatter
   writeFileSync(
     resolve(agentDir, `${name}.md`),
-    `# ${capitalize(name)} — Role\n\n_Role description to be filled in._\n\n**Pubkey:** ${pk}\n`
+    `description: ${capitalize(name)} goose — role to be defined.\n\n# ${capitalize(name)} — Role\n\n_Role description to be filled in._\n\n**Pubkey:** ${pk}\n`
   );
   console.log(`  📁 Agent directory created: ${agentDir}`);
 
@@ -376,6 +377,25 @@ async function newGoose(name) {
     console.log(`  ⚠️  Tiles update failed — run manually: bash /home/deploy/update-tiles.sh`);
   }
 
+  // 7c. Create ~/.claude/agents/<name>.md — nsite page template
+  const CLAUDE_AGENTS_DIR = '/home/deploy/.claude/agents';
+  const claudeAgentMd = resolve(CLAUDE_AGENTS_DIR, `${name}.md`);
+  if (!existsSync(claudeAgentMd)) {
+    writeFileSync(claudeAgentMd,
+      `---\nname: ${name}\ndescription: ${capitalize(name)} goose — role to be defined.\nquote: To be written.\n---\n# ${capitalize(name)} — Role\n\n## Role\n\n_Role description to be filled in._\n\n## Responsibilities\n\n- To be defined\n\n## Commands\n\n\`\`\`bash\n# To be defined\n\`\`\`\n\n## Boundaries\n\n### May NOT\n- To be defined\n\n## Position in V-Formation\n\nTo be defined.\n`
+    );
+    console.log(`  📄 .claude/agents/${name}.md created (fill in role + quote)`);
+  }
+
+  // 7d. Publish nsite agent page
+  console.log(`  🌐 Publishing nsite agent page for ${capitalize(name)}...`);
+  try {
+    execSync(`node ${PUBLISH_AGENT_PAGES} --agent ${name}`, { stdio: 'pipe' });
+    console.log(`  ✅ Nsite page live`);
+  } catch (e) {
+    console.log(`  ⚠️  Nsite publish failed — run manually: node ${PUBLISH_AGENT_PAGES} --agent ${name}`);
+  }
+
   // 8. Announce in formation chat
   await publishChat(pool, `🎉 New goose onboarded: ${capitalize(name)}\nPubkey: ${pk.slice(0, 16)}...\nAdd role description to: ${agentDir}/${name}.md`);
 
@@ -384,14 +404,16 @@ async function newGoose(name) {
   console.log(`\n✅ ${capitalize(name)} is now part of the V-Formation!`);
   console.log(`   NIP-05: ${name}@goosielabs.com`);
   console.log(`   npub:   ${npub}`);
-  console.log(`\n📝 Next steps:`);
-  console.log(`   1. Edit ${agentDir}/${name}.md — add role description`);
-  console.log(`   2. Update about in ${AGENTS_JSON} once role is defined`);
-  console.log(`   3. Re-publish profile: node /home/deploy/agents/publish-profiles.js ${name}`);
-  console.log(`   4. Customise icon bg+symbol in ${GENERATE_ICONS_MJS} → @designy`);
-  console.log(`   5. Update portrait prompt in /home/deploy/scripts/generate-agent-portraits.mjs → re-run for ${name}`);
-  console.log(`   6. Add a script at /home/deploy/scripts/${name}/index.js`);
-  console.log(`   7. Restart goose-runner: sudo systemctl restart goose-runner`);
+  console.log(`\n📝 Next steps (manual):`);
+  console.log(`   1. Edit ${agentDir}/${name}.md — replace description: + role`);
+  console.log(`   2. Edit /home/deploy/.claude/agents/${name}.md — fill in quote + role + boundaries`);
+  console.log(`   3. Re-publish nsite page: node ${PUBLISH_AGENT_PAGES} --agent ${name}`);
+  console.log(`   4. Update about in ${AGENTS_JSON} once role is defined`);
+  console.log(`   5. Re-publish profile: node /home/deploy/agents/publish-profiles.js ${name}`);
+  console.log(`   6. Customise icon bg+symbol in ${GENERATE_ICONS_MJS} → re-run node generate-agent-icons.mjs`);
+  console.log(`   7. Add a script at /home/deploy/scripts/${name}/index.mjs`);
+  console.log(`   8. Add to goose-runner KEYS + switch case, restart goose-runner`);
+  console.log(`   9. Add to Blocky DEFAULT_SCHEDULE if periodic tasks needed`);
 }
 
 // ── renamegoose ───────────────────────────────────────────────────────────────
