@@ -198,13 +198,15 @@ De naam "V-formatie" komt van hoe ganzen vliegen: de voorste gans breekt de wind
 
 | Gans | Wat die doet | Hoe aanroepen |
 |------|-------------|---------------|
-| **Astrid** | Mijn persoonlijke lab-assistent. Kent alles, houdt bij waar ik was, maakt overzichten. Dit ben ik aan het typen als ik "hey Astrid..." schrijf. | De standaard assistent in Claude Code |
-| **Jurry** | Juridisch adviseur. Controleert alle apps op juridische risico's (privacywet, gokwet, erfrecht etc.) | `gans jurry overview` in terminal |
-| **Haitje** | AI-configuratie specialist. Checkt of alle ganzen-configuraties kloppen | `gans haitje check` in terminal |
-| **Tessa** | QA-tester. Test apps, maakt testdata aan | `gans tessa <appnaam> test` in terminal |
-| **Danky** | DevOps rol — git, backups, server-onderhoud | Typ `@danky` in gesprek met Astrid |
-| **Ruby** | Chief Reality Officer — stelt de kritische vragen, pikt onrealistische plannen op | Typ `@ruby` in gesprek met Astrid |
-| **Finny** | Chief Financial Goose — bewaakt kosten en inkomsten in sats | Typ `@finny` in gesprek met Astrid |
+| **Assistenty** | Mijn persoonlijke lab-assistent. Kent alles, houdt bij waar ik was, maakt overzichten. | De standaard assistent in Claude Code |
+| **Blocky** | **De klok van de V-Formatie.** Luistert naar Bitcoin-blokken en triggert andere ganzen op het juiste moment. Geen cron, geen server-klok — Bitcoin is het ritme. | `goosie blocky schedule` voor overzicht |
+| **Healthy** | Server health monitor. Stuurt elke ~30 minuten een Nostr DM naar Perry met de status van de server (RAM, swap, disk, services). Rood = probleem. | `goosie healthy check` of wacht op DM |
+| **Jurry** | Juridisch adviseur. Controleert alle apps op juridische risico's (privacywet, gokwet, erfrecht etc.) | `goosie jurry overview` in terminal |
+| **Ay** | AI-configuratie specialist. Checkt of alle ganzen-configuraties kloppen | `goosie ay check` in terminal |
+| **Testy** | QA-tester. Test apps, maakt testdata aan | `goosie testy <appnaam> test` in terminal |
+| **Devy** | DevOps rol — git, backups, server-onderhoud | Typ `@devy` in gesprek met Assistenty |
+| **Transy** | Chief Reality Officer — stelt de kritische vragen | Typ `@transy` in gesprek |
+| **Finny** | Chief Financial Goose — bewaakt kosten en inkomsten in sats | Typ `@finny` in gesprek |
 
 **Wat is Claude Code?**
 Dit is de AI-tool waarmee ik bouw. Gemaakt door Anthropic. Je start het met het commando `claude` in de terminal. Astrid "leeft" in de configuratiebestanden en weet alles over het project.
