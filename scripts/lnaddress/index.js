@@ -20,22 +20,25 @@ const { readFileSync, readdirSync, existsSync } = require('fs');
 const { join } = require('path');
 
 const PORT        = 3020;
-const AGENTS_DIR  = '/home/deploy/agents';
+const SCAN_DIRS   = ['/home/deploy/agents', '/home/deploy/people'];
 const LNBITS_URL  = 'http://127.0.0.1:5000';
 const PUBLIC_BASE = 'https://goosielabs.com';
 
-// Load all agent wallet inkeys at startup
+// Load all wallet inkeys at startup from all scan dirs
 const wallets = {};
-for (const name of readdirSync(AGENTS_DIR)) {
-  const wf = join(AGENTS_DIR, name, 'lnbits-wallet.json');
-  if (existsSync(wf)) {
-    const w = JSON.parse(readFileSync(wf, 'utf8'));
-    wallets[name] = { inkey: w.inkey, displayName: w.displayName };
+for (const dir of SCAN_DIRS) {
+  if (!existsSync(dir)) continue;
+  for (const name of readdirSync(dir)) {
+    const wf = join(dir, name, 'lnbits-wallet.json');
+    if (existsSync(wf)) {
+      const w = JSON.parse(readFileSync(wf, 'utf8'));
+      wallets[name] = { inkey: w.inkey, displayName: w.displayName };
+    }
   }
 }
 
-console.log(`⚡ lnaddress: loaded ${Object.keys(wallets).length} agent wallets`);
-console.log(`   Agents: ${Object.keys(wallets).join(', ')}`);
+console.log(`⚡ lnaddress: loaded ${Object.keys(wallets).length} wallets`);
+console.log(`   Names: ${Object.keys(wallets).sort().join(', ')}`);
 
 function jsonResponse(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });

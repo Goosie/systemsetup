@@ -98,6 +98,42 @@ const agents = [
     name: 'supporty',
     prompt: `${BASE_STYLE}. Wearing a light blue polo shirt with a small headset on one ear and a friendly open-winged pose as if welcoming someone. Holds a clipboard with a checklist. Warm, approachable smile — the goose who always has time for your question.`,
   },
+  {
+    name: 'backy',
+    prompt: `${BASE_STYLE}. Wearing a sturdy utility vest with multiple pockets stuffed with hard drives and USB sticks, holding a silver portable hard drive in one wing and pressing a large "BACKUP" button with the other. Dependable, prepared, the goose who makes sure nothing is ever lost.`,
+  },
+  {
+    name: 'gitea',
+    prompt: `${BASE_STYLE}. Wearing a dark olive server-admin hoodie with a small tea-cup logo on the chest, sitting at a miniature rack server with glowing LED lights, one wing resting on a mechanical keyboard. Calm, focused, the reliable keeper of all the code.`,
+  },
+  {
+    name: 'gitty',
+    prompt: `${BASE_STYLE}. Wearing a casual dark denim jacket covered in colourful git-branch sticker patches, holding a tablet showing a branching git graph in bright colours. Sharp, fast, always knows where every branch leads.`,
+  },
+  {
+    name: 'humany',
+    prompt: `${BASE_STYLE}. Wearing a smart coral-pink blazer with a "WELCOME" name badge pinned on, holding a golden onboarding folder in one wing and extending the other wing in a warm handshake greeting. Warm, professional, the goose every new recruit meets first.`,
+  },
+  {
+    name: 'weathery',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Weathery — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
+  {
+    name: 'healthy',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Healthy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
+  {
+    name: 'coachy',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Coachy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
+  {
+    name: 'testy2',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Testy2 — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
 ];
 
 async function generateImage(prompt) {
