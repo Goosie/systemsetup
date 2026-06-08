@@ -10,8 +10,11 @@
 import 'websocket-polyfill';
 import WebSocket from 'ws';
 import { readFileSync } from 'fs';
+import { execFileSync } from 'child_process';
 import { resolve } from 'path';
 import { getPublicKey, finalizeEvent, SimplePool } from 'nostr-tools';
+
+const HONK = '/home/deploy/.local/bin/honk';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -26,10 +29,12 @@ const PUBKEY     = keyData.pubkey;
 // Default schedule — used when no relay config exists yet.
 // All intervals in Bitcoin blocks (~10 min each).
 const DEFAULT_SCHEDULE = {
-  testy:  { interval_blocks: 144,  command: 'run-all',  description: '~1 day'   },
-  secury: { interval_blocks: 1008, command: 'check',    description: '~1 week'  },
-  jurry:  { interval_blocks: 4032, command: 'overview', description: '~4 weeks' },
-  ay:     { interval_blocks: 2016, command: 'check',    description: '~2 weeks' },
+  testy:   { interval_blocks: 144,  command: 'run-all',  description: '~1 day'   },
+  secury:  { interval_blocks: 1008, command: 'check',    description: '~1 week'  },
+  jurry:   { interval_blocks: 4032, command: 'overview', description: '~4 weeks' },
+  ay:      { interval_blocks: 2016, command: 'check',    description: '~2 weeks' },
+  backy:   { interval_blocks: 1000, command: 'snapshot', description: '~1 week'  },
+  healthy: { interval_blocks: 3,    command: 'check',    description: '~30 min'  },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -135,6 +140,23 @@ async function triggerGoose(goose, blockHeight) {
   const config = schedule[goose];
 
   console.log(`\n  🚀 Triggering ${goose} (command: ${config.command})`);
+
+  // Backy krijgt een DM via honk (zichtbaar in Swarm) in plaats van NIP-90
+  if (goose === 'backy') {
+    try {
+      execFileSync(HONK, [
+        'from', '@blocky',
+        `Blok ${blockHeight} bereikt — tijd voor een snapshot! snapshot`,
+        'to', '@backy',
+      ], { timeout: 30000 });
+      console.log(`  ✅ Honk verstuurd naar Backy`);
+    } catch (e) {
+      console.error(`  ❌ Honk naar Backy mislukt: ${e.message}`);
+    }
+    lastRun[goose] = blockHeight;
+    await persistLastRun();
+    return;
+  }
 
   const event = await publishEvent({
     kind: 5000,
@@ -262,7 +284,117 @@ function connectMempool() {
   });
 }
 
+// ── Schedule overview command ─────────────────────────────────────────────────
+
+async function showSchedule() {
+  const MEMPOOL_API = process.env.MEMPOOL_API ?? 'http://100.111.14.11:3006';
+
+  // Current block height — lokale node eerst
+  let currentHeight = 0;
+  try {
+    const res = await fetch(`${MEMPOOL_API}/api/blocks/tip/height`);
+    currentHeight = parseInt(await res.text());
+  } catch {
+    try {
+      const res = await fetch('https://mempool.space/api/blocks/tip/height');
+      currentHeight = parseInt(await res.text());
+    } catch { currentHeight = 0; }
+  }
+
+  // Relay state ophalen
+  const pool = new SimplePool();
+  let relaySchedule = {};
+  let lastRunState  = {};
+
+  try {
+    const [schedEvents, lastrunEvents] = await Promise.all([
+      pool.querySync([RELAY], { kinds: [30078], '#d': ['vformation-schedule'], authors: [PUBKEY], limit: 1 }),
+      pool.querySync([RELAY], { kinds: [30078], '#d': ['vformation-lastrun'],  authors: [PUBKEY], limit: 1 }),
+    ]);
+    if (schedEvents.length > 0) relaySchedule = JSON.parse(schedEvents[0].content);
+    if (lastrunEvents.length > 0) lastRunState = JSON.parse(lastrunEvents[0].content);
+  } catch { /* gebruik defaults */ }
+
+  pool.close([RELAY]);
+
+  // Canoniek schema: defaults als basis, relay als override
+  const canon = Object.fromEntries(
+    Object.entries(DEFAULT_SCHEDULE).map(([goose, defaults]) => [
+      goose, { ...defaults, ...(relaySchedule[goose] ?? {}) }
+    ])
+  );
+
+  const CYAN = '\x1b[36m'; const BOLD = '\x1b[1m'; const RESET = '\x1b[0m';
+  const GREEN = '\x1b[32m'; const YELLOW = '\x1b[33m';
+
+  console.log(`\n${BOLD}🪿 Blocky — V-Formation Schedule${RESET}`);
+  console.log(`${'─'.repeat(72)}`);
+  console.log(`📍 Current block: ${BOLD}${currentHeight.toLocaleString()}${RESET}\n`);
+
+  const cols = ['Goose', 'Interval', 'Approx', 'Last run', 'Next run', 'ETA'];
+  console.log(`  ${BOLD}${cols[0].padEnd(10)}${cols[1].padEnd(10)}${cols[2].padEnd(10)}${cols[3].padEnd(12)}${cols[4].padEnd(12)}${cols[5]}${RESET}`);
+  console.log(`  ${'─'.repeat(66)}`);
+
+  for (const [goose, cfg] of Object.entries(canon)) {
+    const last     = lastRunState[goose] ?? null;
+    const interval = cfg.interval_blocks;
+    const next     = last ? last + interval : (currentHeight + interval);
+    const blocksTo = next - currentHeight;
+    const minsTo   = blocksTo * 10;
+
+    const lastStr  = last ? `#${last.toLocaleString()}` : 'never';
+    const nextStr  = `#${next.toLocaleString()}`;
+    const etaStr   = blocksTo <= 0
+      ? `${GREEN}now${RESET}`
+      : blocksTo < 6
+        ? `${YELLOW}~${minsTo}m${RESET}`
+        : minsTo < 120
+          ? `~${minsTo}m`
+          : `~${Math.round(minsTo / 60)}h`;
+
+    console.log(`  ${CYAN}${goose.padEnd(10)}${RESET}${String(interval).padEnd(10)}${cfg.description.padEnd(10)}${lastStr.padEnd(12)}${nextStr.padEnd(12)}${etaStr}`);
+  }
+
+  console.log(`\n  ${BOLD}Stale relay entries (not in active schedule):${RESET}`);
+  const stale = Object.keys(relaySchedule).filter(g => !DEFAULT_SCHEDULE[g]);
+  if (stale.length === 0) {
+    console.log(`  none`);
+  } else {
+    for (const g of stale) {
+      console.log(`  ⚠  ${g} — in relay schedule but not in DEFAULT_SCHEDULE (can be cleaned up)`);
+    }
+  }
+
+  console.log();
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
+
+if (process.argv[2] === 'schedule') {
+  await showSchedule();
+  process.exit(0);
+}
+
+if (process.argv[2] === 'clean-relay') {
+  // Publiceert het canonieke DEFAULT_SCHEDULE naar de relay, verwijdert stale entries
+  const pool = new SimplePool();
+  const content = Object.fromEntries(
+    Object.entries(DEFAULT_SCHEDULE).map(([goose, { interval_blocks, command, description }]) => [
+      goose, { interval_blocks, command, description }
+    ])
+  );
+  const event = finalizeEvent({
+    kind: 30078,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [['d', 'vformation-schedule'], ['t', 'vformation']],
+    content: JSON.stringify(content),
+  }, SECRET_KEY);
+  await Promise.allSettled(pool.publish([RELAY], event));
+  pool.close([RELAY]);
+  console.log('✅ Relay schedule bijgewerkt — stale entries verwijderd, healthy toegevoegd.');
+  console.log('   Geese in schema:', Object.keys(DEFAULT_SCHEDULE).join(', '));
+  process.exit(0);
+}
 
 console.log('🪿 Blocky — Bitcoin block scheduler for the V-Formation');
 console.log('──────────────────────────────────────────────────────────');
