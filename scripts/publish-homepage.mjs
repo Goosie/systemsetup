@@ -225,13 +225,17 @@ async function generateHomepage() {
           const q = src.match(/^quote:\s*(.+)$/m);
           if (q) quote = q[1].trim().replace(/^['"]|['"]$/g, '');
         }
-        // Read LNbits inkey for balance display (read-only key, safe to expose)
-        let inkey = '';
+        // Read LNbits wallet info for balance display (inkey = read-only, safe to expose)
+        let inkey = '', walletId = '';
         const walletFile = path.join(KEYS_DIR, name, 'lnbits-wallet.json');
         if (existsSync(walletFile)) {
-          try { inkey = JSON.parse(readFileSync(walletFile, 'utf8')).inkey ?? ''; } catch {}
+          try {
+            const w = JSON.parse(readFileSync(walletFile, 'utf8'));
+            inkey    = w.inkey    ?? '';
+            walletId = w.wallet_id ?? '';
+          } catch {}
         }
-        agents.push({ name, npub: key.npub, pubkey: key.pubkey || '', description, quote, blockbirth: key.blockbirth || null, inkey });
+        agents.push({ name, npub: key.npub, pubkey: key.pubkey || '', description, quote, blockbirth: key.blockbirth || null, inkey, walletId });
       } catch {}
     }
   } catch {}
@@ -306,7 +310,7 @@ async function generateHomepage() {
       ? `<div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ #${a.blockbirth.toLocaleString('en')} · Age <span class="goose-age">…</span> blocks</div>`
       : '';
     const walletLine = a.inkey
-      ? `<div class="agent-wallet" data-inkey="${a.inkey}">
+      ? `<div class="agent-wallet" data-inkey="${a.inkey}" data-walletid="${a.walletId}">
           <span class="agent-balance">⚡ <span class="balance-sats">…</span> sats</span>
           <a href="lightning:${a.name}@goosielabs.com" class="agent-donate" title="Donate sats to ${title}">donate</a>
          </div>`
