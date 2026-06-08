@@ -27,10 +27,79 @@ const NOSTR_TOOLS = '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools
 const WS_PATH     = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 const HONK        = '/home/deploy/.local/bin/honk';
 
-// AI config — Routstr (OpenAI-compatible, no API key needed for basic use)
-const AI_BASE_URL = process.env.GANDER_AI_URL   ?? 'https://api.routstr.com/v1';
-const AI_MODEL    = process.env.GANDER_AI_MODEL  ?? 'gpt-4o-mini';
-const AI_KEY      = process.env.GANDER_AI_KEY    ?? 'no-key';
+// AI config — Routstr paid via Cashu tokens minted from Gander's LNbits wallet
+const AI_BASE_URL   = process.env.GANDER_AI_URL   ?? 'https://api.routstr.com/v1';
+const AI_MODEL      = process.env.GANDER_AI_MODEL  ?? 'gpt-4o-mini';
+const LNBITS_URL    = 'http://127.0.0.1:5000';
+const MINT_URL      = 'http://127.0.0.1:3338';
+const SATS_PER_CALL = parseInt(process.env.GANDER_SATS_PER_CALL ?? '100'); // budget per AI call
+
+// ── Budget: LNbits wallet ─────────────────────────────────────────────────────
+const ganderWallet = JSON.parse(readFileSync(`${AGENTS_DIR}/gander/lnbits-wallet.json`, 'utf8'));
+
+async function getBalance() {
+  const res = await fetch(`${LNBITS_URL}/api/v1/wallet`, {
+    headers: { 'X-Api-Key': ganderWallet.inkey },
+  });
+  const data = await res.json();
+  return Math.floor((data.balance ?? 0) / 1000); // msat → sat
+}
+
+async function payInvoice(bolt11) {
+  const res = await fetch(`${LNBITS_URL}/api/v1/payments`, {
+    method: 'POST',
+    headers: { 'X-Api-Key': ganderWallet.adminkey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ out: true, bolt11 }),
+  });
+  if (!res.ok) throw new Error(`LNbits payment failed: ${await res.text()}`);
+  return res.json();
+}
+
+async function mintCashuToken(sats) {
+  // 1. Request mint quote
+  const quoteRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: sats, unit: 'sat' }),
+  });
+  const { quote, request: bolt11 } = await quoteRes.json();
+
+  // 2. Pay from Gander's LNbits wallet
+  await payInvoice(bolt11);
+
+  // 3. Poll until paid
+  for (let i = 0; i < 10; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    const stateRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11/${quote}`);
+    const { state } = await stateRes.json();
+    if (state === 'PAID') break;
+  }
+
+  // 4. Mint tokens (blind signatures)
+  const { getPublicKey, generateSecretKey } = await import(NOSTR_TOOLS);
+  // Simple token request — use random secrets for the proofs
+  const secrets = Array.from({ length: sats }, (_, i) => `gander_${quote}_${i}`);
+  const mintRes = await fetch(`${MINT_URL}/v1/mint/bolt11`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      quote,
+      outputs: secrets.map(s => ({
+        amount: 1,
+        id: '009a1f293253e41e', // keyset id — will be validated by mint
+        B_: s,
+      })),
+    }),
+  });
+  const mintData = await mintRes.json();
+
+  // 5. Encode as cashuA token
+  const token = {
+    token: [{ mint: MINT_URL, proofs: mintData.signatures ?? [] }],
+    unit: 'sat',
+  };
+  return 'cashuA' + Buffer.from(JSON.stringify(token)).toString('base64');
+}
 
 // Keys
 const ganderKey  = JSON.parse(readFileSync(`${AGENTS_DIR}/gander/nostr-key.json`, 'utf8'));
@@ -96,6 +165,25 @@ async function gatherNews(topic) {
 
 // ── AI synthesis ──────────────────────────────────────────────────────────────
 
+async function getApiKey() {
+  // If a manual key is set in env, use it
+  if (process.env.GANDER_AI_KEY && process.env.GANDER_AI_KEY !== 'no-key') {
+    return process.env.GANDER_AI_KEY;
+  }
+  // Otherwise mint a Cashu token from Gander's LNbits wallet
+  const balance = await getBalance();
+  console.log(`[Gander] Wallet balance: ${balance} sats (need: ${SATS_PER_CALL})`);
+  if (balance < SATS_PER_CALL) {
+    honk(
+      `⚠️ Gander wallet empty (${balance} sats). Top me up to continue scouting!\nSend sats to ⚡ gander@goosielabs.com | https://goosielabs.com`,
+      'perry', true
+    );
+    throw new Error(`Wallet too low: ${balance} sats (need ${SATS_PER_CALL})`);
+  }
+  console.log(`[Gander] Minting ${SATS_PER_CALL} sat Cashu token from wallet...`);
+  return await mintCashuToken(SATS_PER_CALL);
+}
+
 async function synthesise(topic, newsItems) {
   const newsText = newsItems.slice(0, 15).map((item, i) =>
     `${i + 1}. ${item.title}${item.desc ? ` — ${item.desc}` : ''}`
@@ -133,12 +221,13 @@ Format the response as JSON:
 }`;
 
   console.log(`[Gander] Synthesising with AI...`);
+  const apiKey = await getApiKey();
 
   const res = await fetch(`${AI_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${AI_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: AI_MODEL,
@@ -195,10 +284,20 @@ function honk(message, to, noCC = false) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+if (cmd === 'balance') {
+  const bal = await getBalance();
+  console.log(`🪿 Gander wallet: ${bal} sats`);
+  console.log(`   Each scout call costs ~${SATS_PER_CALL} sats`);
+  console.log(`   Remaining calls: ~${Math.floor(bal / SATS_PER_CALL)}`);
+  console.log(`   Top up: ⚡ gander@goosielabs.com`);
+  process.exit(0);
+}
+
 if (cmd !== 'scout' || !topic) {
   console.log('Usage:');
   console.log('  gander scout "topic"           — research + publish + DM Perry + Directory');
   console.log('  gander scout "topic" --dry-run — preview only');
+  console.log('  gander balance                 — show wallet balance');
   process.exit(0);
 }
 
