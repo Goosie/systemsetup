@@ -55,6 +55,111 @@ const keyData    = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'humany/nostr-key
 const SECRET_KEY = new Uint8Array(keyData.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
 const PUBKEY     = keyData.pubkey;
 
+// ── Flock roster helpers ──────────────────────────────────────────────────────
+
+function buildFlockSection() {
+  const data = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'agents.json'), 'utf8'));
+  const lines = [
+    '## The Flock — Your colleagues in the V-Formation',
+    '',
+    'These are the geese you fly with. Know them. Trust them.',
+    '',
+    '| Goose | What they do | Contact |',
+    '|-------|-------------|---------|',
+  ];
+  for (const a of data.agents) {
+    // Use description: from agents/<name>/<name>.md for clean one-liners
+    let role = 'V-Formation member';
+    const mdFile = resolve(AGENTS_DIR, a.name, `${a.name}.md`);
+    if (existsSync(mdFile)) {
+      const src = readFileSync(mdFile, 'utf8');
+      const m = src.match(/^description:\s*(.+)$/m);
+      if (m) role = m[1].trim().replace(/^['"]|['"]$/g, '');
+    }
+    lines.push(`| **${a.displayName ?? capitalize(a.name)}** | ${role} | ${a.name}@goosielabs.com |`);
+  }
+  lines.push('');
+  lines.push('Full roster: `jq ".agents[] | {name,about}" /home/deploy/agents/agents.json`');
+  lines.push('');
+  return lines.join('\n');
+}
+
+function updateFlockSectionInAll(excludeName = null) {
+  const CLAUDE_AGENTS_DIR = '/home/deploy/.claude/agents';
+  const flockSection = buildFlockSection();
+  const MARKER = '## The Flock — Your colleagues in the V-Formation';
+
+  for (const file of readdirSync(CLAUDE_AGENTS_DIR)) {
+    if (!file.endsWith('.md')) continue;
+    const gName = file.replace('.md', '');
+    if (gName === excludeName) continue;
+    const path = resolve(CLAUDE_AGENTS_DIR, file);
+    let content = readFileSync(path, 'utf8');
+    if (content.includes(MARKER)) {
+      // Replace existing section
+      content = content.replace(/## The Flock[\s\S]*$/, flockSection.trimEnd() + '\n');
+    } else {
+      // Append
+      content = content.trimEnd() + '\n\n' + flockSection;
+    }
+    writeFileSync(path, content);
+  }
+}
+
+// ── Welcome ceremony helpers ──────────────────────────────────────────────────
+
+async function publishAsGoose(gooseName, content, pool) {
+  try {
+    const keyFile = resolve(AGENTS_DIR, gooseName, 'nostr-key.json');
+    if (!existsSync(keyFile)) return;
+    const kd = JSON.parse(readFileSync(keyFile, 'utf8'));
+    const sk = new Uint8Array(kd.nsecHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const event = finalizeEvent({
+      kind: 1,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [['t', 'vformation'], ['t', 'welcome']],
+      content,
+    }, sk);
+    await Promise.allSettled(pool.publish([RELAY], event));
+    console.log(`  🪿 ${capitalize(gooseName)}: "${content.slice(0, 60)}..."`);
+  } catch (e) {
+    console.log(`  ⚠️  ${gooseName} welcome post failed: ${e.message}`);
+  }
+}
+
+async function welcomeCeremony(newName, newNpub, pool) {
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const displayName = cap(newName);
+  console.log(`  🎉 Welcome ceremony for ${displayName}...`);
+
+  // Assistenty — official welcome
+  await publishAsGoose('assistenty',
+    `Welcome to the V-Formation, @${displayName}! 🪿 The flock just got stronger. Glad you're here. | https://goosielabs.com #vformation`,
+    pool
+  );
+  await new Promise(r => setTimeout(r, 500));
+
+  // Coachy — warm personal welcome
+  await publishAsGoose('coachy',
+    `Hey @${displayName}! 🪿 We've been waiting for you. Spread those wings and join the formation — the flock flies together from here. | https://goosielabs.com #vformation`,
+    pool
+  );
+  await new Promise(r => setTimeout(r, 500));
+
+  // Blocky — sets the heartbeat
+  await publishAsGoose('blocky',
+    `New goose in the formation: ${displayName} (${newNpub.slice(0, 16)}…). The flock grows. Bitcoin keeps the clock. 🪿 | https://goosielabs.com #vformation`,
+    pool
+  );
+  await new Promise(r => setTimeout(r, 500));
+
+  // Healthy — keeps watch
+  await publishAsGoose('healthy',
+    `Server health confirmed — there's room for one more. Welcome, @${displayName}! 🟢🪿 | https://goosielabs.com #vformation`,
+    pool
+  );
+}
+
 // ── Relay helpers ─────────────────────────────────────────────────────────────
 
 async function publish(pool, template) {
@@ -395,6 +500,18 @@ async function newGoose(name) {
   } catch (e) {
     console.log(`  ⚠️  Nsite publish failed — run manually: node ${PUBLISH_AGENT_PAGES} --agent ${name}`);
   }
+
+  // 7e. Update ## The Flock section in ALL existing agent prompts
+  console.log(`  📚 Updating formation roster in all agent prompts...`);
+  try {
+    updateFlockSectionInAll(name);
+    console.log(`  ✅ All agent prompts updated with new flock member`);
+  } catch (e) {
+    console.log(`  ⚠️  Flock section update failed: ${e.message}`);
+  }
+
+  // 7f. Welcome ceremony — formation posts a public welcome
+  await welcomeCeremony(name, npub, pool);
 
   // 8. Announce in formation chat
   await publishChat(pool, `🎉 New goose onboarded: ${capitalize(name)}\nPubkey: ${pk.slice(0, 16)}...\nAdd role description to: ${agentDir}/${name}.md`);
