@@ -88,21 +88,29 @@ async function generateImage(prompt) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
     body: JSON.stringify({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       prompt,
       n: 1,
-      size: '1792x1024',
-      quality: 'standard',
-      response_format: 'url',
+      size: '1536x1024',
+      quality: 'medium',
     }),
     signal: AbortSignal.timeout(120_000),
   });
   if (!res.ok) throw new Error(`DALL-E error ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.data[0].url;
+  // gpt-image-1 returns b64_json, dall-e-3 returns url
+  const item = data.data[0];
+  if (item.url) return item.url;
+  if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
+  throw new Error('No image in response: ' + JSON.stringify(item));
 }
 
 async function downloadImage(url) {
+  // Handle base64 data URLs from gpt-image-1
+  if (url.startsWith('data:')) {
+    const base64 = url.split(',')[1];
+    return Buffer.from(base64, 'base64');
+  }
   const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
@@ -138,30 +146,26 @@ async function uploadToBlossom(buf, agentSk) {
 }
 
 async function updateProfile(name, bannerUrl, agentSk) {
-  const { finalizeEvent, SimplePool } = await import(NOSTR_TOOLS);
+  const { finalizeEvent } = await import(NOSTR_TOOLS);
+  const WebSocket = (await import(WS_PATH)).default;
 
-  // Read current profile data from agents.json
   const agents = JSON.parse(readFileSync(`${AGENTS_DIR}/agents.json`, 'utf8'));
   const agent  = agents.agents.find(a => a.name === name);
   if (!agent) throw new Error(`Agent ${name} not in agents.json`);
 
-  const walletFile = `${AGENTS_DIR}/${name}/lnbits-wallet.json`;
-  const lud16 = existsSync(walletFile)
-    ? JSON.parse(readFileSync(walletFile, 'utf8'))?.lightning_address ?? `${name}@goosielabs.com`
-    : null;
+  const lud16 = `${name}@goosielabs.com`;
 
   const metadata = {
-    name: agent.displayName ?? name,
-    about: agent.about ?? '',
-    picture: agent.picture ?? `https://goosielabs.com/agents/${name}/${name}.jpg`,
+    name:    agent.displayName ?? name,
+    about:   agent.about ?? '',
+    picture: `https://goosielabs.com/agents/${name}/${name}.jpg`,
     website: 'https://goosielabs.com',
-    nip05: `${name}@goosielabs.com`,
-    banner: bannerUrl,
-    ...(lud16 ? { lud16 } : {}),
+    nip05:   `${name}@goosielabs.com`,
+    banner:  bannerUrl,
+    lud16,
     bot: true,
   };
 
-  const pool = new SimplePool();
   const event = finalizeEvent({
     kind: 0,
     created_at: Math.floor(Date.now() / 1000),
@@ -169,8 +173,16 @@ async function updateProfile(name, bannerUrl, agentSk) {
     content: JSON.stringify(metadata),
   }, agentSk);
 
-  await Promise.allSettled(pool.publish([RELAY, ...ALL_RELAYS], event));
-  pool.close([RELAY, ...ALL_RELAYS]);
+  // Publish to local relay + external relays
+  const relays = [RELAY, ...ALL_RELAYS];
+  await Promise.allSettled(relays.map(url => new Promise((resolve) => {
+    const ws = new WebSocket(url);
+    ws.on('open', () => ws.send(JSON.stringify(['EVENT', event])));
+    ws.on('message', () => { ws.close(); resolve(); });
+    ws.on('error', () => { ws.close(); resolve(); });
+    setTimeout(() => { try { ws.close(); } catch {} resolve(); }, 8000);
+  })));
+
   return event.id;
 }
 
