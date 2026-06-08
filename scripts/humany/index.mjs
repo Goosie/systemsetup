@@ -473,7 +473,30 @@ async function newGoose(name) {
   });
   console.log(`  ✅ Dashboard rebuilt`);
 
-  // 7b. Update nsite homepage tiles
+  // 7b. Add to AGENT_ORDER + AGENT_COLORS in publish-homepage.mjs
+  try {
+    let homepage = readFileSync(PUBLISH_HOMEPAGE, 'utf8');
+    // Add to AGENT_COLORS if not present
+    if (!homepage.includes(`${name}:'`)) {
+      homepage = homepage.replace(
+        /(const AGENT_COLORS\s*=\s*\{[^}]+)(}\s*;)/,
+        `$1, ${name}:'#374151' $2`
+      );
+    }
+    // Add to AGENT_ORDER if not present
+    if (!homepage.includes(`'${name}'`)) {
+      homepage = homepage.replace(
+        /(const AGENT_ORDER\s*=\s*\[)([^\]]+)(\]\s*;)/,
+        `$1$2,'${name}'$3`
+      );
+    }
+    writeFileSync(PUBLISH_HOMEPAGE, homepage);
+    console.log(`  🃏 ${capitalize(name)} added to homepage AGENT_ORDER`);
+  } catch (e) {
+    console.log(`  ⚠️  AGENT_ORDER update failed — add '${name}' manually to publish-homepage.mjs`);
+  }
+
+  // 7b2. Update nsite homepage tiles
   console.log(`  🏠 Updating homepage tiles...`);
   try {
     execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
