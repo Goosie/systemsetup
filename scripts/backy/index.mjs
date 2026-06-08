@@ -199,8 +199,8 @@ async function handleMessage(fromPubkey, content) {
     return;
   }
 
-  // reply helper — stuurt terug naar de afzender
-  const reply = (msg) => honk('backy', msg, recipient);
+  // reply always goes to Perry — goose-to-goose replies cause feedback loops
+  const reply = (msg) => honk('backy', msg, 'perry');
 
   // Normaliseer: slash-commando of sleutelwoord
   const trimmed = content.trim();

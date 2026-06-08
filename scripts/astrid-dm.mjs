@@ -184,9 +184,8 @@ function connect() {
 
     const authorized = getAuthorizedPubkeys();
     if (!authorized.includes(sender)) {
-      console.log('[astrid-dm] sender not authorized — ignoring');
-      await sendReply(sender, 'Not authorized. Only Perry can send me commands.');
-      return;
+      console.log('[astrid-dm] sender not authorized — silently ignoring');
+      return;  // no reply — avoids feedback loops with other geese
     }
 
     const reply = await handleCommand(sender, text);
