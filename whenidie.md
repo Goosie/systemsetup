@@ -71,6 +71,7 @@ De Umbrel is een kleine minicomputer thuis die mijn Bitcoin Lightning node draai
 |-----|---------------|
 | **Via browser** (zelfde netwerk thuis) | http://umbrel.local |
 | **Via terminal** (zelfde netwerk thuis) | `ssh umbrel` |
+| **Via Tailscale** (overal, ook via server) | http://100.111.14.11 |
 | **Inloggegevens** | Staan in LastPass |
 | **2FA** | Op mijn mobiel (authenticator-app) — je hebt de telefoon nodig |
 
@@ -82,12 +83,29 @@ De Umbrel is een kleine minicomputer thuis die mijn Bitcoin Lightning node draai
 |-----|-------------|
 | **Lightning Node (LND)** | Mijn Bitcoin Lightning node |
 | **Alby Hub** | Beheersinterface voor de Lightning node |
+| **Mempool** | Mijn eigen Bitcoin blockchain explorer (poort 3006) |
 | **Lightning Terminal** | Bevat ook de Taproot Assets daemon (tapd) |
+
+### Waarvoor wordt de Umbrel gebruikt vanuit de server
+
+De server (goosielabs.com) maakt verbinding met de Umbrel via **Tailscale** (een privé VPN-netwerk). Zo kan de server data van de Umbrel gebruiken zonder dat die publiek toegankelijk is.
+
+| Wat | Hoe | Gevolg als Umbrel uit staat |
+|-----|-----|-----------------------------|
+| **Blockchain scan** (perry.html) | Mempool API op poort 3006 | ⚠️ Niet erg — scan slaat over, rest van de pagina werkt gewoon |
+| **Lightning betalingen** (apps) | NWC via Alby Hub → LNbits | 🔴 Kritisch — alle Lightning betalingen in apps stoppen |
+| **Cashu mint** | Via LNbits → Alby Hub | 🔴 Kritisch — mint.goosielabs.com kan geen tokens aanmaken |
+| **LNbits** | Via NWC naar Alby Hub | 🔴 Kritisch — alle app-wallets in LNbits werken niet |
+
+**Kort gezegd:**
+- Umbrel even uit voor een update (paar minuten): apps geven een betaalfout, maar herstellen vanzelf zodra Umbrel terug is.
+- Umbrel permanent uit: alle Lightning- en Cashu-functionaliteit stopt. Apps die sats verwerken zijn dan onbruikbaar.
+- De **Nostr relay, de website en alle apps zelf** blijven gewoon werken — die draaien op de server, niet op de Umbrel.
 
 ### Belangrijk bij afsluiten
 
 Als je de Umbrel wilt afsluiten en sats wilt terughalen:
-1. Open Alby Hub via http://umbrel.local
+1. Open Alby Hub via http://umbrel.local (of http://100.111.14.11 via Tailscale)
 2. Sluit het Lightning-kanaal (met Megalith LSP) — dit kost wat tijd en een kleine Bitcoin-transactiefee
 3. Wacht tot de sats on-chain zijn bijgeschreven
 4. Stuur de sats naar een Bitcoin wallet die jij beheert
