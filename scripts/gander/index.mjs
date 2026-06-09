@@ -166,11 +166,26 @@ async function gatherNews(topic) {
 // ── AI synthesis ──────────────────────────────────────────────────────────────
 
 async function getApiKey() {
-  // If a manual key is set in env, use it
+  // 1. Explicit env override
   if (process.env.GANDER_AI_KEY && process.env.GANDER_AI_KEY !== 'no-key') {
     return process.env.GANDER_AI_KEY;
   }
-  // Otherwise mint a Cashu token from Gander's LNbits wallet
+  // 2. Fallback: OPENAI_API_KEY from ~/.env.services (OpenAI-compatible, no Cashu needed)
+  try {
+    const contents = readFileSync('/home/deploy/.env.services', 'utf8');
+    for (const line of contents.split('\n')) {
+      const m = line.match(/^OPENAI_API_KEY=(.+)$/);
+      if (m) {
+        const key = m[1].replace(/^["']|["']$/g, '');
+        if (key) {
+          process.env.GANDER_AI_URL = 'https://api.openai.com/v1';
+          console.log('[Gander] Using OPENAI_API_KEY from ~/.env.services');
+          return key;
+        }
+      }
+    }
+  } catch { /* ignore */ }
+  // 3. Cashu fallback (via Routstr)
   const balance = await getBalance();
   console.log(`[Gander] Wallet balance: ${balance} sats (need: ${SATS_PER_CALL})`);
   if (balance < SATS_PER_CALL) {
