@@ -444,7 +444,7 @@ async function generateHomepage() {
           <div class="agent-name">Perry</div>
           <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
           <div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ #-2,362,201 · Age <span class="goose-age">…</span> blocks</div>
-          <div class="agent-wallet" style="margin-top:0.35rem">
+          <div class="agent-wallet" data-inkey="02b25e836ae5480eb087b93f6b3ab41a" data-walletid="c9ac4e7c136e4fa49e8ee2b7471382e2" style="margin-top:0.35rem">
             <span class="agent-balance">⚡ splits across all geese</span>
             <a href="lightning:perry@goosielabs.com" class="agent-donate" title="Donate to Perry — splits across all geese">donate</a>
           </div>
