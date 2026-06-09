@@ -157,6 +157,16 @@ Reply in the same language as Perry's message (Dutch or English).`;
 
 // Maps goose → available commands with their shell invocations
 const GOOSE_ROSTER = {
+  blocky: {
+    emoji: '⛓️', label: 'Bitcoin block scheduler',
+    commands: {
+      status: {
+        cmd: null, // handled inline — reads from mempool + relay
+        timeout: 10_000,
+        desc: 'Current block height + Blocky schedule (last/next run per goose)',
+      },
+    },
+  },
   healthy: {
     emoji: '🏥', label: 'Server health',
     commands: {
@@ -252,7 +262,36 @@ Available geese:\n${GOOSE_COMMAND_ENUM.map(e => `  ${e.value}: ${e.desc}`).join(
   },
 ];
 
-function assistentyExecute(name, input) {
+async function blockyStatus() {
+  const lines = [];
+  // Block height from local mempool node
+  try {
+    const resp = await fetch('http://100.111.14.11:3006/api/blocks/tip/height', { signal: AbortSignal.timeout(4000) });
+    const height = await resp.text();
+    lines.push(`⛓️  Huidig blok: ${parseInt(height).toLocaleString('nl-NL')}`);
+  } catch {
+    // Fallback: ask blocky via goosie schedule command
+    try {
+      const out = execSync('node /home/deploy/scripts/blocky/index.mjs schedule 2>&1', { timeout: 8000 }).toString();
+      lines.push(stripAnsi(out).trim().slice(0, 2000));
+      return lines.join('\n');
+    } catch {
+      lines.push('⚠️ Mempool node onbereikbaar en Blocky schedule ook niet beschikbaar');
+      return lines.join('\n');
+    }
+  }
+  // Blocky schedule
+  try {
+    const out = execSync('node /home/deploy/scripts/blocky/index.mjs schedule 2>&1', { timeout: 10000 }).toString();
+    lines.push('');
+    lines.push(stripAnsi(out).trim().slice(0, 2000));
+  } catch (e) {
+    lines.push(`⚠️ Blocky schedule niet beschikbaar: ${e.message.slice(0, 100)}`);
+  }
+  return lines.join('\n').slice(0, 3000);
+}
+
+async function assistentyExecute(name, input) {
   if (name === 'check_formation') return checkFormation();
   if (name !== 'ask_goose') return `Unknown tool: ${name}`;
   const [goose, cmd] = (input.task ?? '').split(':');
@@ -262,6 +301,10 @@ function assistentyExecute(name, input) {
   if (!spec) return `Unknown command "${cmd}" for ${goose}`;
 
   console.log(`[dm-listener] assistenty → ${goose}:${cmd}`);
+
+  // Blocky: inline handler (no shell script, reads from mempool + relay)
+  if (goose === 'blocky' && cmd === 'status') return await blockyStatus();
+
   try {
     const out = execSync(spec.cmd, {
       timeout: spec.timeout,
@@ -432,7 +475,7 @@ async function askClaude(gooseName, userMessage) {
       totalToolCalls += toolBlocks.length;
       const toolResults = await Promise.all(toolBlocks.map(async block => {
         console.log(`[dm-listener] ${gooseName} → ${block.name}(${JSON.stringify(block.input)})`);
-        const result = await config.executeTool(block.name, block.input);
+        const result = await Promise.resolve(config.executeTool(block.name, block.input));
         return { type: 'tool_result', tool_use_id: block.id, content: result };
       }));
 
