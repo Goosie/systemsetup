@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, appendFileSync, mkdirSync, existsSync } fr
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 import WebSocket from 'ws';
-import { nip17, nip44, nip19, SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
+import { nip04, nip17, nip44, nip19, SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
 
 // ── Processed IDs — persisted so restarts don't replay old messages ───────────
 const PROCESSED_FILE = '/home/deploy/logs/dm-listener-processed.json';
@@ -533,6 +533,24 @@ function buildGiftWrap(senderSK, recipientPubkey, content) {
   }, wrapKey);
 }
 
+async function sendReplyNip04(gooseSK, toPubkey, message) {
+  const encrypted = await nip04.encrypt(gooseSK, toPubkey, message);
+  const event = finalizeEvent({
+    kind: 4,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [['p', toPubkey]],
+    content: encrypted,
+  }, gooseSK);
+  return new Promise((resolve) => {
+    const pool = new SimplePool();
+    Promise.allSettled([pool.publish([RELAY], event)]).then(() => {
+      pool.close([RELAY]);
+      resolve();
+    });
+    setTimeout(() => { pool.close([RELAY]); resolve(); }, 8_000);
+  });
+}
+
 async function sendReply(gooseSK, toPubkey, message) {
   return new Promise((resolve) => {
     const pool = new SimplePool();
@@ -567,7 +585,7 @@ function connect() {
     console.log(`[dm-listener] connected`);
     ws.send(JSON.stringify([
       'REQ', 'dm-listener',
-      { kinds: [1059], '#p': geese.map(g => g.pubkey), since: Math.floor(Date.now() / 1000) - 259200 },
+      { kinds: [1059, 4], '#p': geese.map(g => g.pubkey), since: Math.floor(Date.now() / 1000) - 259200 },
     ]));
   };
 
@@ -585,11 +603,22 @@ function connect() {
     const goose = pubkeyMap[recipientPubkey];
     if (!goose) return;
 
-    let rumor;
-    try { rumor = nip17.unwrapEvent(ev, goose.sk); } catch { return; }
+    let senderPubkey, text, isNip04 = false;
 
-    const senderPubkey = rumor.pubkey;
-    const text = rumor.content?.trim();
+    if (ev.kind === 4) {
+      // NIP-04: decrypt directly
+      senderPubkey = ev.pubkey;
+      try { text = await nip04.decrypt(goose.sk, senderPubkey, ev.content); }
+      catch { return; }
+      isNip04 = true;
+    } else {
+      // NIP-17: unwrap gift-wrap
+      let rumor;
+      try { rumor = nip17.unwrapEvent(ev, goose.sk); } catch { return; }
+      senderPubkey = rumor.pubkey;
+      text = rumor.content?.trim();
+    }
+
     if (!text) return;
 
     console.log(`[dm-listener] DM to ${goose.name} from ${senderPubkey.slice(0, 8)}…: "${text.slice(0, 80)}"`);
@@ -607,9 +636,13 @@ function connect() {
       reply = `Er ging iets mis: ${err.message}`;
     }
 
-    console.log(`[dm-listener] reply (${reply.length} chars): "${reply.slice(0, 60)}…"`);
+    console.log(`[dm-listener] reply via ${isNip04 ? 'NIP-04' : 'NIP-17'} (${reply.length} chars): "${reply.slice(0, 60)}…"`);
     try {
-      await sendReply(goose.sk, senderPubkey, reply);
+      if (isNip04) {
+        await sendReplyNip04(goose.sk, senderPubkey, reply);
+      } else {
+        await sendReply(goose.sk, senderPubkey, reply);
+      }
       console.log(`[dm-listener] sent ✓`);
     } catch (err) {
       console.error(`[dm-listener] send failed: ${err.message}`);
