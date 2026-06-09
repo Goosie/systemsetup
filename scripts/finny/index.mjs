@@ -75,22 +75,30 @@ function aggregate(entries) {
   return { totals, byGoose, byModel };
 }
 
-function fmt(n) { return n.toLocaleString('nl-NL'); }
-function fmtCost(usd) { return `$${usd.toFixed(4)}`; }
+async function getEurRate() {
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR');
+    const d = await r.json();
+    return d.rates?.EUR ?? 0.92;
+  } catch {
+    return 0.92; // fallback
+  }
+}
 
-function buildReport(sinceStats, allStats, sinceLabel) {
+function fmt(n) { return n.toLocaleString('nl-NL'); }
+function fmtCost(usd, eurRate) { return `€${(usd * eurRate).toFixed(4)}`; }
+
+function buildReport(sinceStats, allStats, sinceLabel, eurRate) {
   const lines = [];
   lines.push(`🏦 Finny — API verbruikrapport`);
   lines.push(`${new Date().toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', dateStyle: 'short', timeStyle: 'short' })}`);
   lines.push('');
 
-  // Since last report
   if (sinceStats.totals.calls > 0) {
     lines.push(`📊 Laatste ${sinceLabel}:`);
     lines.push(`  ${sinceStats.totals.calls} gesprekken · ${fmt(sinceStats.totals.input_tokens)} in / ${fmt(sinceStats.totals.output_tokens)} uit tokens`);
     if (sinceStats.totals.tool_calls > 0) lines.push(`  ${sinceStats.totals.tool_calls} tool calls`);
-    lines.push(`  Kosten: ${fmtCost(sinceStats.totals.cost_usd)} (schatting)`);
-
+    lines.push(`  Kosten: ${fmtCost(sinceStats.totals.cost_usd, eurRate)} (schatting)`);
     const gooseList = Object.entries(sinceStats.byGoose).sort((a, b) => b[1] - a[1])
       .map(([g, n]) => `${g} ${n}×`).join(' · ');
     if (gooseList) lines.push(`  Ganzen: ${gooseList}`);
@@ -99,23 +107,19 @@ function buildReport(sinceStats, allStats, sinceLabel) {
   }
 
   lines.push('');
-
-  // All time
   lines.push(`📈 Totaal (alle tijd):`);
   lines.push(`  ${allStats.totals.calls} gesprekken · ${fmt(allStats.totals.input_tokens)} in / ${fmt(allStats.totals.output_tokens)} uit tokens`);
-  lines.push(`  Kosten: ${fmtCost(allStats.totals.cost_usd)} (schatting)`);
+  lines.push(`  Kosten: ${fmtCost(allStats.totals.cost_usd, eurRate)} (schatting)`);
 
-  // Model breakdown if multiple models
   if (Object.keys(allStats.byModel).length > 1) {
     lines.push('');
     lines.push('Modellen:');
-    for (const [model, count] of Object.entries(allStats.byModel)) {
+    for (const [model, count] of Object.entries(allStats.byModel))
       lines.push(`  ${model}: ${count}×`);
-    }
   }
 
   lines.push('');
-  lines.push('⚠️ Prijzen zijn schattingen. Controleer console.anthropic.com voor exacte kosten.');
+  lines.push(`⚠️ Schatting op basis van EUR/USD ${eurRate.toFixed(4)}. Exacte kosten: console.anthropic.com`);
 
   return lines.join('\n');
 }
@@ -162,7 +166,8 @@ if (command === 'report') {
   const sinceLabel = lastReport.ts === 0 ? 'alle tijd' :
     minutes < 120 ? `${minutes} min` : `${Math.round(minutes / 60)} uur`;
 
-  const report = buildReport(sinceStats, allStats, sinceLabel);
+  const eurRate = await getEurRate();
+  const report = buildReport(sinceStats, allStats, sinceLabel, eurRate);
 
   console.log(report);
 
