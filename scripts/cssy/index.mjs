@@ -3,11 +3,13 @@
  * Cssy — CSS Design System Goose
  *
  * Commands:
- *   status       — template.css stats + which apps use it
- *   themes       — list all named themes
- *   audit        — find CSS variables used in code but undeclared in template.css
- *   sync <name>  — create/update apps/<name>/public/theme.css
- *   sync-all     — sync theme.css for every active app
+ *   status        — template.css stats + which apps use it
+ *   themes        — list all named themes
+ *   audit         — find CSS variables used in code but undeclared in template.css
+ *   wire <name>   — inject theme-loader + theme-selector into apps/<name>/index.html
+ *   wire-all      — wire every active app that hasn't been wired yet
+ *   sync <name>   — create/update apps/<name>/public/theme.css (app-specific overrides)
+ *   sync-all      — sync theme.css for every active app
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
@@ -65,17 +67,36 @@ function findUsedVarsIn(dir) {
 function themeTemplate(appName) {
   const title = appName.charAt(0).toUpperCase() + appName.slice(1);
   return `/* theme.css — ${title}
- * Inherits all design tokens from template.css.
+ * Inherits all design tokens from template.css via theme-loader.js.
  * Only add overrides that are specific to this app below.
  * Maintained by @Cssy
  */
-@import '/templates/template.css';
 
 /* App-specific overrides — uncomment and edit as needed */
 /* :root { */
 /*   --color-brand: #yourcolor; */
 /* } */
 `;
+}
+
+// Checks if an index.html already has the theme-loader injected
+function isWired(indexHtml) {
+  return indexHtml.includes('theme-loader.js');
+}
+
+// Injects theme-loader into <head> and theme-selector before </body>
+function wireIndexHtml(html) {
+  // Insert theme-loader as last item in <head>
+  html = html.replace(
+    /(<\/head>)/i,
+    '        <!-- Theme system — Cssy -->\n        <script src="/theme-loader.js"></script>\n    $1'
+  );
+  // Insert theme-selector before </body>
+  html = html.replace(
+    /(<\/body>)/i,
+    '        <!-- Theme selector — Perry-only, fixed bottom-right -->\n        <script src="/theme-selector.js" defer></script>\n    $1'
+  );
+  return html;
 }
 
 // ── commands ──────────────────────────────────────────────────────────────────
@@ -86,14 +107,18 @@ switch (command) {
     const lines = readTemplate().split('\n').length;
     const themes = getThemes();
     const apps = getActiveApps();
-    const withTheme = apps.filter(a => existsSync(join(APPS_DIR, a, 'public', 'theme.css')));
+    const wired = apps.filter(a => {
+      const idx = join(APPS_DIR, a, 'index.html');
+      if (!existsSync(idx)) return false;
+      return isWired(readFileSync(idx, 'utf8'));
+    });
     console.log(`🎨 Cssy — CSS Design System`);
     console.log(`   template.css:  ${lines} lines`);
     console.log(`   Themes:        ${themes.join(', ')}`);
     console.log(`   Active apps:   ${apps.length}`);
-    console.log(`   With theme.css: ${withTheme.length} / ${apps.length}`);
-    const missing = apps.filter(a => !withTheme.includes(a));
-    if (missing.length) console.log(`   Missing:       ${missing.join(', ')}`);
+    console.log(`   Theme-wired:   ${wired.length} / ${apps.length}`);
+    const unwired = apps.filter(a => !wired.includes(a));
+    if (unwired.length) console.log(`   Not wired:     ${unwired.join(', ')}`);
     break;
   }
 
@@ -108,10 +133,8 @@ switch (command) {
     console.log(`🔍 Cssy — Variable Audit\n`);
     const declared = getDeclaredVars();
     const apps = getActiveApps();
+    const undeclared = new Map();
 
-    const undeclared = new Map(); // varName → Set of apps using it
-
-    // scan main webroot (excluding apps/)
     const webVars = findUsedVarsIn(WEBROOT + '/src');
     for (const v of webVars) {
       if (!declared.has(v)) {
@@ -120,7 +143,6 @@ switch (command) {
       }
     }
 
-    // scan each app
     for (const app of apps) {
       const appSrc = join(APPS_DIR, app, 'src');
       if (!existsSync(appSrc)) continue;
@@ -148,25 +170,59 @@ switch (command) {
           `  ${v}: /* TODO: set value */;`
         ).join('\n');
         const block = `\n/* discovered — undeclared variables found in the wild */\n:root {\n${additions}\n}\n`;
-        const css = readTemplate();
-        writeFileSync(TEMPLATE, css + block);
+        writeFileSync(TEMPLATE, readTemplate() + block);
         console.log(`\n   ✅ Added ${undeclared.size} variable(s) to template.css`);
       }
     }
     break;
   }
 
+  case 'wire': {
+    if (!arg) { console.error('Usage: wire <appname>'); process.exit(1); }
+    const indexPath = join(APPS_DIR, arg, 'index.html');
+    if (!existsSync(indexPath)) {
+      console.error(`No index.html found at ${indexPath}`); process.exit(1);
+    }
+    const html = readFileSync(indexPath, 'utf8');
+    if (isWired(html)) {
+      console.log(`🎨 ${arg} — already wired`);
+    } else {
+      writeFileSync(indexPath, wireIndexHtml(html));
+      console.log(`🎨 ${arg} — wired ✓`);
+      console.log(`   Rebuild the app to apply: npm run build (in apps/${arg}/)`);
+    }
+    break;
+  }
+
+  case 'wire-all': {
+    const apps = getActiveApps();
+    let wired = 0, skipped = 0, noHtml = 0;
+    for (const app of apps) {
+      const indexPath = join(APPS_DIR, app, 'index.html');
+      if (!existsSync(indexPath)) { noHtml++; continue; }
+      const html = readFileSync(indexPath, 'utf8');
+      if (isWired(html)) { skipped++; continue; }
+      writeFileSync(indexPath, wireIndexHtml(html));
+      console.log(`   ✓ ${app}`);
+      wired++;
+    }
+    console.log(`\n🎨 wire-all done: ${wired} wired, ${skipped} already wired, ${noHtml} no index.html`);
+    if (wired > 0) console.log(`   Rebuild each wired app to apply changes.`);
+    break;
+  }
+
   case 'sync': {
     if (!arg) { console.error('Usage: sync <appname>'); process.exit(1); }
-    const dest = join(APPS_DIR, arg, 'public', 'theme.css');
+    const publicDir = join(APPS_DIR, arg, 'public');
     if (!existsSync(join(APPS_DIR, arg))) {
-      console.error(`App "${arg}" not found in ${APPS_DIR}`); process.exit(1);
+      console.error(`App "${arg}" not found`); process.exit(1);
     }
-    writeFileSync(dest, themeTemplate(arg));
-    console.log(`🎨 theme.css written → ${dest}`);
-    console.log(`   Add to index.html:`);
-    console.log(`   <link rel="stylesheet" href="/templates/template.css" />`);
-    console.log(`   <link rel="stylesheet" href="theme.css" />`);
+    if (existsSync(publicDir)) {
+      writeFileSync(join(publicDir, 'theme.css'), themeTemplate(arg));
+      console.log(`🎨 theme.css written → ${publicDir}/theme.css`);
+    } else {
+      console.log(`   No public/ dir in ${arg} — skipped theme.css`);
+    }
     break;
   }
 
@@ -181,10 +237,10 @@ switch (command) {
       console.log(`   ✓ ${app}`);
       created++;
     }
-    console.log(`\n🎨 sync-all done: ${created} created, ${skipped} skipped (already exist or no public/)`);
+    console.log(`\n🎨 sync-all done: ${created} created, ${skipped} skipped`);
     break;
   }
 
   default:
-    console.log(`Usage: node index.mjs [status|themes|audit [--fix]|sync <name>|sync-all]`);
+    console.log(`Usage: node index.mjs [status|themes|audit [--fix]|wire <name>|wire-all|sync <name>|sync-all]`);
 }
