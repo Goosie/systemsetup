@@ -71,23 +71,37 @@ async function handlePing({ reply }) {
 async function handleSnapshot({ reply }) {
   console.log(`[Backy] handleSnapshot: DO_TOKEN=${!!DO_TOKEN} DO_DROPLET_ID=${!!DROPLET_ID}`);
   if (!DO_TOKEN || !DROPLET_ID) {
-    console.log('[Backy] handleSnapshot: tokens ontbreken');
     reply('✗ DO_API_TOKEN of DO_DROPLET_ID ontbreekt — check .goosie.env');
     return;
   }
-  console.log('[Backy] handleSnapshot: snapshot starten...');
-  reply('📦 Snapshot gestart — DigitalOcean aan het werk...');
+
+  reply('📦 Snapshot gestart — ik stuur een DM zodra hij écht klaar is (10-30 min).');
+
+  let result;
   try {
-    const result = await createSnapshot();
-    console.log(`[Backy] handleSnapshot: snapshot klaar: ${result.name}`);
-    reply(`✓ Snapshot klaar: ${result.name}\nAction ID: ${result.actionId} | Status: ${result.status}`);
-    honk('backy', `✓ Snapshot gestart: ${result.name}`, 'blocky');
-    await publishNote(`📦 Backy: server snapshot created successfully — https://goosielabs.com #vformation`);
+    result = await createSnapshot();
+    console.log(`[Backy] Snapshot gestart: ${result.name} (action ${result.actionId})`);
   } catch (err) {
     console.error(`[Backy] handleSnapshot fout: ${err.message}`);
-    reply(`✗ Snapshot mislukt: ${err.message}`);
-    await publishNote(`⚠️ Backy: snapshot failed — https://goosielabs.com #vformation`);
+    reply(`✗ Snapshot kon niet starten: ${err.message}`);
+    return;
   }
+
+  // Poll tot DigitalOcean klaar is, dan pas DM sturen
+  pollAction(result.actionId, async (status) => {
+    if (status === 'completed') {
+      console.log(`[Backy] Snapshot voltooid: ${result.name}`);
+      honk('backy', `✓ Snapshot klaar: ${result.name}\nVeilig om de droplet te upgraden. 🚀`, 'perry');
+      await publishNote(`📦 Backy: snapshot '${result.name}' voltooid — server klaar voor upgrade. #vformation`);
+    } else if (status === 'timeout') {
+      console.warn(`[Backy] Snapshot timeout na 45 min: ${result.name}`);
+      honk('backy', `⚠ Snapshot ${result.name} — timeout na 45 min. Check het DO dashboard.`, 'perry');
+    } else {
+      console.error(`[Backy] Snapshot mislukt: ${result.name} status=${status}`);
+      honk('backy', `✗ Snapshot ${result.name} mislukt (${status}). Check het DO dashboard.`, 'perry');
+      await publishNote(`⚠️ Backy: snapshot '${result.name}' mislukt. #vformation`);
+    }
+  });
 }
 
 async function handleStatus({ reply }) {
@@ -128,6 +142,36 @@ async function createSnapshot() {
   const data = await resp.json();
   if (!resp.ok) throw new Error(JSON.stringify(data));
   return { name, actionId: data.action?.id, status: data.action?.status };
+}
+
+// Poll DO action every 60s until completed/errored, then call onDone(status).
+// Timeout after 45 min.
+function pollAction(actionId, onDone) {
+  const MAX_MS   = 45 * 60 * 1000;
+  const INTERVAL = 60 * 1000;
+  const start    = Date.now();
+
+  async function check() {
+    if (Date.now() - start > MAX_MS) { onDone('timeout'); return; }
+    try {
+      const resp = await fetch(`https://api.digitalocean.com/v2/actions/${actionId}`, {
+        headers: { 'Authorization': `Bearer ${DO_TOKEN}` },
+      });
+      const data = await resp.json();
+      const status = data.action?.status;
+      console.log(`[Backy] pollAction ${actionId}: ${status}`);
+      if (status === 'completed' || status === 'errored') {
+        onDone(status);
+      } else {
+        setTimeout(check, INTERVAL);
+      }
+    } catch (err) {
+      console.error(`[Backy] pollAction fout: ${err.message} — retry in 60s`);
+      setTimeout(check, INTERVAL);
+    }
+  }
+
+  setTimeout(check, INTERVAL);
 }
 
 // ── NIP-17 decryptie ──────────────────────────────────────────────────────────
