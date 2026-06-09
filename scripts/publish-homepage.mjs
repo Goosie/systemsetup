@@ -437,10 +437,21 @@ async function generateHomepage() {
     '>AI-ganzen met elk een eigen identiteit op Nostr — klik om hun rol en instructies te lezen.<',
     '>AI geese each with their own Nostr identity — click to read their role and instructions.<'
   );
+  // Perry's founder card — always first in the formation
+  const perryCard = `      <div class="agent-card agent-card-founder" data-blockbirth="">
+        <div class="agent-avatar"><img src="/perry/perry-icon-192.png" alt="Perry Smit"></div>
+        <div class="agent-info">
+          <div class="agent-name">Perry Smit</div>
+          <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
+          <div style="margin-top:0.4rem;font-size:0.72rem;color:#888780">🪿 Lead Goose</div>
+        </div>
+        <div class="agent-links"><a href="/perry.html" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>
+      </div>`;
+
   // Regenerate agent cards
   html = html.replace(
     /<!-- AGENTS-TILES-START -->[\s\S]*?<!-- AGENTS-TILES-END -->/,
-    `<!-- AGENTS-TILES-START -->\n${agentCardsHtml}\n<!-- AGENTS-TILES-END -->`
+    `<!-- AGENTS-TILES-START -->\n${perryCard}\n${agentCardsHtml}\n<!-- AGENTS-TILES-END -->`
   );
 
   // Join / contact section
