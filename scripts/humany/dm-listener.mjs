@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, appendFileSync, mkdirSync, existsSync } fr
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 import WebSocket from 'ws';
-import { nip17, nip19, SimplePool } from 'nostr-tools';
+import { nip17, nip44, nip19, SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
 
 // ── Processed IDs — persisted so restarts don't replay old messages ───────────
 const PROCESSED_FILE = '/home/deploy/logs/dm-listener-processed.json';
@@ -492,10 +492,51 @@ async function askClaude(gooseName, userMessage) {
 
 // ── NIP-17 reply ──────────────────────────────────────────────────────────────
 
+// Build NIP-17 gift-wrap with CURRENT timestamp so Snort's live subscription catches it.
+// Standard nip17.wrapEvent uses randomNow() (up to 2 days back) which Snort misses.
+function buildGiftWrap(senderSK, recipientPubkey, content) {
+  const now = Math.floor(Date.now() / 1000);
+  const senderPubkey = getPublicKey(senderSK);
+
+  // 1. Rumor (kind:14 — unsigned inner DM)
+  const rumor = {
+    kind: 14,
+    created_at: now,
+    tags: [['p', recipientPubkey]],
+    content,
+    pubkey: senderPubkey,
+  };
+
+  // 2. Seal (kind:13 — encrypt rumor with sender's key)
+  const sealContent = nip44.v2.encrypt(
+    JSON.stringify(rumor),
+    nip44.v2.utils.getConversationKey(senderSK, recipientPubkey)
+  );
+  const seal = finalizeEvent({
+    kind: 13,
+    created_at: now,
+    tags: [],
+    content: sealContent,
+  }, senderSK);
+
+  // 3. Wrap (kind:1059 — encrypt seal with random key)
+  const wrapKey = generateSecretKey();
+  const wrapContent = nip44.v2.encrypt(
+    JSON.stringify(seal),
+    nip44.v2.utils.getConversationKey(wrapKey, recipientPubkey)
+  );
+  return finalizeEvent({
+    kind: 1059,
+    created_at: now,
+    tags: [['p', recipientPubkey]],
+    content: wrapContent,
+  }, wrapKey);
+}
+
 async function sendReply(gooseSK, toPubkey, message) {
   return new Promise((resolve) => {
     const pool = new SimplePool();
-    const wrapped = nip17.wrapEvent(gooseSK, { publicKey: toPubkey }, message);
+    const wrapped = buildGiftWrap(gooseSK, toPubkey, message);
     Promise.allSettled([pool.publish([RELAY], wrapped)]).then(() => {
       pool.close([RELAY]);
       resolve();
