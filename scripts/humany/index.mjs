@@ -190,6 +190,17 @@ function createLnbitsWallet(name, displayName) {
   }
 }
 
+async function publishDmRelayList(pool, sk, name) {
+  const event = finalizeEvent({
+    kind: 10050,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [['relay', 'wss://relay.goosielabs.com']],
+    content: '',
+  }, sk);
+  await Promise.allSettled(pool.publish(ALL_RELAYS, event));
+  console.log(`  📬 Kind 10050 (DM relay list) published for ${capitalize(name)}`);
+}
+
 async function publishKind0ForGoose(pool, sk, name, about) {
   const displayName = capitalize(name);
   const walletFile  = `${AGENTS_DIR}/${name}/lnbits-wallet.json`;
@@ -462,7 +473,10 @@ async function newGoose(name) {
   const pool = new SimplePool();
   await publishKind0ForGoose(pool, sk, name, about);
 
-  // 6b. Issue NIP-58 formation badge from Assistenty
+  // 6b. Publish kind 10050 DM relay list so NIP-17 DMs can be delivered
+  await publishDmRelayList(pool, sk, name);
+
+  // 6c. Issue NIP-58 formation badge from Assistenty
   await issueBadgeAward(pool, pk, capitalize(name));
 
   // 7. Rebuild vformation dashboard
