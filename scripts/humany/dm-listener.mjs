@@ -209,7 +209,7 @@ const GOOSE_ROSTER = {
   finny: {
     emoji: '💰', label: 'Financial watchdog',
     commands: {
-      report: { cmd: 'node /home/deploy/scripts/finny/index.mjs report --dry-run', timeout: 30_000, desc: 'API usage and cost report (EUR)' },
+      report: { cmd: 'node /home/deploy/scripts/finny/index.mjs report', timeout: 30_000, desc: 'API usage and cost report (EUR) — sends DM to Perry' },
     },
   },
   cssy: {
@@ -222,7 +222,8 @@ const GOOSE_ROSTER = {
   commy: {
     emoji: '📢', label: 'Community manager',
     commands: {
-      collect: { cmd: 'node /home/deploy/scripts/commy/index.mjs collect --dry-run', timeout: 30_000, desc: 'Collect recent activity for community posts' },
+      run:     { cmd: 'node /home/deploy/scripts/commy/index.mjs run',     timeout: 60_000, desc: 'Post community update to Nostr' },
+      collect: { cmd: 'node /home/deploy/scripts/commy/index.mjs collect', timeout: 30_000, desc: 'Collect recent activity for next post' },
     },
   },
   gander: {
@@ -235,6 +236,24 @@ const GOOSE_ROSTER = {
     emoji: '💎', label: 'Reality checker',
     commands: {
       review: { cmd: 'node /home/deploy/scripts/transy/index.mjs review', timeout: 60_000, desc: 'Critical reality check — hard questions about current work' },
+    },
+  },
+  backy: {
+    emoji: '📦', label: 'Backup & snapshots',
+    commands: {
+      snapshot: { cmd: null, timeout: 10_000, desc: 'Trigger a DigitalOcean server snapshot via DM' },
+    },
+  },
+  coachy: {
+    emoji: '🙌', label: 'Encouragement goose',
+    commands: {
+      check: { cmd: 'node /home/deploy/scripts/coachy/index.mjs', timeout: 30_000, desc: 'Send an encouraging message to the flock' },
+    },
+  },
+  docy: {
+    emoji: '🎫', label: 'Onboarding manager',
+    commands: {
+      status: { cmd: 'node /home/deploy/scripts/docy/index.mjs status', timeout: 30_000, desc: 'Onboarding status and invite codes overview' },
     },
   },
 };
@@ -396,6 +415,16 @@ async function assistentyExecute(name, input) {
     }
   }
 
+  // Backy: send DM via honk
+  if (goose === 'backy' && cmd === 'snapshot') {
+    try {
+      const out = execSync('honk from @assistenty "snapshot" to @backy', { timeout: 10_000, encoding: 'utf8' });
+      return `📦 Snapshot opdracht verstuurd naar Backy:\n${stripAnsi(out).trim()}`;
+    } catch (e) {
+      return `⚠️ Honk naar Backy mislukt: ${e.message}`;
+    }
+  }
+
   // Blocky: inline handler (no shell script, reads from mempool + relay)
   if (goose === 'blocky' && cmd === 'status') return await blockyStatus();
 
@@ -475,10 +504,11 @@ De V-Formatie specialisten die jij kunt raadplegen:
 - 🪿 Ay: AI-configuratie — ganzen-prompts, V-formatie kwaliteit
 
 Werkwijze:
-1. Vraagt Perry naar de todo lijst of open taken → gebruik read_todo (optioneel met filter)
-2. Vraagt Perry naar de server of formatie status → gebruik check_formation
-3. Andere vragen → gebruik ask_goose voor de juiste specialist (meerdere tegelijk mag)
-4. Synthetiseer alles concreet — als er actie nodig is, noem die expliciet
+1. Vraagt Perry naar de todo lijst → gebruik read_todo
+2. Vraagt Perry naar de formatie status → gebruik check_formation
+3. Vraagt Perry om iets TE DOEN (post, scout, snapshot, rapport, check) → gebruik ask_goose met het juiste commando — voer het daadwerkelijk uit
+4. Informatie ophalen → gebruik ask_goose voor de juiste specialist (meerdere tegelijk mag)
+5. Wacht niet op bevestiging tenzij het destructief is — gewoon doen
 
 Context over het project:
 - Goosie Labs — experimenten met Nostr, Lightning en AI op een Ubuntu 24.04 VPS
