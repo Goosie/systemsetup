@@ -742,6 +742,106 @@ async function handleMention(ev) {
   }
 }
 
+// ── NIP-52 agenda item handler ────────────────────────────────────────────────
+
+function extractAgendaText(content) {
+  return content
+    .replace(/nostr:npub\w+/g, '')
+    .replace(/#agendaitem/gi, '')
+    .replace(/#\w+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Simple date extraction from Dutch/English text
+function parseDate(text) {
+  const now   = new Date();
+  const lower = text.toLowerCase();
+
+  if (lower.includes('morgen') || lower.includes('tomorrow'))
+    return new Date(now.getTime() + 86400_000);
+  if (lower.includes('overmorgen'))
+    return new Date(now.getTime() + 172800_000);
+  if (lower.includes('maandag') || lower.includes('monday'))
+    return nextWeekday(now, 1);
+  if (lower.includes('dinsdag') || lower.includes('tuesday'))
+    return nextWeekday(now, 2);
+  if (lower.includes('woensdag') || lower.includes('wednesday'))
+    return nextWeekday(now, 3);
+  if (lower.includes('donderdag') || lower.includes('thursday'))
+    return nextWeekday(now, 4);
+  if (lower.includes('vrijdag') || lower.includes('friday'))
+    return nextWeekday(now, 5);
+  if (lower.includes('zaterdag') || lower.includes('saturday'))
+    return nextWeekday(now, 6);
+  if (lower.includes('zondag') || lower.includes('sunday'))
+    return nextWeekday(now, 0);
+
+  // Default: tomorrow
+  return new Date(now.getTime() + 86400_000);
+}
+
+function nextWeekday(from, targetDay) {
+  const d = new Date(from);
+  const diff = (targetDay - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+async function publishCalendarEvent(title, date, description, publisherSK, perryPubkey) {
+  const d    = new Date(date);
+  const dateStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
+  const uid  = `goosie-${Date.now()}`;
+
+  const event = finalizeEvent({
+    kind: 31922, // NIP-52 date-based calendar event
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['d', uid],
+      ['title', title],
+      ['start', dateStr],
+      ['summary', description || title],
+      ['p', perryPubkey, RELAY.replace('ws://', 'wss://').replace('127.0.0.1:7778', 'relay.goosielabs.com'), 'host'],
+    ],
+    content: description || '',
+  }, publisherSK);
+
+  const pool = new SimplePool();
+  await Promise.allSettled(pool.publish([RELAY], event));
+  pool.close([RELAY]);
+  return { uid, dateStr, eventId: event.id };
+}
+
+async function handleAgendaItem(ev) {
+  if (processed.has(ev.id)) return;
+  processed.add(ev.id);
+  saveProcessed(processed);
+
+  if (!perryKeys.includes(ev.pubkey)) return;
+
+  const title = extractAgendaText(ev.content);
+  if (!title) return;
+
+  console.log(`[mention] #agendaitem from Perry: "${title.slice(0, 80)}"`);
+
+  const assistentyGoose = geese.find(g => g.name === 'assistenty');
+  if (!assistentyGoose) return;
+
+  try {
+    const date = parseDate(title);
+    const { uid, dateStr } = await publishCalendarEvent(
+      title, date, title, assistentyGoose.sk, ev.pubkey
+    );
+
+    const reply = `📅 Agenda item aangemaakt!\n\nTitel: ${title}\nDatum: ${dateStr}\n\nGepubliceerd op relay als NIP-52 event (kind:31922)\nID: ${uid}`;
+    await sendReplyNip04(assistentyGoose.sk, ev.pubkey, reply);
+    console.log(`[mention] calendar event published: ${uid} on ${dateStr}`);
+  } catch (e) {
+    console.error(`[mention] agenda item failed: ${e.message}`);
+    await sendReplyNip04(assistentyGoose.sk, ev.pubkey, `⚠️ Kon agenda item niet aanmaken: ${e.message}`);
+  }
+}
+
 // ── Relay listener ────────────────────────────────────────────────────────────
 
 const processed      = loadProcessed();
@@ -773,9 +873,9 @@ function connect() {
     if (assistentyPubkey) {
       ws.send(JSON.stringify([
         'REQ', 'dm-mentions',
-        { kinds: [1], '#p': [assistentyPubkey], '#t': ['todo'], since: Math.floor(Date.now() / 1000) - 3600 },
+        { kinds: [1], '#p': [assistentyPubkey], '#t': ['todo', 'agendaitem'], since: Math.floor(Date.now() / 1000) - 3600 },
       ]));
-      console.log(`[dm-listener] watching mentions (#todo @assistenty)`);
+      console.log(`[dm-listener] watching mentions (#todo #agendaitem @assistenty)`);
     }
   };
 
@@ -786,9 +886,14 @@ function connect() {
     const [type, , ev] = msg;
     if (type !== 'EVENT' || !ev) return;
 
-    // kind:1 mention with #todo
+    // kind:1 mention with #todo or #agendaitem
     if (ev.kind === 1) {
-      await handleMention(ev);
+      const tags = ev.tags?.filter(t => t[0] === 't').map(t => t[1]?.toLowerCase()) ?? [];
+      if (tags.includes('agendaitem')) {
+        await handleAgendaItem(ev);
+      } else if (tags.includes('todo')) {
+        await handleMention(ev);
+      }
       return;
     }
 
