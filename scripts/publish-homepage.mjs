@@ -475,7 +475,7 @@ async function generateHomepage() {
     </style>
     <div class="agents-grid">`);
 
-  html = html.replace(/<\/body>/, `<script src="/qr.js" defer></script><script src="/goose-balances.js" defer></script>\n</body>`);
+  html = html.replace(/<\/body>/, `<script src="/qr.js" defer></script><script src="/goose-balances.js" defer></script><script src="/blocky-block.js" defer></script>\n</body>`);
 
   // nsite marker
   html = html.replace(
