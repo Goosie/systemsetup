@@ -157,6 +157,16 @@ Reply in the same language as Perry's message (Dutch or English).`;
 
 // Maps goose → available commands with their shell invocations
 const GOOSE_ROSTER = {
+  humany: {
+    emoji: '🪿', label: 'Formation HR',
+    commands: {
+      list: {
+        cmd: null, // handled inline — reads agents.json
+        timeout: 5_000,
+        desc: 'List all geese in the V-Formation with name, role and Lightning address',
+      },
+    },
+  },
   blocky: {
     emoji: '⛓️', label: 'Bitcoin block scheduler',
     commands: {
@@ -332,6 +342,27 @@ async function assistentyExecute(name, input) {
   if (!spec) return `Unknown command "${cmd}" for ${goose}`;
 
   console.log(`[dm-listener] assistenty → ${goose}:${cmd}`);
+
+  // Humany: inline handler — reads agents.json
+  if (goose === 'humany' && cmd === 'list') {
+    try {
+      const agents = JSON.parse(readFileSync('/home/deploy/agents/agents.json', 'utf8'));
+      const lines = ['🪿 V-Formatie — alle ganzen:\n'];
+      for (const a of agents.agents) {
+        const md = `/home/deploy/agents/${a.name}/${a.name}.md`;
+        let desc = a.about || a.description || 'rol nog te definiëren';
+        try {
+          const src = readFileSync(md, 'utf8');
+          const m = src.match(/^description:\s*(.+)$/m);
+          if (m) desc = m[1].trim().replace(/^['"]|['"]$/g, '');
+        } catch {}
+        lines.push(`• ${a.displayName ?? a.name} — ${desc} | ⚡ ${a.name}@goosielabs.com`);
+      }
+      return lines.join('\n');
+    } catch (e) {
+      return `Kon ganzenlijst niet ophalen: ${e.message}`;
+    }
+  }
 
   // Blocky: inline handler (no shell script, reads from mempool + relay)
   if (goose === 'blocky' && cmd === 'status') return await blockyStatus();
