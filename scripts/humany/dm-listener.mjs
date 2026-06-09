@@ -17,11 +17,29 @@
  */
 
 import 'websocket-polyfill';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 import WebSocket from 'ws';
 import { nip17, nip19, SimplePool } from 'nostr-tools';
+
+const USAGE_LOG = '/home/deploy/logs/finny/usage.jsonl';
+
+function logUsage(gooseName, model, inputTokens, outputTokens, toolCalls) {
+  try {
+    mkdirSync('/home/deploy/logs/finny', { recursive: true });
+    appendFileSync(USAGE_LOG, JSON.stringify({
+      ts: Math.floor(Date.now() / 1000),
+      goose: gooseName,
+      model,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      tool_calls: toolCalls,
+    }) + '\n');
+  } catch (e) {
+    console.warn(`[dm-listener] usage log failed: ${e.message}`);
+  }
+}
 
 const RELAY      = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
 const AGENTS_DIR = '/home/deploy/agents';
@@ -319,6 +337,8 @@ async function askClaude(gooseName, userMessage) {
 
   const messages = [{ role: 'user', content: userMessage }];
   const MAX_ITER = 8;
+  let totalInputTokens = 0, totalOutputTokens = 0, totalToolCalls = 0;
+  const model = 'claude-haiku-4-5-20251001';
 
   for (let i = 0; i < MAX_ITER; i++) {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -344,8 +364,11 @@ async function askClaude(gooseName, userMessage) {
     }
 
     const data = await resp.json();
+    totalInputTokens  += data.usage?.input_tokens  ?? 0;
+    totalOutputTokens += data.usage?.output_tokens ?? 0;
 
     if (data.stop_reason === 'end_turn') {
+      logUsage(gooseName, model, totalInputTokens, totalOutputTokens, totalToolCalls);
       return data.content?.find(b => b.type === 'text')?.text?.trim() ?? '(no response)';
     }
 
@@ -354,6 +377,7 @@ async function askClaude(gooseName, userMessage) {
 
       // Execute all tool calls in parallel
       const toolBlocks = data.content.filter(b => b.type === 'tool_use');
+      totalToolCalls += toolBlocks.length;
       const toolResults = await Promise.all(toolBlocks.map(async block => {
         console.log(`[dm-listener] ${gooseName} → ${block.name}(${JSON.stringify(block.input)})`);
         const result = await config.executeTool(block.name, block.input);

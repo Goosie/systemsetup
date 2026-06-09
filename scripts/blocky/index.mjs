@@ -37,6 +37,7 @@ const DEFAULT_SCHEDULE = {
   healthy: { interval_blocks: 4,    command: 'check',    description: '~40 min'  },
   coachy:  { interval_blocks: 72,   command: 'check',    description: '~12 hours' },
   commy:   { interval_blocks: 3,    command: 'run',      description: '~30 min'  },
+  finny:   { interval_blocks: 6,    command: 'report',   description: '~1 hour'  },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
