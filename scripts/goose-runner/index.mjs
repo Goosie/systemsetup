@@ -47,6 +47,7 @@ const KEYS = {
   coachy: loadKey('coachy'),
   gander: loadKey('gander'),
   cssy: loadKey('cssy'),
+  commy: loadKey('commy'),
   // ── NEW GEESE ──
 };
 
@@ -228,6 +229,7 @@ async function dispatch(pool, event) {
       case 'coachy': await handleScript(pool, 'coachy', event, command); break;
       case 'gander': await handleScript(pool, 'gander', event, command); break;
       case 'cssy': await handleScript(pool, 'cssy', event, command); break;
+      case 'commy': await handleScript(pool, 'commy', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {

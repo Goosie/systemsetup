@@ -36,6 +36,7 @@ const DEFAULT_SCHEDULE = {
   backy:   { interval_blocks: 1000, command: 'snapshot', description: '~1 week'  },
   healthy: { interval_blocks: 4,    command: 'check',    description: '~40 min'  },
   coachy:  { interval_blocks: 72,   command: 'check',    description: '~12 hours' },
+  commy:   { interval_blocks: 3,    command: 'run',      description: '~30 min'  },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
