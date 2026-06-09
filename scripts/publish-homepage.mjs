@@ -441,7 +441,7 @@ async function generateHomepage() {
   const perryCard = `      <div class="agent-card agent-card-founder" data-blockbirth="">
         <div class="agent-avatar"><img src="/perry/perry-icon-192.png" alt="Perry Smit"></div>
         <div class="agent-info">
-          <div class="agent-name">Perry Smit</div>
+          <div class="agent-name">Perry</div>
           <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
           <div style="margin-top:0.4rem;font-size:0.72rem;color:#888780">🪿 Lead Goose</div>
         </div>
