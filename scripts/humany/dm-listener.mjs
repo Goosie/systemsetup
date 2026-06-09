@@ -507,10 +507,10 @@ function buildGiftWrap(senderSK, recipientPubkey, content) {
     pubkey: senderPubkey,
   };
 
-  // 2. Seal (kind:13 — encrypt rumor with sender's key)
-  const sealContent = nip44.v2.encrypt(
+  // 2. Seal (kind:13 — NIP-44 encrypt rumor, signed by sender)
+  const sealContent = nip44.encrypt(
     JSON.stringify(rumor),
-    nip44.v2.utils.getConversationKey(senderSK, recipientPubkey)
+    nip44.getConversationKey(senderSK, recipientPubkey)
   );
   const seal = finalizeEvent({
     kind: 13,
@@ -519,11 +519,11 @@ function buildGiftWrap(senderSK, recipientPubkey, content) {
     content: sealContent,
   }, senderSK);
 
-  // 3. Wrap (kind:1059 — encrypt seal with random key)
+  // 3. Wrap (kind:1059 — NIP-44 encrypt seal with random one-time key)
   const wrapKey = generateSecretKey();
-  const wrapContent = nip44.v2.encrypt(
+  const wrapContent = nip44.encrypt(
     JSON.stringify(seal),
-    nip44.v2.utils.getConversationKey(wrapKey, recipientPubkey)
+    nip44.getConversationKey(wrapKey, recipientPubkey)
   );
   return finalizeEvent({
     kind: 1059,
