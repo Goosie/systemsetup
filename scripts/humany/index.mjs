@@ -177,6 +177,55 @@ async function publishChat(pool, content) {
   });
 }
 
+async function updateSplitTargets() {
+  const LNBITS_DB = '/home/deploy/lnbits/data/database.sqlite3';
+  try {
+    // Get Perry's adminkey from LNbits DB
+    const result = execSync(
+      `sqlite3 "${LNBITS_DB}" "SELECT adminkey FROM wallets WHERE name='Perry' LIMIT 1;"`,
+      { encoding: 'utf8' }
+    ).trim();
+    if (!result) { console.log('  ⚠️  Split targets: Perry wallet not found in DB'); return; }
+    const perryAdminkey = result;
+
+    // Build targets from all geese with a wallet file
+    const geese = readdirSync(AGENTS_DIR)
+      .filter(n => existsSync(resolve(AGENTS_DIR, n, 'lnbits-wallet.json')))
+      .map(n => {
+        const w = JSON.parse(readFileSync(resolve(AGENTS_DIR, n, 'lnbits-wallet.json'), 'utf8'));
+        return { name: n, wallet_id: w.wallet_id };
+      })
+      .filter(g => g.wallet_id);
+
+    if (!geese.length) return;
+
+    const pct = Math.round(100 / geese.length * 10000) / 10000;
+    const targets = geese.map((g, i) => ({
+      wallet:  g.wallet_id,
+      percent: i === geese.length - 1 ? Math.round((100 - pct * (geese.length - 1)) * 10000) / 10000 : pct,
+      alias:   g.name,
+    }));
+
+    const body = JSON.stringify({ targets });
+    await new Promise((resolve, reject) => {
+      const req = http.request(`${LNBITS_URL}/splitpayments/api/v1/targets`, {
+        method: 'PUT',
+        headers: { 'X-Api-Key': perryAdminkey, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      }, res => {
+        let data = '';
+        res.on('data', d => data += d);
+        res.on('end', () => { resolve(data); });
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+    console.log(`  💸 Split targets updated: ${geese.length} geese × ${pct}% each`);
+  } catch (e) {
+    console.log(`  ⚠️  Split targets update failed: ${e.message}`);
+  }
+}
+
 function createLnbitsWallet(name, displayName) {
   try {
     const result = execSync(
@@ -465,6 +514,8 @@ async function newGoose(name) {
     } catch {
       console.log(`  ⚠️  lnaddress restart failed — run: sudo systemctl restart lnaddress`);
     }
+    // Update Perry's split targets to include the new goose
+    await updateSplitTargets();
   } else {
     console.log(`  ⚠️  Wallet skipped — run manually: python3 /home/deploy/scripts/create-wallet.py ${name} "${capitalize(name)}"`);
   }
