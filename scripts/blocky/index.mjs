@@ -34,7 +34,7 @@ const DEFAULT_SCHEDULE = {
   jurry:   { interval_blocks: 4032, command: 'overview', description: '~4 weeks' },
   ay:      { interval_blocks: 2016, command: 'check',    description: '~2 weeks' },
   backy:   { interval_blocks: 1000, command: 'snapshot', description: '~1 week'  },
-  healthy: { interval_blocks: 3,    command: 'check',    description: '~30 min'  },
+  healthy: { interval_blocks: 4,    command: 'check',    description: '~40 min'  },
   coachy:  { interval_blocks: 72,   command: 'check',    description: '~12 hours' },
 };
 

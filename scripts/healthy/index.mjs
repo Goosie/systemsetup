@@ -180,29 +180,39 @@ const dmMessage = `${emoji} Goosie Labs — Server Health\n${timestamp}\n\n${out
 console.log(`[healthy] Status: ${emoji} (vorige: ${prevEmoji ?? 'onbekend'}) — gewijzigd: ${changed}`);
 
 if (DRY_RUN) {
-  console.log('\n── DM inhoud (dry-run) ──────────────────────────────');
-  console.log(dmMessage);
-  if (changed || prevEmoji === null) {
+  if (emoji === '🔴') {
+    console.log('\n── DM inhoud (dry-run, alleen bij 🔴) ──────────────');
+    console.log(dmMessage);
+  } else {
+    console.log(`\n── DM overgeslagen (dry-run) — status is ${emoji}, geen DM`);
+  }
+  if ((changed || prevEmoji === null) && (emoji === '🟢' || emoji === '🟡')) {
     const issues = extractIssues(output);
     const { text } = buildPublicNote(emoji, prevEmoji, issues);
-    console.log('\n── Publiek bericht (dry-run) ────────────────────────');
+    console.log('\n── Publiek bericht (dry-run, 🟢/🟡 only) ───────────');
     console.log(text);
+  } else {
+    console.log(`\n── Publiek bericht overgeslagen (dry-run) — status ${emoji} of ongewijzigd`);
   }
   console.log('─────────────────────────────────────────────────────\n');
   console.log('[healthy] Dry-run klaar — niets verstuurd.');
   process.exit(exitCode);
 }
 
-// Stuur DM altijd
-try {
-  await sendDM(PERRY_PUBKEY, dmMessage);
-  console.log(`[healthy] DM verstuurd naar Perry`);
-} catch (err) {
-  console.error(`[healthy] DM mislukt: ${err.message}`);
+// DM alleen bij 🔴
+if (emoji === '🔴') {
+  try {
+    await sendDM(PERRY_PUBKEY, dmMessage);
+    console.log(`[healthy] DM verstuurd naar Perry (🔴 status)`);
+  } catch (err) {
+    console.error(`[healthy] DM mislukt: ${err.message}`);
+  }
+} else {
+  console.log(`[healthy] DM overgeslagen — status is ${emoji} (alleen 🔴 triggers DM)`);
 }
 
-// Publiek bericht alleen bij statuswijziging
-if (changed || prevEmoji === null) {
+// Publiek bericht alleen bij statuswijziging naar 🟢 of 🟡
+if ((changed || prevEmoji === null) && (emoji === '🟢' || emoji === '🟡')) {
   const issues = extractIssues(output);
   const { text, tags } = buildPublicNote(emoji, prevEmoji, issues);
   try {
@@ -211,10 +221,13 @@ if (changed || prevEmoji === null) {
   } catch (err) {
     console.error(`[healthy] Publiek bericht mislukt: ${err.message}`);
   }
-  saveLastStatus(emoji);
+} else if (changed) {
+  console.log(`[healthy] Publiek bericht overgeslagen — status ${emoji} is niet publiek`);
 } else {
-  console.log(`[healthy] Status ongewijzigd (${emoji}) — geen publiek bericht`);
+  console.log(`[healthy] Status ongewijzigd (${emoji}) — geen berichten`);
 }
+
+saveLastStatus(emoji);
 
 console.log(`[healthy] Klaar.`);
 process.exit(0);
