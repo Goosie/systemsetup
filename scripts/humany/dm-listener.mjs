@@ -17,11 +17,24 @@
  */
 
 import 'websocket-polyfill';
-import { readFileSync, writeFileSync, appendFileSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 import WebSocket from 'ws';
 import { nip17, nip19, SimplePool } from 'nostr-tools';
+
+// ── Processed IDs — persisted so restarts don't replay old messages ───────────
+const PROCESSED_FILE = '/home/deploy/logs/dm-listener-processed.json';
+const MAX_PROCESSED  = 2000;
+
+function loadProcessed() {
+  try { return new Set(JSON.parse(readFileSync(PROCESSED_FILE, 'utf8'))); } catch { return new Set(); }
+}
+
+function saveProcessed(set) {
+  const ids = [...set].slice(-MAX_PROCESSED);
+  try { writeFileSync(PROCESSED_FILE, JSON.stringify(ids)); } catch {}
+}
 
 const USAGE_LOG = '/home/deploy/logs/finny/usage.jsonl';
 
@@ -182,7 +195,45 @@ const GOOSE_COMMAND_ENUM = Object.entries(GOOSE_ROSTER).flatMap(([goose, cfg]) =
   }))
 );
 
+const FORMATION_SERVICES = [
+  { name: 'dm-listener',    label: 'DM luisteraar (ganzen + Perry)'   },
+  { name: 'goose-runner',   label: 'Goose runner (Blocky jobs)'       },
+  { name: 'blocky',         label: 'Blocky (V-Formatie klok)'         },
+  { name: 'strfry',         label: 'Nostr relay'                      },
+  { name: 'lnbits',         label: 'LNbits (Lightning)'               },
+  { name: 'nutshell',       label: 'Cashu mint'                       },
+  { name: 'nginx',          label: 'Nginx (webserver)'                },
+  { name: 'backy',          label: 'Backy (snapshots)'                },
+  { name: 'goosie-newbie',  label: 'Newbie (app onboarding bot)'      },
+];
+
+function checkFormation() {
+  const lines = [];
+  for (const { name, label } of FORMATION_SERVICES) {
+    try {
+      execSync(`systemctl is-active --quiet ${name}`, { timeout: 3000 });
+      lines.push(`✅ ${name} — ${label}`);
+    } catch {
+      lines.push(`❌ ${name} — ${label}`);
+    }
+  }
+  // Blocky last-run info
+  try {
+    const lastRun = JSON.parse(readFileSync('/home/deploy/logs/blocky-lastrun.json', 'utf8'));
+    lines.push('');
+    lines.push('Laatste Blocky runs:');
+    for (const [goose, block] of Object.entries(lastRun).slice(0, 8))
+      lines.push(`  ${goose}: blok ${block}`);
+  } catch { /* geen lastrun beschikbaar */ }
+  return lines.join('\n');
+}
+
 const ASSISTENTY_TOOLS = [
+  {
+    name: 'check_formation',
+    description: 'Check of alle V-Formatie services draaien en wanneer ganzen voor het laatst actief waren.',
+    input_schema: { type: 'object', properties: {} },
+  },
   {
     name: 'ask_goose',
     description: `Delegate a task to a specialist goose and get their report back.
@@ -202,6 +253,7 @@ Available geese:\n${GOOSE_COMMAND_ENUM.map(e => `  ${e.value}: ${e.desc}`).join(
 ];
 
 function assistentyExecute(name, input) {
+  if (name === 'check_formation') return checkFormation();
   if (name !== 'ask_goose') return `Unknown tool: ${name}`;
   const [goose, cmd] = (input.task ?? '').split(':');
   const roster = GOOSE_ROSTER[goose];
@@ -411,7 +463,7 @@ async function sendReply(gooseSK, toPubkey, message) {
 
 // ── Relay listener ────────────────────────────────────────────────────────────
 
-const processed      = new Set();
+const processed      = loadProcessed();
 const geese          = ENABLED_GEESE.map(loadKey);
 const pubkeyMap      = Object.fromEntries(geese.map(g => [g.pubkey, g]));
 const perryKeys      = getPerryPubkeys();
@@ -443,6 +495,7 @@ function connect() {
     if (type !== 'EVENT' || !ev) return;
     if (processed.has(ev.id)) return;
     processed.add(ev.id);
+    saveProcessed(processed);
 
     const recipientPubkey = ev.tags?.find(t => t[0] === 'p')?.[1];
     const goose = pubkeyMap[recipientPubkey];
