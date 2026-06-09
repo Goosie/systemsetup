@@ -444,6 +444,10 @@ async function generateHomepage() {
           <div class="agent-name">Perry</div>
           <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
           <div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ #-2,362,201 · Age <span class="goose-age">…</span> blocks</div>
+          <div class="agent-wallet" style="margin-top:0.35rem">
+            <span class="agent-balance">⚡ splits across all geese</span>
+            <a href="lightning:perry@goosielabs.com" class="agent-donate" title="Donate to Perry — splits across all geese">donate</a>
+          </div>
         </div>
         <div class="agent-links"><a href="/perry.html" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>
       </div>`;
