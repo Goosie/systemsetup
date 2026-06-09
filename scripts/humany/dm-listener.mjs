@@ -38,9 +38,27 @@ function loadKey(name) {
   };
 }
 
-function loadWhitelist()      { return JSON.parse(readFileSync(WHITELIST, 'utf8')); }
-function saveWhitelist(wl)    { writeFileSync(WHITELIST, JSON.stringify(wl, null, 2) + '\n'); }
-function getPerryPubkeys()    { const wl = loadWhitelist(); return [wl.perry_zoomer, wl.perry_goosie].filter(Boolean); }
+const AGENTS_JSON = '/home/deploy/agents/agents.json';
+
+function loadWhitelist()   { return JSON.parse(readFileSync(WHITELIST, 'utf8')); }
+function saveWhitelist(wl) { writeFileSync(WHITELIST, JSON.stringify(wl, null, 2) + '\n'); }
+
+function getPerryPubkeys() {
+  const wl = loadWhitelist();
+  return [wl.perry_zoomer, wl.perry_goosie].filter(Boolean);
+}
+
+// All allowed senders: Perry + every goose in the formation
+function getAllowedSenders() {
+  const perry = getPerryPubkeys();
+  try {
+    const agents = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
+    const geesePubkeys = agents.agents.map(a => a.pubkey).filter(Boolean);
+    return [...new Set([...perry, ...geesePubkeys])];
+  } catch {
+    return perry; // fallback: Perry only if agents.json unreadable
+  }
+}
 
 function stripAnsi(str) {
   return str.replace(/\x1B\[[0-9;]*[mGKHJA-Z]/g, '').replace(/\x1B\[[0-9]*[JK]/g, '');
@@ -369,16 +387,18 @@ async function sendReply(gooseSK, toPubkey, message) {
 
 // ── Relay listener ────────────────────────────────────────────────────────────
 
-const processed  = new Set();
-const geese      = ENABLED_GEESE.map(loadKey);
-const pubkeyMap  = Object.fromEntries(geese.map(g => [g.pubkey, g]));
-const perryKeys  = getPerryPubkeys();
+const processed      = new Set();
+const geese          = ENABLED_GEESE.map(loadKey);
+const pubkeyMap      = Object.fromEntries(geese.map(g => [g.pubkey, g]));
+const perryKeys      = getPerryPubkeys();
+const allowedSenders = getAllowedSenders();
 
 let ws;
 let reconnectTimer;
 
 console.log(`[dm-listener] geese: ${geese.map(g => g.name).join(', ')}`);
 console.log(`[dm-listener] perry: ${perryKeys.map(p => p.slice(0, 8) + '…').join(', ')}`);
+console.log(`[dm-listener] allowed senders: Perry (${perryKeys.length}) + geese (${allowedSenders.length - perryKeys.length}) = ${allowedSenders.length} total`);
 
 function connect() {
   ws = new WebSocket(RELAY);
@@ -413,8 +433,8 @@ function connect() {
 
     console.log(`[dm-listener] DM to ${goose.name} from ${senderPubkey.slice(0, 8)}…: "${text.slice(0, 80)}"`);
 
-    if (!perryKeys.includes(senderPubkey)) {
-      console.log(`[dm-listener] not authorized — ignored`);
+    if (!allowedSenders.includes(senderPubkey)) {
+      console.log(`[dm-listener] ${senderPubkey.slice(0, 8)}… not authorized — ignored`);
       return;
     }
 
