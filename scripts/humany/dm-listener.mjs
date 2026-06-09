@@ -202,7 +202,39 @@ const GOOSE_ROSTER = {
     emoji: '🪿', label: 'AI config specialist',
     commands: {
       check:    { cmd: 'node /home/deploy/scripts/ay/index.js check',    timeout: 60_000, desc: 'Check V-Formation agent configs for issues' },
+      advies:   { cmd: 'node /home/deploy/scripts/ay/index.js advies',   timeout: 60_000, desc: 'Proactive advice on V-Formation configuration' },
       overview: { cmd: 'node /home/deploy/scripts/ay/index.js overview', timeout: 60_000, desc: 'Full overview of V-Formation health' },
+    },
+  },
+  finny: {
+    emoji: '💰', label: 'Financial watchdog',
+    commands: {
+      report: { cmd: 'node /home/deploy/scripts/finny/index.mjs report --dry-run', timeout: 30_000, desc: 'API usage and cost report (EUR)' },
+    },
+  },
+  cssy: {
+    emoji: '🎨', label: 'CSS design system',
+    commands: {
+      status: { cmd: 'node /home/deploy/scripts/cssy/index.mjs status', timeout: 30_000, desc: 'CSS design system status overview' },
+      audit:  { cmd: 'node /home/deploy/scripts/cssy/index.mjs audit',  timeout: 60_000, desc: 'Audit undeclared CSS variables across all apps' },
+    },
+  },
+  commy: {
+    emoji: '📢', label: 'Community manager',
+    commands: {
+      collect: { cmd: 'node /home/deploy/scripts/commy/index.mjs collect --dry-run', timeout: 30_000, desc: 'Collect recent activity for community posts' },
+    },
+  },
+  gander: {
+    emoji: '🔭', label: 'News scout',
+    commands: {
+      scout: { cmd: 'node /home/deploy/scripts/gander/index.mjs scout', timeout: 60_000, desc: 'Scout latest news on Bitcoin, Nostr and AI' },
+    },
+  },
+  transy: {
+    emoji: '💎', label: 'Reality checker',
+    commands: {
+      review: { cmd: 'node /home/deploy/scripts/transy/index.mjs review', timeout: 60_000, desc: 'Critical reality check — hard questions about current work' },
     },
   },
 };
