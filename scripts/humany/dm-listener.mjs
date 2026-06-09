@@ -687,6 +687,61 @@ async function sendReply(gooseSK, toPubkey, message) {
   });
 }
 
+// ── Mention handler — kind:1 with #todo + @assistenty ────────────────────────
+
+function extractTodoText(content) {
+  return content
+    .replace(/nostr:npub\w+/g, '')   // remove @mention npubs
+    .replace(/#todo/gi, '')          // remove #todo tag
+    .replace(/#\w+/g, '')            // remove other hashtags
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function appendTodo(text, senderNote) {
+  try {
+    const date = new Date().toISOString().slice(0, 10);
+    const entry = `- [ ] [${date}] \`#idee\` **${text}** — via Nostr mention`;
+    const content = readFileSync(TODO_FILE, 'utf8');
+    const updated = content.replace('### General\n', `### General\n\n${entry}`);
+    writeFileSync(TODO_FILE, updated);
+    return true;
+  } catch (e) {
+    console.error(`[mention] todo write failed: ${e.message}`);
+    return false;
+  }
+}
+
+async function handleMention(ev) {
+  if (processed.has(ev.id)) return;
+  processed.add(ev.id);
+  saveProcessed(processed);
+
+  // Only from Perry
+  if (!perryKeys.includes(ev.pubkey)) return;
+
+  const text = extractTodoText(ev.content);
+  if (!text) return;
+
+  console.log(`[mention] #todo from Perry: "${text.slice(0, 80)}"`);
+
+  const ok = appendTodo(text, ev);
+  const reply = ok
+    ? `✅ Todo toegevoegd: "${text}"\n\nStaat nu op ~/todo.md`
+    : `⚠️ Kon todo niet opslaan — probeer het opnieuw`;
+
+  // Reply via NIP-04 (broad client support)
+  const assistentyGoose = geese.find(g => g.name === 'assistenty');
+  if (assistentyGoose) {
+    try {
+      await sendReplyNip04(assistentyGoose.sk, ev.pubkey, reply);
+      console.log(`[mention] confirmation DM sent`);
+    } catch (e) {
+      console.error(`[mention] DM failed: ${e.message}`);
+    }
+  }
+}
+
 // ── Relay listener ────────────────────────────────────────────────────────────
 
 const processed      = loadProcessed();
@@ -705,12 +760,23 @@ console.log(`[dm-listener] allowed senders: Perry (${perryKeys.length}) + geese 
 function connect() {
   ws = new WebSocket(RELAY);
 
+  const assistentyPubkey = geese.find(g => g.name === 'assistenty')?.pubkey;
+
   ws.onopen = () => {
     console.log(`[dm-listener] connected`);
+    // DM subscription (NIP-17 + NIP-04)
     ws.send(JSON.stringify([
       'REQ', 'dm-listener',
       { kinds: [1059, 4], '#p': geese.map(g => g.pubkey), since: Math.floor(Date.now() / 1000) - 259200 },
     ]));
+    // Mention subscription — kind:1 with #todo tagging Assistenty
+    if (assistentyPubkey) {
+      ws.send(JSON.stringify([
+        'REQ', 'dm-mentions',
+        { kinds: [1], '#p': [assistentyPubkey], '#t': ['todo'], since: Math.floor(Date.now() / 1000) - 3600 },
+      ]));
+      console.log(`[dm-listener] watching mentions (#todo @assistenty)`);
+    }
   };
 
   ws.onmessage = async (event) => {
@@ -719,6 +785,13 @@ function connect() {
 
     const [type, , ev] = msg;
     if (type !== 'EVENT' || !ev) return;
+
+    // kind:1 mention with #todo
+    if (ev.kind === 1) {
+      await handleMention(ev);
+      return;
+    }
+
     if (processed.has(ev.id)) return;
     processed.add(ev.id);
     saveProcessed(processed);
