@@ -139,6 +139,11 @@ const agents = [
     // TODO: replace outfit description with something role-specific
     prompt: `${BASE_STYLE}. Gander — V-formation agent. Wearing a neat professional outfit that fits their role.`,
   },
+  {
+    name: 'cssy',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Cssy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
 ];
 
 async function generateImage(prompt) {
