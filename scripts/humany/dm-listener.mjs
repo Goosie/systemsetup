@@ -238,7 +238,37 @@ function checkFormation() {
   return lines.join('\n');
 }
 
+const TODO_FILE = '/home/deploy/todo.md';
+
+function readTodo(filter) {
+  try {
+    const content = readFileSync(TODO_FILE, 'utf8');
+    if (!filter) return content.slice(0, 6000);
+    // Filter op tag of app naam
+    const lines = content.split('\n');
+    const filtered = lines.filter(l =>
+      l.includes(filter) || l.startsWith('##') || l.startsWith('# ')
+    );
+    return filtered.join('\n').slice(0, 6000);
+  } catch (e) {
+    return `Todo bestand niet beschikbaar: ${e.message}`;
+  }
+}
+
 const ASSISTENTY_TOOLS = [
+  {
+    name: 'read_todo',
+    description: 'Lees de centrale todo lijst van Goosie Labs. Optioneel filter op tag (#server, #idee, #finance, #app:naam) of app naam.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          description: 'Optioneel: filter op tag of app naam, bijv. "#server", "#app:honkensus", "finance"',
+        },
+      },
+    },
+  },
   {
     name: 'check_formation',
     description: 'Check of alle V-Formatie services draaien en wanneer ganzen voor het laatst actief waren.',
@@ -292,6 +322,7 @@ async function blockyStatus() {
 }
 
 async function assistentyExecute(name, input) {
+  if (name === 'read_todo') return readTodo(input.filter);
   if (name === 'check_formation') return checkFormation();
   if (name !== 'ask_goose') return `Unknown tool: ${name}`;
   const [goose, cmd] = (input.task ?? '').split(':');
@@ -381,10 +412,10 @@ De V-Formatie specialisten die jij kunt raadplegen:
 - 🪿 Ay: AI-configuratie — ganzen-prompts, V-formatie kwaliteit
 
 Werkwijze:
-1. Bepaal welke specialisten relevant zijn voor Perry's vraag
-2. Gebruik ask_goose om ze te raadplegen (meerdere tegelijk mag en is vaak beter)
-3. Synthetiseer hun bevindingen in een helder, concreet antwoord voor Perry
-4. Als er actie nodig is: noem die expliciet
+1. Vraagt Perry naar de todo lijst of open taken → gebruik read_todo (optioneel met filter)
+2. Vraagt Perry naar de server of formatie status → gebruik check_formation
+3. Andere vragen → gebruik ask_goose voor de juiste specialist (meerdere tegelijk mag)
+4. Synthetiseer alles concreet — als er actie nodig is, noem die expliciet
 
 Context over het project:
 - Goosie Labs — experimenten met Nostr, Lightning en AI op een Ubuntu 24.04 VPS
