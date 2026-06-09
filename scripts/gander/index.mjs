@@ -282,6 +282,25 @@ function honk(message, to, noCC = false) {
   }
 }
 
+// ── HonkTopic publish (Honkensus integration) ─────────────────────────────────
+
+async function publishHonkTopic(ideaTitle, description, sourceUrl) {
+  const words = ideaTitle.trim().split(/\s+/).slice(0, 5);
+  const slug = words.join('-').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+  const titleStr = words.join(' ');
+
+  const tags = [
+    ['d', slug],
+    ['title', titleStr],
+    ['status', 'open'],
+    ['t', 'honkensus'],
+    ['p', ganderKey.pubkey, 'owner'],
+  ];
+  if (sourceUrl) tags.push(['r', sourceUrl]);
+
+  return publishEvent(31100, description, tags);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 if (cmd === 'balance') {
@@ -331,6 +350,13 @@ if (DRY_RUN) {
   ideas.forEach((idea, i) => console.log(`${i + 1}. ${idea.title}\n   ${idea.description}\n`));
   console.log('── Teaser ───────────────────────────────────────────────────');
   console.log(teaser);
+  console.log('── HonkTopics (kind:31100) ──────────────────────────────────');
+  const drySourceUrl = newsItems.find(i => i.link)?.link ?? '';
+  ideas.forEach((idea, i) => {
+    const words = idea.title.trim().split(/\s+/).slice(0, 5);
+    console.log(`${i + 1}. "${words.join(' ')}"${drySourceUrl ? `\n   r: ${drySourceUrl}` : ''}`);
+    console.log(`   ${idea.description.slice(0, 120)}...\n`);
+  });
   console.log('─────────────────────────────────────────────────────────────\n');
   console.log('[Gander] Dry-run complete — nothing published.');
   process.exit(0);
@@ -348,6 +374,15 @@ const articleEvent = await publishEvent(30023, article, [
   ['published_at', String(Math.floor(Date.now() / 1000))],
 ]);
 console.log(`[Gander] Article published: ${articleEvent.id.slice(0, 16)}...`);
+
+// 3b. Publish HonkTopics (kind:31100) for each build idea
+console.log('[Gander] Publishing HonkTopics to Honkensus...');
+const sourceUrl = newsItems.find(i => i.link)?.link ?? '';
+for (const idea of ideas) {
+  const honkTopic = await publishHonkTopic(idea.title, idea.description, sourceUrl);
+  const topicTitle = idea.title.trim().split(/\s+/).slice(0, 5).join(' ');
+  console.log(`[Gander] HonkTopic: "${topicTitle}" → ${honkTopic.id.slice(0, 16)}...`);
+}
 
 // 4. Short teaser note (kind:1)
 const noteContent = `🪿 Gander scouted: "${topic}"\n\n${teaser}\n\nFull briefing: nostr:${articleEvent.id}\n\nhttps://goosielabs.com #vformation #gander`;
@@ -369,4 +404,4 @@ if (DIRECTORY?.pubkey) {
   console.log(`[Gander] Ideas also sent to Directory`);
 }
 
-console.log(`\n✅ Gander done.\n   Topic: ${topic}\n   Article: ${articleEvent.id.slice(0, 16)}...\n   Ideas sent to Perry + Directory\n`);
+console.log(`\n✅ Gander done.\n   Topic: ${topic}\n   Article: ${articleEvent.id.slice(0, 16)}...\n   Ideas sent to Perry + Directory\n   3 HonkTopics published → https://goosielabs.com/apps/honkensus/\n`);
