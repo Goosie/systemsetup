@@ -127,7 +127,40 @@ Ik heb een eigen Lightning node thuis draaien op een **Umbrel** minicomputer.
 
 Er is één actief Lightning kanaal (met Megalith LSP).
 
-De **Cashu mint** (mint.goosielabs.com) maakt digitale cash tokens aan die gebruikt worden in de apps. Die is verbonden met LNbits, dat verbonden is met Alby Hub.
+De **Cashu mint** (mint.goosielabs.com) maakt digitale cash tokens aan die gebruikt worden in de apps. Die is verbonden met LNbits, dat rechtstreeks via Tailscale is verbonden met mijn LND node op Umbrel.
+
+### De seed phrase (24 woorden) — KRITIEK
+
+De 24 woorden voor mijn Lightning node liggen fysiek opgeschreven op een veilige plek. Vraag dit na bij mensen die het weten.
+
+**Waar je hem vindt als de Umbrel nog werkt:**
+1. Open `http://umbrel.local` in je browser (op hetzelfde netwerk als de Umbrel)
+2. Log in → open de **Lightning Node** app → instellingen → **Recovery phrase**
+
+**Wat je ermee kunt:** hiermee herstel je alle Bitcoin op mijn on-chain wallet én alle Lightning-kanalen (samen met de channel.backup, zie hieronder).
+
+### channel.backup — dagelijks automatisch opgeslagen op de server
+
+Elke dag kopieert een script automatisch het `channel.backup` bestand van de Umbrel naar de server. Dit bestand is nodig om Lightning-kanalen te herstellen na een hardware crash.
+
+**Bestand ophalen van de server (vanaf desktop of Umbrel):**
+```bash
+scp deploy@209.38.106.245:/home/deploy/backups/lnd-scb/channel.backup.latest ~/channel.backup
+```
+
+**Versies staan in:** `/home/deploy/backups/lnd-scb/` (laatste 14 dagen bewaard)
+
+### Lightning node herstellen na hardware crash
+
+Je hebt nodig: **24 seed words** + **channel.backup** bestand
+
+1. Haal `channel.backup.latest` op van de server (commando hierboven)
+2. Nieuwe Umbrel installeren (of dezelfde herstarten)
+3. Open de **Lightning Node** app → kies **"Restore existing wallet"**
+4. Voer de 24 seed words in
+5. Upload het `channel.backup` bestand
+6. LND force-closet alle kanalen — sats komen na enkele uren/dagen terug op de on-chain wallet
+7. Stuur de on-chain sats daarna naar een andere wallet die jij beheert
 
 ---
 
