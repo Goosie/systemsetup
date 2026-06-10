@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 /**
- * scb-backup — LND onderhoud: SCB backup + TLS cert check
+ * scb-backup — LND + LNbits daily backup
  *
- * Elke dag (144 blokken via Blocky):
- *   1. Kopieert channel.backup van Umbrel, bewaart 14 versies
- *   2. Vergelijkt TLS cert op Umbrel met lokale kopie
- *      → bij wijziging: cert vervangen + LNbits herstarten
+ * Every day (144 blocks via Blocky):
+ *   1. channel.backup from Umbrel — keeps 14 versions
+ *   2. TLS cert check — replaces + restarts LNbits if changed
+ *   3. LNbits SQLite databases — keeps 14 versions
+ *   4. LNbits .env + lnd-certs — keeps 14 versions
  *
- * Gebruik:
- *   node index.mjs           # backup + cert check
- *   node index.mjs --dry-run # tonen zonder wijzigingen
+ * Usage:
+ *   node index.mjs           # full backup
+ *   node index.mjs --dry-run # show without changes
  */
 
-import { execSync, execFileSync, spawnSync } from 'child_process';
-import { existsSync, readdirSync, unlinkSync, readFileSync, writeFileSync, statSync } from 'fs';
+import { execSync, execFileSync } from 'child_process';
+import { existsSync, readdirSync, unlinkSync, readFileSync, mkdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { createHash } from 'crypto';
 
@@ -23,7 +24,9 @@ const UMBREL_HOST = 'umbrel@100.111.14.11';
 const REMOTE_SCB  = '/home/umbrel/umbrel/app-data/lightning/data/lnd/data/chain/bitcoin/mainnet/channel.backup';
 const REMOTE_CERT = '/home/umbrel/umbrel/app-data/lightning/data/lnd/tls.cert';
 const LOCAL_CERT  = '/home/deploy/lnbits/lnd-certs/tls.cert';
-const BACKUP_DIR  = '/home/deploy/backups/lnd-scb';
+
+const SCB_DIR     = '/home/deploy/backups/lnd-scb';
+const LNBITS_DIR  = '/home/deploy/backups/lnbits';
 const KEEP        = 14;
 
 function md5(path) {
@@ -39,43 +42,37 @@ function scpFrom(remote, local) {
   ], { stdio: 'inherit' });
 }
 
+function pruneDir(dir, prefix, keep) {
+  const files = readdirSync(dir).filter(f => f.startsWith(prefix)).sort();
+  while (files.length > keep) {
+    const old = join(dir, files.shift());
+    unlinkSync(old);
+    console.log(`🗑  Removed: ${old}`);
+  }
+}
+
 // ── 1. SCB backup ─────────────────────────────────────────────────────────────
 
 console.log(`\n📦 SCB backup — ${new Date().toISOString()}`);
 
 const ts     = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-const dst    = join(BACKUP_DIR, `channel.backup.${ts}`);
-const latest = join(BACKUP_DIR, 'channel.backup.latest');
+const dst    = join(SCB_DIR, `channel.backup.${ts}`);
+const latest = join(SCB_DIR, 'channel.backup.latest');
 
 if (DRY_RUN) {
-  console.log(`   Dry-run — zou kopiëren naar ${dst}`);
+  console.log(`   Dry-run — would copy to ${dst}`);
 } else {
   try {
     scpFrom(REMOTE_SCB, dst);
     const size = statSync(dst).size;
     const hash = md5(dst);
-    if (existsSync(latest)) {
-      const prevHash = md5(latest);
-      if (hash === prevHash) {
-        console.log(`✅ Backup opgeslagen (${size} bytes) — ongewijzigd`);
-      } else {
-        console.log(`✅ Backup opgeslagen (${size} bytes) — ⚠️  GEWIJZIGD (nieuw kanaal?)`);
-      }
-    } else {
-      console.log(`✅ Eerste backup opgeslagen (${size} bytes)`);
-    }
+    const changed = existsSync(latest) && md5(latest) !== hash;
+    console.log(`✅ SCB saved (${size} bytes)${changed ? ' — ⚠️  CHANGED (new channel?)' : ' — unchanged'}`);
     execSync(`cp ${dst} ${latest}`);
-    // Opruimen — max KEEP versies bewaren
-    const files = readdirSync(BACKUP_DIR).filter(f => f.startsWith('channel.backup.2')).sort();
-    while (files.length > KEEP) {
-      const old = join(BACKUP_DIR, files.shift());
-      unlinkSync(old);
-      console.log(`🗑  Oud bestand verwijderd: ${old}`);
-    }
-    const kept = readdirSync(BACKUP_DIR).filter(f => f.startsWith('channel.backup.2'));
-    console.log(`📁 Bewaard: ${kept.length} versies (max ${KEEP})`);
+    pruneDir(SCB_DIR, 'channel.backup.2', KEEP);
+    console.log(`📁 SCB versions: ${readdirSync(SCB_DIR).filter(f => f.startsWith('channel.backup.2')).length} (max ${KEEP})`);
   } catch (e) {
-    console.error(`❌ SCB backup mislukt: ${e.message}`);
+    console.error(`❌ SCB backup failed: ${e.message}`);
   }
 }
 
@@ -84,35 +81,82 @@ if (DRY_RUN) {
 console.log(`\n🔐 TLS cert check`);
 
 const tmpCert = '/tmp/lnd-tls-check.cert';
-
 try {
   scpFrom(REMOTE_CERT, tmpCert);
+  const remoteHash = md5(tmpCert);
+  const localHash  = existsSync(LOCAL_CERT) ? md5(LOCAL_CERT) : null;
+
+  if (remoteHash === localHash) {
+    console.log('✅ TLS cert unchanged');
+  } else {
+    console.log('⚠️  TLS cert changed on Umbrel!');
+    if (!DRY_RUN) {
+      execSync(`cp ${tmpCert} ${LOCAL_CERT}`);
+      console.log(`✅ New cert saved: ${LOCAL_CERT}`);
+      execSync('sudo systemctl restart lnbits', { stdio: 'inherit' });
+      console.log('✅ LNbits restarted with new cert');
+    }
+  }
+  execSync(`rm -f ${tmpCert}`);
 } catch (e) {
-  console.error(`❌ Cert ophalen mislukt: ${e.message}`);
-  process.exit(1);
+  console.error(`❌ Cert check failed: ${e.message}`);
 }
 
-const remoteHash = md5(tmpCert);
-const localHash  = existsSync(LOCAL_CERT) ? md5(LOCAL_CERT) : null;
+// ── 3. LNbits database backup ─────────────────────────────────────────────────
 
-if (remoteHash === localHash) {
-  console.log('✅ TLS cert ongewijzigd — LNbits hoeft niet herstarten');
+console.log(`\n🗄  LNbits database backup`);
+
+if (!existsSync(LNBITS_DIR)) mkdirSync(LNBITS_DIR, { recursive: true });
+
+const dbDir = '/home/deploy/lnbits/data';
+const dbs = readdirSync(dbDir).filter(f => f.endsWith('.sqlite3'));
+
+if (DRY_RUN) {
+  console.log(`   Dry-run — would backup: ${dbs.join(', ')}`);
 } else {
-  console.log('⚠️  TLS cert is veranderd op Umbrel!');
-  if (DRY_RUN) {
-    console.log('   Dry-run — zou cert vervangen en LNbits herstarten');
-  } else {
-    execSync(`cp ${tmpCert} ${LOCAL_CERT}`);
-    console.log(`✅ Nieuw cert opgeslagen: ${LOCAL_CERT}`);
+  for (const db of dbs) {
+    const src  = join(dbDir, db);
+    const name = db.replace('.sqlite3', '');
+    const dest = join(LNBITS_DIR, `${name}.${ts}.sqlite3`);
     try {
-      execSync('sudo systemctl restart lnbits', { stdio: 'inherit' });
-      console.log('✅ LNbits herstart met nieuw cert');
+      // sqlite3 .backup is safe even while DB is open/writing
+      execSync(`sqlite3 ${src} ".backup '${dest}'"`, { stdio: 'pipe' });
+      const size = statSync(dest).size;
+      console.log(`  ✅ ${db} → ${size} bytes`);
+      pruneDir(LNBITS_DIR, `${name}.`, KEEP);
     } catch (e) {
-      console.error(`❌ LNbits herstart mislukt: ${e.message}`);
+      console.error(`  ❌ ${db} failed: ${e.message}`);
     }
   }
 }
 
-execSync(`rm -f ${tmpCert}`);
+// ── 4. LNbits config backup ───────────────────────────────────────────────────
 
-console.log('\n✅ scb-backup klaar\n');
+console.log(`\n⚙️  LNbits config backup`);
+
+const configFiles = [
+  '/home/deploy/lnbits/.env',
+  '/home/deploy/lnbits/lnd-certs/tls.cert',
+  '/home/deploy/lnbits/lnd-certs/admin.macaroon',
+];
+
+if (DRY_RUN) {
+  console.log(`   Dry-run — would backup: .env, tls.cert, admin.macaroon`);
+} else {
+  for (const src of configFiles) {
+    if (!existsSync(src)) continue;
+    const name = src.split('/').pop();
+    const dest = join(LNBITS_DIR, `${name}.${ts}`);
+    try {
+      execSync(`cp ${src} ${dest}`);
+      // Protect sensitive files
+      if (name === 'admin.macaroon') execSync(`chmod 600 ${dest}`);
+      console.log(`  ✅ ${name}`);
+      pruneDir(LNBITS_DIR, `${name}.`, KEEP);
+    } catch (e) {
+      console.error(`  ❌ ${name}: ${e.message}`);
+    }
+  }
+}
+
+console.log('\n✅ scb-backup done\n');
