@@ -139,16 +139,28 @@ De 24 woorden voor mijn Lightning node liggen fysiek opgeschreven op een veilige
 
 **Wat je ermee kunt:** hiermee herstel je alle Bitcoin op mijn on-chain wallet én alle Lightning-kanalen (samen met de channel.backup, zie hieronder).
 
-### channel.backup — dagelijks automatisch opgeslagen op de server
+### Dagelijkse automatische backup — LND + LNbits
 
-Elke dag kopieert een script automatisch het `channel.backup` bestand van de Umbrel naar de server. Dit bestand is nodig om Lightning-kanalen te herstellen na een hardware crash.
+Elke dag (via Blocky, ~144 blokken) draait `scb-backup` en slaat op:
 
-**Bestand ophalen van de server (vanaf desktop of Umbrel):**
+| Wat | Waar op server | Waar offsite |
+|-----|---------------|-------------|
+| `channel.backup` (LND) | `/home/deploy/backups/lnd-scb/` | — |
+| LNbits databases (6x) | `/home/deploy/backups/lnbits/` | `umbrel@100.111.14.11:/home/umbrel/lnbits-backup/` |
+| LNbits `.env` config | `/home/deploy/backups/lnbits/` | `umbrel@100.111.14.11:/home/umbrel/lnbits-backup/` |
+| LND cert + macaroon | `/home/deploy/backups/lnbits/` | `umbrel@100.111.14.11:/home/umbrel/lnbits-backup/` |
+
+Alles: 14 versies bewaard. Offsite kopie staat op de Umbrel thuis — twee fysieke locaties.
+
+**channel.backup ophalen (voor LND herstel):**
 ```bash
 scp deploy@209.38.106.245:/home/deploy/backups/lnd-scb/channel.backup.latest ~/channel.backup
 ```
 
-**Versies staan in:** `/home/deploy/backups/lnd-scb/` (laatste 14 dagen bewaard)
+**LNbits backup ophalen van Umbrel:**
+```bash
+scp umbrel@umbrel.local:/home/umbrel/lnbits-backup/database.sqlite3 ~/lnbits-database.sqlite3
+```
 
 ### Lightning node herstellen na hardware crash
 
