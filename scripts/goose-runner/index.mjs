@@ -49,6 +49,11 @@ const KEYS = {
   cssy: loadKey('cssy'),
   commy: loadKey('commy'),
   finny: loadKey('finny'),
+  thinky: loadKey('thinky'),
+  creaty: loadKey('creaty'),
+  prompty: loadKey('prompty'),
+  devy:       loadKey('devy'),
+  'scb-backup': loadKey('devy'),
   // ── NEW GEESE ──
 };
 
@@ -231,7 +236,12 @@ async function dispatch(pool, event) {
       case 'gander': await handleScript(pool, 'gander', event, command); break;
       case 'cssy': await handleScript(pool, 'cssy', event, command); break;
       case 'commy': await handleScript(pool, 'commy', event, command); break;
-      case 'finny': await handleScript(pool, 'finny', event, command); break;
+      case 'finny':      await handleScript(pool, 'finny',      event, command); break;
+      case 'scb-backup': await handleScript(pool, 'scb-backup', event, command); break;
+      case 'thinky': await handleScript(pool, 'thinky', event, command); break;
+      case 'creaty': await handleScript(pool, 'creaty', event, command); break;
+      case 'prompty': await handleScript(pool, 'prompty', event, command); break;
+      case 'devy':    await handleScript(pool, 'devy',    event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {
