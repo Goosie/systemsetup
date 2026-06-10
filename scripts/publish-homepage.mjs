@@ -40,8 +40,7 @@ const CLAUDE_DIR = '/home/deploy/.claude/agents';
 const PERRY_NSEC = process.env.PERRY_NSEC;
 if (!PERRY_NSEC || !PERRY_NSEC.startsWith('nsec1')) {
   console.error('\x1b[31m✗\x1b[0m PERRY_NSEC not set or invalid.');
-  console.error('  Run: source ~/.bashrc.local && node publish-homepage.mjs');
-  console.error('  Or:  PERRY_NSEC=nsec1... node publish-homepage.mjs');
+  console.error('  Run: bash /home/deploy/scripts/update-tiles.sh');
   process.exit(1);
 }
 
@@ -185,8 +184,8 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { assistenty:'#6366f1', devy:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48', healthy:'#22c55e', backy:'#1e40af', coachy:'#d97706' , gander:'#374151' , cssy:'#374151' };
-  const AGENT_ORDER    = ['assistenty','devy','finny','ay','jurry','secury','healthy','backy','testy','checky','commy','coachy','designy','nosty','docy','transy','gander','cssy'];
+  const AGENT_COLORS   = { assistenty:'#6366f1', devy:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48', healthy:'#22c55e', backy:'#1e40af', coachy:'#d97706' , gander:'#374151' , cssy:'#374151' , thinky:'#374151' };
+  const AGENT_ORDER    = ['assistenty','devy','finny','ay','jurry','secury','healthy','backy','testy','checky','commy','coachy','designy','nosty','docy','transy','gander','cssy','thinky'];
 
   // Read tiles from tile.json directly
   const tiles = [];

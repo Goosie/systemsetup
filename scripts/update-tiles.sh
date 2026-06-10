@@ -25,6 +25,7 @@ done
 
 # Republish nsite homepage (reads all tile.json files automatically)
 source ~/.bashrc.local
+export PERRY_NSEC
 node /home/deploy/scripts/publish-homepage.mjs
 
 if [ $? -eq 0 ]; then
