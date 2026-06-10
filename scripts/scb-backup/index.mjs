@@ -159,4 +159,43 @@ if (DRY_RUN) {
   }
 }
 
+// ── 5. Offsite copy to Umbrel ─────────────────────────────────────────────────
+// Second physical location — if DigitalOcean goes down, recovery is possible from Umbrel.
+
+console.log(`\n🏠 Offsite copy to Umbrel`);
+
+const UMBREL_BACKUP_DIR = '/home/umbrel/lnbits-backup';
+const OFFSITE_FILES = [
+  { src: '/home/deploy/lnbits/data/database.sqlite3',          name: 'database.sqlite3' },
+  { src: '/home/deploy/lnbits/data/ext_splitpayments.sqlite3', name: 'ext_splitpayments.sqlite3' },
+  { src: '/home/deploy/lnbits/.env',                           name: 'lnbits.env' },
+];
+
+if (DRY_RUN) {
+  console.log(`   Dry-run — would copy to ${UMBREL_HOST}:${UMBREL_BACKUP_DIR}/`);
+} else {
+  try {
+    // Ensure backup dir exists on Umbrel
+    execFileSync('ssh', [
+      '-o', 'StrictHostKeyChecking=accept-new',
+      '-o', 'ConnectTimeout=10',
+      UMBREL_HOST,
+      `mkdir -p ${UMBREL_BACKUP_DIR}`,
+    ]);
+    for (const { src, name } of OFFSITE_FILES) {
+      if (!existsSync(src)) continue;
+      execFileSync('scp', [
+        '-o', 'StrictHostKeyChecking=accept-new',
+        '-o', 'ConnectTimeout=10',
+        src,
+        `${UMBREL_HOST}:${UMBREL_BACKUP_DIR}/${name}`,
+      ]);
+      console.log(`  ✅ ${name} → Umbrel`);
+    }
+    console.log(`  📍 Location: ${UMBREL_HOST}:${UMBREL_BACKUP_DIR}/`);
+  } catch (e) {
+    console.error(`  ❌ Offsite copy failed: ${e.message}`);
+  }
+}
+
 console.log('\n✅ scb-backup done\n');
