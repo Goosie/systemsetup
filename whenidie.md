@@ -327,32 +327,38 @@ npm run build
 # Dat is het. Nginx serveert automatisch.
 ```
 
-### Backup — drie lagen
+### Backup — vier lagen
 
-**Laag 1 — Automatische wekelijkse server-snapshot (primair)**
+**Laag 1 — Dagelijkse LND + LNbits backup (kritiek)**
 
-Blocky (Bitcoin block scheduler) triggert elke ~1000 blokken (~1 week) een backup via Backy.
-Backy belt de DigitalOcean API en maakt een volledige server-snapshot.
-Het resultaat komt terug als DM naar Perry — zichtbaar in het Swarm dashboard.
+Blocky triggert elke ~144 blokken (~1 dag) het `scb-backup` script:
+- `channel.backup` van Umbrel → server
+- Alle LNbits databases → server én offsite naar Umbrel
+- LNbits config (`.env`, cert, macaroon) → server én Umbrel
+
+Handmatig draaien:
+```bash
+goosie scb-backup backup
+```
+
+Offsite kopie op Umbrel: `/home/umbrel/lnbits-backup/`
+
+**Laag 2 — Wekelijkse server-snapshot via Backy**
+
+Blocky triggert elke ~1000 blokken (~1 week) een volledige DO server-snapshot via Backy.
 
 ```
 Blocky (~1000 blokken) → NIP-90 job → Backy → DO snapshot API → DM resultaat → Perry
 ```
 
-Blocky is ook de timer voor alle andere ganzen (QA, security, juridisch, health). Het volledige overzicht:
-```bash
-goosie blocky schedule
-```
-
-Handmatig een snapshot triggeren:
+Handmatig triggeren:
 ```bash
 honk from @perry "snapshot" to @backy
 ```
 
 Restore na crash: DO dashboard → Snapshots → Create Droplet from snapshot.
-Snapshot bevat alles: OS, apps, keys, databases.
 
-**Laag 2 — Lokale backup vóór grote wijzigingen**
+**Laag 3 — Lokale backup vóór grote wijzigingen**
 
 ```bash
 /home/deploy/backup.sh
@@ -360,7 +366,7 @@ Snapshot bevat alles: OS, apps, keys, databases.
 
 Altijd doen vóór grote wijzigingen. Maakt git snapshot + SQLite dump.
 
-**Laag 3 — Key rotation backups**
+**Laag 4 — Key rotation backups**
 
 `rotatekey <gans>` maakt automatisch een backup van alle getroffen bestanden in:
 `/home/deploy/key-rotation-backups/<gans>-<timestamp>/`
