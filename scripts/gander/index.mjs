@@ -395,6 +395,10 @@ const articleEvent = await publishEvent(30023, article, [
   ['published_at', String(Math.floor(Date.now() / 1000))],
 ]);
 console.log(`[Gander] Article published: ${articleEvent.id.slice(0, 16)}...`);
+const { nip19 } = await import(NOSTR_TOOLS);
+const articleDTag = `gander-${slug}-${date}`;
+const articleNaddr = nip19.naddrEncode({ kind: 30023, pubkey: ganderKey.pubkey, identifier: articleDTag });
+const articleUrl = `https://njump.me/${articleNaddr}`;
 
 // 3b. Publish HonkTopics (kind:31100) for each build idea
 console.log('[Gander] Publishing HonkTopics to Honkensus...');
@@ -406,14 +410,14 @@ for (const idea of ideas) {
 }
 
 // 4. Short teaser note (kind:1)
-const noteContent = `🪿 Gander scouted: "${topic}"\n\n${teaser}\n\nFull briefing: nostr:${articleEvent.id}\n\nhttps://goosielabs.com #vformation #gander`;
+const noteContent = `🪿 Gander scouted: "${topic}"\n\n${teaser}\n\n${articleUrl}\n\nhttps://goosielabs.com #vformation #gander`;
 await publishEvent(1, noteContent, [['t', 'vformation'], ['t', 'gander']]);
 console.log(`[Gander] Teaser note published`);
 
 // 5. DM 3 ideas to Perry + Directory
 const ideasText = `🪿 Gander intelligence briefing: "${topic}"\n\n${ideas.map((idea, i) =>
   `**Idea ${i + 1}: ${idea.title}**\n${idea.description}`
-).join('\n\n')}\n\nFull article: nostr:${articleEvent.id}`;
+).join('\n\n')}\n\n📖 Full article: ${articleUrl}`;
 
 // Always send to Perry
 honk(ideasText, 'perry', true);
