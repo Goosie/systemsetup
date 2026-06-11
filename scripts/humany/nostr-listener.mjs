@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * dm-listener.mjs — NIP-17 DM listener with Claude AI brain
+ * nostr-listener.mjs — Nostr listener with Claude AI brain
  *
- * Listens for encrypted DMs (kind:1059) addressed to enabled geese.
+ * Listens for Nostr events (kind:1059) addressed to enabled geese.
  * Decrypts with the goose's private key, calls Claude Haiku with the
  * goose's system prompt and tools, and replies via NIP-17 DM.
  *
@@ -12,8 +12,8 @@
  *
  * Only responds to Perry's whitelisted pubkeys.
  *
- * Usage:  node /home/deploy/scripts/humany/dm-listener.mjs
- * Service: sudo systemctl start dm-listener
+ * Usage:  node /home/deploy/scripts/humany/nostr-listener.mjs
+ * Service: sudo systemctl start nostr-listener
  */
 
 import 'websocket-polyfill';
@@ -24,7 +24,7 @@ import WebSocket from 'ws';
 import { nip04, nip17, nip44, nip19, SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
 
 // ── Processed IDs — persisted so restarts don't replay old messages ───────────
-const PROCESSED_FILE = '/home/deploy/logs/dm-listener-processed.json';
+const PROCESSED_FILE = '/home/deploy/logs/nostr-listener-processed.json';
 const MAX_PROCESSED  = 2000;
 
 function loadProcessed() {
@@ -50,7 +50,7 @@ function logUsage(gooseName, model, inputTokens, outputTokens, toolCalls) {
       tool_calls: toolCalls,
     }) + '\n');
   } catch (e) {
-    console.warn(`[dm-listener] usage log failed: ${e.message}`);
+    console.warn(`[nostr-listener] usage log failed: ${e.message}`);
   }
 }
 
@@ -267,7 +267,7 @@ const GOOSE_COMMAND_ENUM = Object.entries(GOOSE_ROSTER).flatMap(([goose, cfg]) =
 );
 
 const FORMATION_SERVICES = [
-  { name: 'dm-listener',    label: 'DM luisteraar (ganzen + Perry)'   },
+  { name: 'nostr-listener',    label: 'Nostr luisteraar (ganzen + Perry)'   },
   { name: 'goose-runner',   label: 'Goose runner (Blocky jobs)'       },
   { name: 'blocky',         label: 'Blocky (V-Formatie klok)'         },
   { name: 'strfry',         label: 'Nostr relay'                      },
@@ -392,7 +392,7 @@ async function assistentyExecute(name, input) {
   const spec = roster.commands[cmd];
   if (!spec) return `Unknown command "${cmd}" for ${goose}`;
 
-  console.log(`[dm-listener] assistenty → ${goose}:${cmd}`);
+  console.log(`[nostr-listener] assistenty → ${goose}:${cmd}`);
 
   // Humany: inline handler — reads agents.json
   if (goose === 'humany' && cmd === 'list') {
@@ -578,7 +578,7 @@ async function askClaude(gooseName, userMessage) {
 
     if (!resp.ok) {
       const err = await resp.text();
-      console.error(`[dm-listener] Claude API ${resp.status}: ${err.slice(0, 200)}`);
+      console.error(`[nostr-listener] Claude API ${resp.status}: ${err.slice(0, 200)}`);
       return `AI brain error (${resp.status}) — probeer het later opnieuw.`;
     }
 
@@ -598,7 +598,7 @@ async function askClaude(gooseName, userMessage) {
       const toolBlocks = data.content.filter(b => b.type === 'tool_use');
       totalToolCalls += toolBlocks.length;
       const toolResults = await Promise.all(toolBlocks.map(async block => {
-        console.log(`[dm-listener] ${gooseName} → ${block.name}(${JSON.stringify(block.input)})`);
+        console.log(`[nostr-listener] ${gooseName} → ${block.name}(${JSON.stringify(block.input)})`);
         const result = await Promise.resolve(config.executeTool(block.name, block.input));
         return { type: 'tool_result', tool_use_id: block.id, content: result };
       }));
@@ -853,9 +853,9 @@ const allowedSenders = getAllowedSenders();
 let ws;
 let reconnectTimer;
 
-console.log(`[dm-listener] geese: ${geese.map(g => g.name).join(', ')}`);
-console.log(`[dm-listener] perry: ${perryKeys.map(p => p.slice(0, 8) + '…').join(', ')}`);
-console.log(`[dm-listener] allowed senders: Perry (${perryKeys.length}) + geese (${allowedSenders.length - perryKeys.length}) = ${allowedSenders.length} total`);
+console.log(`[nostr-listener] geese: ${geese.map(g => g.name).join(', ')}`);
+console.log(`[nostr-listener] perry: ${perryKeys.map(p => p.slice(0, 8) + '…').join(', ')}`);
+console.log(`[nostr-listener] allowed senders: Perry (${perryKeys.length}) + geese (${allowedSenders.length - perryKeys.length}) = ${allowedSenders.length} total`);
 
 function connect() {
   ws = new WebSocket(RELAY);
@@ -863,10 +863,10 @@ function connect() {
   const assistentyPubkey = geese.find(g => g.name === 'assistenty')?.pubkey;
 
   ws.onopen = () => {
-    console.log(`[dm-listener] connected`);
+    console.log(`[nostr-listener] connected`);
     // DM subscription (NIP-17 + NIP-04)
     ws.send(JSON.stringify([
-      'REQ', 'dm-listener',
+      'REQ', 'nostr-listener',
       { kinds: [1059, 4], '#p': geese.map(g => g.pubkey), since: Math.floor(Date.now() / 1000) - 259200 },
     ]));
     // Mention subscription — kind:1 with #todo tagging Assistenty
@@ -875,7 +875,7 @@ function connect() {
         'REQ', 'dm-mentions',
         { kinds: [1], '#p': [assistentyPubkey], '#t': ['todo', 'agendaitem'], since: Math.floor(Date.now() / 1000) - 3600 },
       ]));
-      console.log(`[dm-listener] watching mentions (#todo #agendaitem @assistenty)`);
+      console.log(`[nostr-listener] watching mentions (#todo #agendaitem @assistenty)`);
     }
   };
 
@@ -923,10 +923,10 @@ function connect() {
 
     if (!text) return;
 
-    console.log(`[dm-listener] DM to ${goose.name} from ${senderPubkey.slice(0, 8)}…: "${text.slice(0, 80)}"`);
+    console.log(`[nostr-listener] DM to ${goose.name} from ${senderPubkey.slice(0, 8)}…: "${text.slice(0, 80)}"`);
 
     if (!allowedSenders.includes(senderPubkey)) {
-      console.log(`[dm-listener] ${senderPubkey.slice(0, 8)}… not authorized — ignored`);
+      console.log(`[nostr-listener] ${senderPubkey.slice(0, 8)}… not authorized — ignored`);
       return;
     }
 
@@ -934,37 +934,37 @@ function connect() {
     try {
       reply = await askClaude(goose.name, text);
     } catch (err) {
-      console.error(`[dm-listener] error: ${err.message}`);
+      console.error(`[nostr-listener] error: ${err.message}`);
       reply = `Er ging iets mis: ${err.message}`;
     }
 
-    console.log(`[dm-listener] reply via ${isNip04 ? 'NIP-04' : 'NIP-17'} (${reply.length} chars): "${reply.slice(0, 60)}…"`);
+    console.log(`[nostr-listener] reply via ${isNip04 ? 'NIP-04' : 'NIP-17'} (${reply.length} chars): "${reply.slice(0, 60)}…"`);
     try {
       if (isNip04) {
         await sendReplyNip04(goose.sk, senderPubkey, reply);
       } else {
         await sendReply(goose.sk, senderPubkey, reply);
       }
-      console.log(`[dm-listener] sent ✓`);
+      console.log(`[nostr-listener] sent ✓`);
     } catch (err) {
-      console.error(`[dm-listener] send failed: ${err.message}`);
+      console.error(`[nostr-listener] send failed: ${err.message}`);
     }
   };
 
   ws.onclose = () => {
-    console.log(`[dm-listener] disconnected — reconnect in 10s`);
+    console.log(`[nostr-listener] disconnected — reconnect in 10s`);
     reconnectTimer = setTimeout(connect, 10_000);
   };
 
-  ws.onerror = (e) => console.error(`[dm-listener] ws error: ${e.message}`);
+  ws.onerror = (e) => console.error(`[nostr-listener] ws error: ${e.message}`);
 }
 
 process.on('SIGTERM', () => {
-  console.log('[dm-listener] shutting down');
+  console.log('[nostr-listener] shutting down');
   clearTimeout(reconnectTimer);
   ws?.close();
   process.exit(0);
 });
 
 connect();
-console.log('[dm-listener] started');
+console.log('[nostr-listener] started');
