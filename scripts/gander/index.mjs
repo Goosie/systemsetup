@@ -206,6 +206,7 @@ async function synthesise(topic, newsItems) {
 
   const prompt = `You are Gander, the news scout goose of Goosie Labs V-Formation.
 The flock builds open-source tools around Bitcoin, Nostr, self-sovereign identity, AI and decentralisation.
+Respond with valid JSON only.
 
 Research topic: "${topic}"
 
@@ -238,7 +239,7 @@ Format the response as JSON:
   console.log(`[Gander] Synthesising with AI...`);
   const apiKey = await getApiKey();
 
-  const res = await fetch(`${AI_BASE_URL}/chat/completions`, {
+  const res = await fetch(`${process.env.GANDER_AI_URL ?? AI_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -355,6 +356,11 @@ try {
 }
 
 const { article, ideas, teaser } = synthesis;
+if (!article || typeof article !== 'string') {
+  console.error('[Gander] AI returned unexpected structure — missing article field');
+  console.error('[Gander] Got:', JSON.stringify(synthesis).slice(0, 200));
+  process.exit(1);
+}
 const title = `Gander on: ${topic} — ${date}`;
 
 if (DRY_RUN) {

@@ -39,6 +39,8 @@ const DEFAULT_SCHEDULE = {
   commy:   { interval_blocks: 3,    command: 'run',      description: '~30 min'  },
   finny:      { interval_blocks: 6,    command: 'report',   description: '~1 hour'  },
   'scb-backup': { interval_blocks: 144,  command: 'backup',   description: '~1 day'   },
+  'regenerate-tiles': { interval_blocks: 144, command: 'regen', description: '~1 day (keep agent ages fresh)' },
+  gander:  { interval_blocks: 1008, command: 'scout "nostr use cases people want"', description: '~1 week' },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -156,6 +158,22 @@ async function triggerGoose(goose, blockHeight) {
       console.log(`  ✅ Honk verstuurd naar Backy`);
     } catch (e) {
       console.error(`  ❌ Honk naar Backy mislukt: ${e.message}`);
+    }
+    lastRun[goose] = blockHeight;
+    await persistLastRun();
+    return;
+  }
+
+  // Regenerate tiles is a local maintenance task
+  if (goose === 'regenerate-tiles') {
+    try {
+      execFileSync('node', [
+        '/home/deploy/systemsetup/scripts/regenerate-agent-tiles.mjs',
+        String(blockHeight),
+      ], { timeout: 60000, stdio: 'inherit' });
+      console.log(`  ✅ Agent tiles regenerated`);
+    } catch (e) {
+      console.error(`  ❌ Tile regeneration failed: ${e.message}`);
     }
     lastRun[goose] = blockHeight;
     await persistLastRun();
