@@ -875,46 +875,67 @@ async function mintWelcomeToken() {
   // Load Docy's wallet — she pays the Lightning invoice to mint the token
   const docyWallet = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'docy/lnbits-wallet.json'), 'utf8'));
 
-  // 1. Get mint quote (Lightning invoice from the Cashu mint)
-  const quoteRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount: WELCOME_SATS, unit: 'sat' }),
-  });
-  if (!quoteRes.ok) throw new Error(`Mint quote failed: ${quoteRes.status}`);
-  const { quote, request: bolt11 } = await quoteRes.json();
+  // 1. Init cashu-ts (skip loadMint — keyset ID format mismatch with Nutshell v0.16+)
+  const { CashuMint, CashuWallet } = await import(CASHU_LIB);
+  const cashuMint   = new CashuMint(MINT_URL);
+  const cashuWallet = new CashuWallet(cashuMint);
 
-  // 2. Pay the invoice from Docy's LNbits wallet
+  // 2. Get active keyset explicitly
+  const keysResp = await cashuMint.getKeys();
+  const keyset   = keysResp.keysets[0];
+  if (!keyset) throw new Error('No keyset returned by mint');
+
+  // 3. Request mint quote
+  const mintQuote = await cashuWallet.createMintQuote(WELCOME_SATS);
+
+  // 4. Pay the Lightning invoice from Docy's LNbits wallet
   const payRes = await fetch(`${LNBITS_URL}/api/v1/payments`, {
     method: 'POST',
     headers: { 'X-Api-Key': docyWallet.adminkey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ out: true, bolt11 }),
+    body: JSON.stringify({ out: true, bolt11: mintQuote.request }),
   });
   if (!payRes.ok) throw new Error(`LNbits payment failed: ${payRes.status}`);
 
-  // 3. Poll until mint confirms payment (max 15s)
+  // 5. Poll until mint confirms payment
   for (let i = 0; i < 10; i++) {
     await new Promise(r => setTimeout(r, 1500));
-    const stateRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11/${quote}`);
-    const { state } = await stateRes.json();
-    if (state === 'PAID') break;
+    const s = await cashuWallet.checkMintQuote(mintQuote.quote);
+    if (s.state === 'PAID') break;
   }
 
-  // 4. Mint using cashu-ts for proper blind signatures
-  const { CashuMint, CashuWallet } = await import(CASHU_LIB);
-  const mint   = new CashuMint(MINT_URL);
-  const wallet = new CashuWallet(mint);
-  await wallet.loadMint();
-  const { proofs } = await wallet.mintTokens(WELCOME_SATS, quote);
+  // 6. Create blinded outputs and mint via REST (cashu-ts mintProofs fails on long keyset IDs)
+  const outputData  = await cashuWallet.createOutputData(WELCOME_SATS, keyset);
+  const blindedMsgs = outputData.map(o => o.blindedMessage);
+  const mintRes     = await fetch(`${MINT_URL}/v1/mint/bolt11`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ quote: mintQuote.quote, outputs: blindedMsgs }),
+  });
+  if (!mintRes.ok) throw new Error(`Mint bolt11 failed: ${mintRes.status}`);
+  const { signatures } = await mintRes.json();
 
-  // 5. Encode as cashuA token string
-  const token = { token: [{ mint: MINT_URL, proofs }], unit: 'sat' };
-  return 'cashuA' + Buffer.from(JSON.stringify(token)).toString('base64');
+  // 7. Construct proofs from blind signatures
+  const proofs = signatures.map((sig, i) => ({
+    id: keyset.id,
+    amount: outputData[i].blindedMessage.amount,
+    secret: outputData[i].secret,
+    C: sig.C_,
+  }));
+
+  // 8. Encode as cashuA — manual encoding because getEncodedToken also chokes on long keyset IDs
+  return 'cashuA' + Buffer.from(JSON.stringify({
+    token: [{ mint: MINT_URL, proofs }], unit: 'sat',
+  })).toString('base64');
 }
 
 async function handleGoosielabsMention(ev) {
   const pubkey = ev.pubkey;
   if (!pubkey) return;
+
+  // Deduplicate — same event can arrive from multiple relays
+  if (processed.has(ev.id)) return;
+  processed.add(ev.id);
+  saveProcessed(processed);
 
   // Skip geese mentioning each other
   const geesePubkeys = new Set(geese.map(g => g.pubkey));
@@ -992,7 +1013,7 @@ function connect() {
       ]));
       console.log(`[nostr-listener] watching mentions (#todo #agendaitem @assistenty)`);
     }
-    // Docy welcome token — kind:1 with #goosielabs hashtag
+    // Docy welcome token — kind:1 with #goosielabs on our relay
     ws.send(JSON.stringify([
       'REQ', 'docy-welcome',
       { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
@@ -1082,6 +1103,54 @@ function connect() {
 
   ws.onerror = (e) => console.error(`[nostr-listener] ws error: ${e.message}`);
 }
+
+// ── Docy public relay watcher ─────────────────────────────────────────────────
+// Listens on major public relays for #goosielabs posts from strangers
+
+const PUBLIC_RELAYS = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.primal.net',
+  'wss://relay.nostr.band',
+];
+
+function connectPublicRelay(relayUrl) {
+  let wsPublic;
+  let reconnectPublic;
+
+  function conn() {
+    try { wsPublic = new WebSocket(relayUrl); } catch { return; }
+
+    wsPublic.onopen = () => {
+      console.log(`[nostr-listener] docy: connected to ${relayUrl}`);
+      wsPublic.send(JSON.stringify([
+        'REQ', 'docy-public',
+        { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
+      ]));
+    };
+
+    wsPublic.onmessage = async (event) => {
+      let msg;
+      try { msg = JSON.parse(event.data.toString()); } catch { return; }
+      const [type, , ev] = msg;
+      if (type !== 'EVENT' || !ev || ev.kind !== 1) return;
+      const tags = ev.tags?.filter(t => t[0] === 't').map(t => t[1]?.toLowerCase()) ?? [];
+      if (tags.includes('goosielabs')) {
+        await handleGoosielabsMention(ev);
+      }
+    };
+
+    wsPublic.onclose = () => {
+      reconnectPublic = setTimeout(conn, 30_000);
+    };
+
+    wsPublic.onerror = () => {};
+  }
+
+  conn();
+}
+
+PUBLIC_RELAYS.forEach(connectPublicRelay);
 
 process.on('SIGTERM', () => {
   console.log('[nostr-listener] shutting down');
