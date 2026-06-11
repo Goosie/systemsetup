@@ -36,6 +36,14 @@ function saveProcessed(set) {
   try { writeFileSync(PROCESSED_FILE, JSON.stringify(ids)); } catch {}
 }
 
+// ── Rewarded pubkeys — one welcome token per pubkey, ever ────────────────────
+function loadRewarded() {
+  try { return new Set(JSON.parse(readFileSync(REWARDED_FILE, 'utf8'))); } catch { return new Set(); }
+}
+function saveRewarded(set) {
+  try { writeFileSync(REWARDED_FILE, JSON.stringify([...set])); } catch {}
+}
+
 const USAGE_LOG = '/home/deploy/logs/finny/usage.jsonl';
 
 function logUsage(gooseName, model, inputTokens, outputTokens, toolCalls) {
@@ -57,6 +65,14 @@ function logUsage(gooseName, model, inputTokens, outputTokens, toolCalls) {
 const RELAY      = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
 const AGENTS_DIR = '/home/deploy/agents';
 const WHITELIST  = '/home/deploy/whitelist.json';
+
+// ── Docy welcome token config ─────────────────────────────────────────────────
+const MINT_URL      = process.env.MINT_URL   ?? 'http://127.0.0.1:3338';
+const LNBITS_URL    = process.env.LNBITS_URL ?? 'http://127.0.0.1:5000';
+const WELCOME_SATS  = 21;
+const CASHU_LIB     = '/var/www/goosielabs/apps/catchzaps/node_modules/@cashu/cashu-ts/lib/cashu-ts.es.js';
+const REWARDED_FILE = '/home/deploy/logs/nostr-listener-rewarded.json';
+// Filter on #goosielabs hashtag — no hardcoded pubkey needed
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -537,7 +553,7 @@ const GEESE_CONFIG = {
   },
 };
 
-const ENABLED_GEESE = ['assistenty', 'healthy'];
+const ENABLED_GEESE = ['assistenty', 'healthy', 'docy'];
 
 // ── Claude API — tool loop with parallel tool execution ───────────────────────
 
@@ -853,6 +869,105 @@ const allowedSenders = getAllowedSenders();
 let ws;
 let reconnectTimer;
 
+// ── Docy welcome token handler ────────────────────────────────────────────────
+
+async function mintWelcomeToken() {
+  // Load Docy's wallet — she pays the Lightning invoice to mint the token
+  const docyWallet = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'docy/lnbits-wallet.json'), 'utf8'));
+
+  // 1. Get mint quote (Lightning invoice from the Cashu mint)
+  const quoteRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: WELCOME_SATS, unit: 'sat' }),
+  });
+  if (!quoteRes.ok) throw new Error(`Mint quote failed: ${quoteRes.status}`);
+  const { quote, request: bolt11 } = await quoteRes.json();
+
+  // 2. Pay the invoice from Docy's LNbits wallet
+  const payRes = await fetch(`${LNBITS_URL}/api/v1/payments`, {
+    method: 'POST',
+    headers: { 'X-Api-Key': docyWallet.adminkey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ out: true, bolt11 }),
+  });
+  if (!payRes.ok) throw new Error(`LNbits payment failed: ${payRes.status}`);
+
+  // 3. Poll until mint confirms payment (max 15s)
+  for (let i = 0; i < 10; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    const stateRes = await fetch(`${MINT_URL}/v1/mint/quote/bolt11/${quote}`);
+    const { state } = await stateRes.json();
+    if (state === 'PAID') break;
+  }
+
+  // 4. Mint using cashu-ts for proper blind signatures
+  const { CashuMint, CashuWallet } = await import(CASHU_LIB);
+  const mint   = new CashuMint(MINT_URL);
+  const wallet = new CashuWallet(mint);
+  await wallet.loadMint();
+  const { proofs } = await wallet.mintTokens(WELCOME_SATS, quote);
+
+  // 5. Encode as cashuA token string
+  const token = { token: [{ mint: MINT_URL, proofs }], unit: 'sat' };
+  return 'cashuA' + Buffer.from(JSON.stringify(token)).toString('base64');
+}
+
+async function handleGoosielabsMention(ev) {
+  const pubkey = ev.pubkey;
+  if (!pubkey) return;
+
+  // Skip geese mentioning each other
+  const geesePubkeys = new Set(geese.map(g => g.pubkey));
+  if (geesePubkeys.has(pubkey)) return;
+
+  const rewarded = loadRewarded();
+  if (rewarded.has(pubkey)) {
+    console.log(`[nostr-listener] docy: ${pubkey.slice(0, 8)}… already rewarded, skipping`);
+    return;
+  }
+
+  console.log(`[nostr-listener] docy: new #goosielabs mention from ${pubkey.slice(0, 8)}… — minting ${WELCOME_SATS} sat welcome token`);
+
+  let token;
+  try {
+    token = await mintWelcomeToken();
+  } catch (e) {
+    console.error(`[nostr-listener] docy: mint failed: ${e.message}`);
+    return;
+  }
+
+  // Mark as rewarded before sending (prevents double-send if honk fails)
+  rewarded.add(pubkey);
+  saveRewarded(rewarded);
+
+  // Send welcome DM via Docy
+  const docy = geese.find(g => g.name === 'docy');
+  if (!docy) {
+    console.error('[nostr-listener] docy: goose not loaded, cannot send DM');
+    return;
+  }
+
+  const message = `🪿 Welkom bij Goosie Labs!
+
+Bedankt voor je post over ons. Als welkomstcadeautje stuur ik je ${WELCOME_SATS} sats in Cashu ecash — geen account nodig, gewoon claimen.
+
+**Jouw welkomsttoken:**
+\`${token}\`
+
+Je kunt dit token inwisselen op https://wallet.cashu.me of in elke Cashu-wallet.
+
+💡 Gebruik het token om **Proof of Read** te doen op https://goosielabs.com/apps/proofofread/ — bewijs dat je een boek hebt gelezen en verdien een Nostr-badge + meer sats.
+
+— Docy 🪿 (onboarding manager bij Goosie Labs)`;
+
+  try {
+    await sendReply(docy.sk, pubkey, message);
+    console.log(`[nostr-listener] docy: welcome token sent to ${pubkey.slice(0, 8)}…`);
+  } catch (e) {
+    console.error(`[nostr-listener] docy: DM failed: ${e.message}`);
+  }
+}
+
 console.log(`[nostr-listener] geese: ${geese.map(g => g.name).join(', ')}`);
 console.log(`[nostr-listener] perry: ${perryKeys.map(p => p.slice(0, 8) + '…').join(', ')}`);
 console.log(`[nostr-listener] allowed senders: Perry (${perryKeys.length}) + geese (${allowedSenders.length - perryKeys.length}) = ${allowedSenders.length} total`);
@@ -877,6 +992,12 @@ function connect() {
       ]));
       console.log(`[nostr-listener] watching mentions (#todo #agendaitem @assistenty)`);
     }
+    // Docy welcome token — kind:1 with #goosielabs hashtag
+    ws.send(JSON.stringify([
+      'REQ', 'docy-welcome',
+      { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
+    ]));
+    console.log(`[nostr-listener] docy: watching #goosielabs mentions for welcome tokens`);
   };
 
   ws.onmessage = async (event) => {
@@ -886,13 +1007,16 @@ function connect() {
     const [type, , ev] = msg;
     if (type !== 'EVENT' || !ev) return;
 
-    // kind:1 mention with #todo or #agendaitem
+    // kind:1 mentions
     if (ev.kind === 1) {
       const tags = ev.tags?.filter(t => t[0] === 't').map(t => t[1]?.toLowerCase()) ?? [];
       if (tags.includes('agendaitem')) {
         await handleAgendaItem(ev);
       } else if (tags.includes('todo')) {
         await handleMention(ev);
+      }
+      if (tags.includes('goosielabs')) {
+        await handleGoosielabsMention(ev);
       }
       return;
     }
