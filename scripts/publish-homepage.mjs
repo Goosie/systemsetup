@@ -6,8 +6,6 @@
  *
  * Pages published:
  *   /index.html     — homepage (tiles + V-Formation, regenerated from tile.json)
- *   /about.html     — About page (EN, generated from code)
- *   /contact.html   — Contact page (EN, generated from code)
  *   /mcp.html       — MCP article (EN, from scripts/pages/mcp_en.html)
  *   /bitcoin.html   — Bitcoin article (EN, generated from code)
  *
@@ -118,7 +116,6 @@ function publishManifest(nsecHex, pubkey, files) {
 function shell(title, bodyHtml, lang='nl', activePage='') {
   const navLinks = [
     { href: './',           label: 'Home',    key: 'home' },
-    { href: 'about.html',   label: 'About',   key: 'about' },
     { href: '/perry.html',  label: 'Perry',   key: 'perry' },
   ];
   const nav = navLinks.map(l =>
@@ -358,8 +355,6 @@ async function generateHomepage() {
   html = html.replace(/<a href="#meedoen"[^>]*>Meedoen<\/a>/g, '');
   html = html.replace(/<a href="https:\/\/goosielabs\.com\/apps\/"[^>]*>Apps<\/a>/g, '');
   html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
-  html = html.replace(/>Over ons<\/a>/, '>About</a>');
-  html = html.replace(/href="\/over-ons\/"/g, 'href="about.html"');
   html = html.replace(/href="\/contact\/"/, 'href="/perry.html"');
   html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
   html = html.replace(/id="projecten"/g, 'id="projects"');
@@ -557,123 +552,6 @@ function generateContactEn() {
   return shell('Contact', `<div class="page-content">${cleaned}</div>`, 'en', 'contact');
 }
 
-// ── About page (EN) — written directly, no WP dependency ─────────────────────
-function generateAboutEn() {
-  return shell('About', `
-    <style>
-      .about-hero { background:linear-gradient(160deg,#042C53 0%,#0C447C 50%,#185FA5 100%); color:#fff; padding:6rem 2rem 5rem; }
-      .about-hero-inner { max-width:1080px; margin:0 auto; }
-      .about-label { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:6px 14px; font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:#B5D4F4; margin-bottom:2rem; }
-      .about-hero h1 { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(2.2rem,5vw,3.4rem); font-weight:700; line-height:1.1; letter-spacing:-0.03em; color:#fff; margin-bottom:1rem; }
-      .about-hero-sub { font-size:1.1rem; font-weight:300; color:#85B7EB; margin-bottom:1.5rem; }
-      .about-hero-text { font-size:1rem; line-height:1.85; color:rgba(255,255,255,0.8); max-width:640px; }
-      .about-section { padding:5rem 2rem; }
-      .about-section-inner { max-width:1080px; margin:0 auto; }
-      .about-section-gray { background:#F8F8F6; }
-      .about-section-dark { background:linear-gradient(135deg,#042C53 0%,#0C447C 100%); color:#fff; padding:5rem 2rem; }
-      .about-label-sm { font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:#378ADD; margin-bottom:0.75rem; }
-      .about-label-sm-light { color:#85B7EB; }
-      .about-h2 { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(1.5rem,3vw,2.2rem); font-weight:700; color:#042C53; line-height:1.2; letter-spacing:-0.02em; margin-bottom:0.75rem; }
-      .about-h2-light { color:#fff; }
-      .about-sub { font-size:1rem; color:#5F5E5A; max-width:580px; line-height:1.75; }
-      .about-sub-light { color:rgba(255,255,255,0.75); max-width:600px; }
-      .about-quote { font-family:'Libre Baskerville',Georgia,serif; font-size:clamp(1rem,2vw,1.3rem); font-style:italic; color:#0C447C; border-left:3px solid #378ADD; padding-left:1.5rem; margin:2.5rem 0; line-height:1.6; max-width:600px; }
-      .perry-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; margin-top:3rem; }
-      @media(max-width:640px){ .perry-grid { grid-template-columns:1fr; } }
-      .perry-block h3 { font-family:'Libre Baskerville',Georgia,serif; font-size:1.1rem; color:#042C53; margin-bottom:0.5rem; }
-      .perry-block p { font-size:0.95rem; color:#5F5E5A; line-height:1.75; }
-      .formation-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; margin-top:2rem; }
-      .goose-card { background:#fff; border:1px solid #EDEDEA; border-radius:0.75rem; padding:1.25rem; }
-      .goose-card-name { font-weight:700; font-size:0.95rem; color:#0C447C; margin-bottom:0.25rem; }
-      .goose-card-role { font-size:0.75rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#378ADD; margin-bottom:0.5rem; }
-      .goose-card-desc { font-size:0.85rem; color:#5F5E5A; line-height:1.6; }
-      .steps { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.5rem; margin-top:2rem; }
-      .step { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; padding:1.5rem; }
-      .step-num { font-size:2rem; font-weight:800; color:rgba(255,255,255,0.2); margin-bottom:0.5rem; }
-      .step-title { font-weight:600; color:#fff; margin-bottom:0.4rem; }
-      .step-desc { font-size:0.85rem; color:rgba(255,255,255,0.65); line-height:1.6; }
-      .tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.5rem; }
-      .tag { background:#E6F1FB; color:#185FA5; border-radius:9999px; padding:4px 12px; font-size:0.78rem; font-weight:500; }
-    </style>
-
-    <div class="about-hero">
-      <div class="about-hero-inner">
-        <div class="about-label">Open experiment lab</div>
-        <h1>We build what others don't dare to yet.</h1>
-        <p class="about-hero-sub">An open lab for Bitcoin, Nostr and AI.</p>
-        <p class="about-hero-text">Goosie Labs is not an agency. Not a startup. It is a place where technology that makes the world fairer is simply tried out. Everything here is in development — use it, build on it, or join in.</p>
-      </div>
-    </div>
-
-    <div class="about-section">
-      <div class="about-section-inner">
-        <div class="about-label-sm">The founder</div>
-        <h2 class="about-h2">Perry Smit</h2>
-        <blockquote class="about-quote">"This is not a product. This is a lab. Everything here is in development."</blockquote>
-        <div class="perry-grid">
-          <div class="perry-block">
-            <h3>Why Bitcoin</h3>
-            <p>Started with Bitcoin because it's fair. Moved on to Nostr because identity should belong to you. Now deep in AI because it finally runs locally — without Google watching over your shoulder.</p>
-          </div>
-          <div class="perry-block">
-            <h3>Outside the lab</h3>
-            <p>Mountain biking in the mountains, tai chi in the garden, or just walking. The best ideas arrive when you're not at a keyboard.</p>
-          </div>
-        </div>
-        <div class="tags">
-          <span class="tag">Bitcoin</span>
-          <span class="tag">Nostr</span>
-          <span class="tag">Cashu</span>
-          <span class="tag">Lightning</span>
-          <span class="tag">Local AI</span>
-          <span class="tag">Self-Sovereign Identity</span>
-          <span class="tag">Austrian Economics</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="about-section about-section-gray">
-      <div class="about-section-inner">
-        <div class="about-label-sm">The AI team</div>
-        <h2 class="about-h2">The V-Formation</h2>
-        <p class="about-sub">Geese fly in V-formation because each goose reduces air resistance for the next. They switch positions. No one always leads. The whole is faster than the sum of its parts.</p>
-        <div class="formation-grid">
-          <div class="goose-card"><div class="goose-card-name">🪿 Assistenty</div><div class="goose-card-role">Primary orchestrator</div><div class="goose-card-desc">Will assist the director and every goose wherever she can. When there is a party, Assistenty will do most of the honking.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Devy</div><div class="goose-card-role">Developer Goose</div><div class="goose-card-desc">The main developer, always busy with keys. Turns ideas into points on the horizon. Devy loves to play with Nosty's features.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Finny</div><div class="goose-card-role">Chief Financial Goose</div><div class="goose-card-desc">Keeps track of all the coins flying around. Makes sure API calls get paid and every goose has enough pocket money to reach the next destination.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Ay</div><div class="goose-card-role">Config Auditor</div><div class="goose-card-desc">Manages all AI configurations and checks regularly that every goose has their feathers properly in order.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Jurry</div><div class="goose-card-role">Legal Advisor</div><div class="goose-card-desc">Makes sure the goosies don't do anything seriously wrong along the way. He honks proactively when something is about to become risky.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Secury</div><div class="goose-card-role">Security Goose</div><div class="goose-card-desc">Checks that all flights are secure and that the flock lands in the right place. When invaders are around, he honks them away.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Testy</div><div class="goose-card-role">QA Goose</div><div class="goose-card-desc">Always eager to test what the goosies have built. She's always first to arrive at the destination.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Checky</div><div class="goose-card-role">Quality Controller</div><div class="goose-card-desc">Makes sure everyone is on board with the right tools before the skirts fly away. When memory and capacity are confirmed, he honks the all-clear.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Commy</div><div class="goose-card-role">Community Goose</div><div class="goose-card-desc">Always honking about what the goosies are up to across social media streams. Always up for a good honky conversation.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Designy</div><div class="goose-card-role">Interface Builder</div><div class="goose-card-desc">Forever dreaming and sketching what the next destination should look like. Once arrived, he makes the environment nicer, cleaner, and easier to walk around.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Nosty</div><div class="goose-card-role">Nostr Identity Manager</div><div class="goose-card-desc">Our liaison with the Nostr flock. Always experimenting with new features — when something useful turns up, you'll hear him honking from far away.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Docy</div><div class="goose-card-role">Onboarding &amp; Identity</div><div class="goose-card-desc">Always writing things down and making pictures of the skirts. Works closely with Commy, his best friend, who flies right behind him to catch his stories.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Transy</div><div class="goose-card-role">Chief Reality Officer</div><div class="goose-card-desc">The communicator when the flock travels to foreign lands. Speaks almost every language and translates everything into the right honky sound. A very friendly goose — has friends everywhere.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Blocky</div><div class="goose-card-role">Bitcoin Block Scheduler</div><div class="goose-card-desc">Knows exactly when the next Bitcoin block will be mined. Every ten minutes on average, he activates all kinds of processes — backups, payment scripts, and whatever else needs a heartbeat.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Directory</div><div class="goose-card-role">Formation Director</div><div class="goose-card-desc">Always flies highest and looks furthest. When something interesting appears on the horizon, he knows exactly where to direct the flock.</div></div>
-          <div class="goose-card"><div class="goose-card-name">🪿 Supporty</div><div class="goose-card-role">Support Goose</div><div class="goose-card-desc">Always willing to help and knows exactly who to ask when things get complicated. The only goose who honks less than the others — and the one quietly cleaning up what the rest left behind.</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="about-section-dark">
-      <div class="about-section-inner">
-        <div class="about-label-sm about-label-sm-light">How we work</div>
-        <h2 class="about-h2 about-h2-light">In half an hour, something stands.</h2>
-        <p class="about-sub-light">No quote. No process. We just build.</p>
-        <div class="steps">
-          <div class="step"><div class="step-num">01</div><div class="step-title">Session at the garden shed</div><div class="step-desc">We sketch it out on the wall. What do you want? What should it do? Who uses it?</div></div>
-          <div class="step"><div class="step-num">02</div><div class="step-title">Stack started</div><div class="step-desc">React, Vite, Nostr-tools — within thirty minutes something is running you can actually touch.</div></div>
-          <div class="step"><div class="step-num">03</div><div class="step-title">V-Formation flies</div><div class="step-desc">Assistenty keeps the overview. Devy manages the code. Finny guards the sats. Testy tests everything.</div></div>
-          <div class="step"><div class="step-num">04</div><div class="step-title">You get something real</div><div class="step-desc">A working prototype, or clear insight into what you want to build — and how.</div></div>
-        </div>
-      </div>
-    </div>
-  `, 'en', 'about');
-}
-
 // ── Article pages ─────────────────────────────────────────────────────────────
 function generateArticle(file, title, lang) {
   const fragment = readFileSync(file, 'utf8').replace(/<!-- wp:[^>]+-->/g, '');
@@ -736,7 +614,6 @@ console.log('Generating pages…\n');
 
 const pages = {
   '/index.html':      Buffer.from(await generateHomepage(), 'utf8'),
-  '/about.html':      Buffer.from(generateAboutEn(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle(`${PAGES_DIR}/mcp_en.html`, 'What is MCP?', 'en'), 'utf8'),
   '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
 };
