@@ -351,8 +351,7 @@ function addToPortraitsGenerator(name) {
   const newEntry =
     `  {\n` +
     `    name: '${name}',\n` +
-    `    // TODO: replace outfit description with something role-specific\n` +
-    `    prompt: \`\${BASE_STYLE}. ${label} — V-formation agent. Wearing a neat professional outfit that fits their role.\`,\n` +
+    `    prompt: \`\${BASE_STYLE}. ${label} — V-formation agent. Wearing a unique outfit that reflects their role and personality.\`,\n` +
     `  },`;
   content = content.replace(/^(\];)/m, `${newEntry}\n$1`);
   writeFileSync(GENERATE_PORTRAITS, content);
@@ -375,11 +374,13 @@ function generateIcon(name) {
 
 function getOpenAIKey() {
   if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
-  try {
-    const rc = readFileSync('/home/deploy/.bashrc.local', 'utf8');
-    const m = rc.match(/export\s+OPENAI_API_KEY=([^\s\n]+)/);
-    return m ? m[1] : null;
-  } catch { return null; }
+  for (const f of ['/home/deploy/.env.services', '/home/deploy/.bashrc.local']) {
+    try {
+      const m = readFileSync(f, 'utf8').match(/(?:export\s+)?OPENAI_API_KEY=([^\s\n]+)/);
+      if (m) return m[1];
+    } catch {}
+  }
+  return null;
 }
 
 function generatePortrait(name) {
@@ -545,27 +546,21 @@ async function newGoose(name) {
     : `  ⚠️  Icon generation failed — run manually: cd /var/www/goosielabs && node generate-agent-icons.mjs`
   );
 
-  // 2e. @Designy — portrait (AI-illustrated goose character)
+  // 2e. @Designy — portrait via DALL-E (gpt-image-1)
   addToPortraitsGenerator(name);
-  if (process.env.OPENAI_API_KEY) {
-    console.log(`  🎨 @Designy: generating portrait for ${capitalize(name)}...`);
-    const portraitOk = generatePortrait(name);
-    console.log(portraitOk
-      ? `  🎨 Portrait generated → /agents/${name}/${name}.jpg`
-      : `  ⚠️  Portrait generation failed — retry: OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`
+  console.log(`  🎨 @Designy: generating DALL-E portrait for ${capitalize(name)}...`);
+  const portraitOk = generatePortrait(name);
+  console.log(portraitOk
+    ? `  🎨 Portrait generated → /agents/${name}/${name}.jpg`
+    : `  ⚠️  Portrait generation failed — retry: node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`
+  );
+  if (portraitOk) {
+    console.log(`  🖼️  Removing background → generating transparent PNG...`);
+    const pngOk = generateTransparentPng(name);
+    console.log(pngOk
+      ? `  🖼️  Transparent PNG generated → /agents/${name}/${name}.png`
+      : `  ⚠️  PNG generation failed — run manually: bash /home/deploy/update-tiles.sh`
     );
-    if (portraitOk) {
-      console.log(`  🖼️  Removing background → generating transparent PNG...`);
-      const pngOk = generateTransparentPng(name);
-      console.log(pngOk
-        ? `  🖼️  Transparent PNG generated → /agents/${name}/${name}.png`
-        : `  ⚠️  PNG generation failed — run manually: bash /home/deploy/update-tiles.sh`
-      );
-    }
-  } else {
-    console.log(`  🎨 Portrait: OPENAI_API_KEY not set — run when ready:`);
-    console.log(`     OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`);
-    console.log(`     Then run: bash /home/deploy/update-tiles.sh  (generates transparent PNG)`);
   }
 
   // 3. Update whitelist.json

@@ -164,8 +164,11 @@ const agents = [
   },
   {
     name: 'welcome',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Welcome — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+    prompt: `${BASE_STYLE}. Wearing a cheerful orange welcome vest with a glowing golden name tag that reads "Welcome". Holding a small gift envelope with a lightning bolt symbol on it. Warm, friendly smile — the goose you'd want to meet first at any door.`,
+  },
+  {
+    name: 'linky',
+    prompt: `${BASE_STYLE}. Linky — LinkedIn communication goose. Wearing a sharp navy blue business suit with a striped tie, holding a shiny smartphone showing a social media feed. Confident, polished, ready to network.`,
   },
 ];
 
