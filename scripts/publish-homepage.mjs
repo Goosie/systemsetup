@@ -295,12 +295,17 @@ async function generateHomepage() {
     const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
     const tileText = a.quote || (a.description.length > 120 ? a.description.slice(0, 120) + '…' : a.description);
 
-    // Use .jpg portrait → icon-192.png → 🪿 emoji fallback
+    // Use .png portrait (transparent bg) → .jpg portrait → icon-192.png → 🪿 emoji fallback
+    const pngSrc  = `${KEYS_DIR}/${a.name}/${a.name}.png`;
     const jpgSrc  = `${KEYS_DIR}/${a.name}/${a.name}.jpg`;
     const iconSrc = `${KEYS_DIR}/${a.name}/icon-192.png`;
     const destDir = `${WEBROOT_AGENTS}/${a.name}`;
     let avatar;
-    if (existsSync(jpgSrc)) {
+    if (existsSync(pngSrc)) {
+      mkdirSync(destDir, { recursive: true });
+      copyFileSync(pngSrc, `${destDir}/${a.name}.png`);
+      avatar = `<div class="agent-avatar"><img src="/agents/${a.name}/${a.name}.png" alt="${title}"></div>`;
+    } else if (existsSync(jpgSrc)) {
       mkdirSync(destDir, { recursive: true });
       copyFileSync(jpgSrc, `${destDir}/${a.name}.jpg`);
       avatar = `<div class="agent-avatar"><img src="/agents/${a.name}/${a.name}.jpg" alt="${title}"></div>`;
