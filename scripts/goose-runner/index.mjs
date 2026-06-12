@@ -54,6 +54,8 @@ const KEYS = {
   prompty: loadKey('prompty'),
   devy:       loadKey('devy'),
   'scb-backup': loadKey('devy'),
+  toddy: loadKey('toddy'),
+  welcome: loadKey('welcome'),
   // ── NEW GEESE ──
 };
 
@@ -242,6 +244,8 @@ async function dispatch(pool, event) {
       case 'creaty': await handleScript(pool, 'creaty', event, command); break;
       case 'prompty': await handleScript(pool, 'prompty', event, command); break;
       case 'devy':    await handleScript(pool, 'devy',    event, command); break;
+      case 'toddy': await handleScript(pool, 'toddy', event, command); break;
+      case 'welcome': await handleScript(pool, 'welcome', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {

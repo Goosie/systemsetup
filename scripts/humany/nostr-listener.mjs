@@ -553,7 +553,7 @@ const GEESE_CONFIG = {
   },
 };
 
-const ENABLED_GEESE = ['assistenty', 'healthy', 'docy'];
+const ENABLED_GEESE = ['assistenty', 'healthy', 'docy', 'welcome'];
 
 // ── Claude API — tool loop with parallel tool execution ───────────────────────
 
@@ -691,15 +691,34 @@ async function sendReplyNip04(gooseSK, toPubkey, message) {
   });
 }
 
+async function getInboxRelays(pubkey) {
+  // Look up recipient's NIP-17 inbox (kind:10050), fall back to our relay
+  const lookupRelays = ['wss://relay.damus.io', 'wss://nos.lol', RELAY.replace('127.0.0.1:7778', 'relay.goosielabs.com').replace('ws://', 'wss://')];
+  try {
+    const pool = new SimplePool();
+    const event = await pool.get(lookupRelays, { kinds: [10050], authors: [pubkey] });
+    pool.close(lookupRelays);
+    if (event) {
+      const relays = event.tags.filter(t => t[0] === 'relay').map(t => t[1]).filter(Boolean);
+      if (relays.length > 0) return relays;
+    }
+  } catch {}
+  return [RELAY];
+}
+
 async function sendReply(gooseSK, toPubkey, message) {
+  const inboxRelays = await getInboxRelays(toPubkey);
+  // Always also publish to our own relay as fallback
+  const targetRelays = [...new Set([...inboxRelays, RELAY])];
+  console.log(`[nostr-listener] docy: publishing DM to relays: ${targetRelays.join(', ')}`);
   return new Promise((resolve) => {
     const pool = new SimplePool();
     const wrapped = buildGiftWrap(gooseSK, toPubkey, message);
-    Promise.allSettled([pool.publish([RELAY], wrapped)]).then(() => {
-      pool.close([RELAY]);
+    Promise.allSettled([pool.publish(targetRelays, wrapped)]).then(() => {
+      pool.close(targetRelays);
       resolve();
     });
-    setTimeout(() => { pool.close([RELAY]); resolve(); }, 8_000);
+    setTimeout(() => { pool.close(targetRelays); resolve(); }, 8_000);
   });
 }
 
@@ -873,7 +892,7 @@ let reconnectTimer;
 
 async function mintWelcomeToken() {
   // Load Docy's wallet — she pays the Lightning invoice to mint the token
-  const docyWallet = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'docy/lnbits-wallet.json'), 'utf8'));
+  const docyWallet = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'welcome/lnbits-wallet.json'), 'utf8'));
 
   // 1. Init cashu-ts (skip loadMint — keyset ID format mismatch with Nutshell v0.16+)
   const { CashuMint, CashuWallet } = await import(CASHU_LIB);
@@ -943,17 +962,17 @@ async function handleGoosielabsMention(ev) {
 
   const rewarded = loadRewarded();
   if (rewarded.has(pubkey)) {
-    console.log(`[nostr-listener] docy: ${pubkey.slice(0, 8)}… already rewarded, skipping`);
+    console.log(`[nostr-listener] welcome: ${pubkey.slice(0, 8)}… already rewarded, skipping`);
     return;
   }
 
-  console.log(`[nostr-listener] docy: new #goosielabs mention from ${pubkey.slice(0, 8)}… — minting ${WELCOME_SATS} sat welcome token`);
+  console.log(`[nostr-listener] welcome: new #goosielabs mention from ${pubkey.slice(0, 8)}… — minting ${WELCOME_SATS} sat welcome token`);
 
   let token;
   try {
     token = await mintWelcomeToken();
   } catch (e) {
-    console.error(`[nostr-listener] docy: mint failed: ${e.message}`);
+    console.error(`[nostr-listener] welcome: mint failed: ${e.message}`);
     return;
   }
 
@@ -968,24 +987,29 @@ async function handleGoosielabsMention(ev) {
     return;
   }
 
+  const redeemUrl = `https://wallet.cashu.me/#${token}`;
+
   const message = `🪿 Welkom bij Goosie Labs!
 
-Bedankt voor je post over ons. Als welkomstcadeautje stuur ik je ${WELCOME_SATS} sats in Cashu ecash — geen account nodig, gewoon claimen.
+Bedankt voor je post over ons. Als welkomstcadeautje krijg je ${WELCOME_SATS} sats — klik gewoon op de link om ze te claimen:
 
-**Jouw welkomsttoken:**
-\`${token}\`
+👉 ${redeemUrl}
 
-Je kunt dit token inwisselen op https://wallet.cashu.me of in elke Cashu-wallet.
+💡 Gebruik ze daarna voor **Proof of Read** op https://goosielabs.com/apps/proofofread/ — bewijs dat je een boek hebt gelezen en verdien een Nostr-badge + meer sats terug.
 
-💡 Gebruik het token om **Proof of Read** te doen op https://goosielabs.com/apps/proofofread/ — bewijs dat je een boek hebt gelezen en verdien een Nostr-badge + meer sats.
+— Welcome 🪿 (Goosie Labs)`;
 
-— Docy 🪿 (onboarding manager bij Goosie Labs)`;
+  const welcomeGoose = geese.find(g => g.name === 'welcome');
+  if (!welcomeGoose) {
+    console.error('[nostr-listener] welcome: goose not loaded, cannot send DM');
+    return;
+  }
 
   try {
-    await sendReply(docy.sk, pubkey, message);
-    console.log(`[nostr-listener] docy: welcome token sent to ${pubkey.slice(0, 8)}…`);
+    await sendReply(welcomeGoose.sk, pubkey, message);
+    console.log(`[nostr-listener] welcome: welcome token sent to ${pubkey.slice(0, 8)}…`);
   } catch (e) {
-    console.error(`[nostr-listener] docy: DM failed: ${e.message}`);
+    console.error(`[nostr-listener] welcome: DM failed: ${e.message}`);
   }
 }
 
@@ -1015,10 +1039,10 @@ function connect() {
     }
     // Docy welcome token — kind:1 with #goosielabs on our relay
     ws.send(JSON.stringify([
-      'REQ', 'docy-welcome',
+      'REQ', 'welcome-sub',
       { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
     ]));
-    console.log(`[nostr-listener] docy: watching #goosielabs mentions for welcome tokens`);
+    console.log(`[nostr-listener] welcome: watching #goosielabs mentions for welcome tokens`);
   };
 
   ws.onmessage = async (event) => {
@@ -1122,9 +1146,9 @@ function connectPublicRelay(relayUrl) {
     try { wsPublic = new WebSocket(relayUrl); } catch { return; }
 
     wsPublic.onopen = () => {
-      console.log(`[nostr-listener] docy: connected to ${relayUrl}`);
+      console.log(`[nostr-listener] welcome: connected to ${relayUrl}`);
       wsPublic.send(JSON.stringify([
-        'REQ', 'docy-public',
+        'REQ', 'welcome-public',
         { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
       ]));
     };

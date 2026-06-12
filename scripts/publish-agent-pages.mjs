@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { readdir } from 'fs/promises';
 import path from 'path';
 import WebSocket from '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
+import { generateQRDataUrl } from './lib/qr-code-util.mjs';
 
 // ── nostr-tools (ESM, via import()) ──────────────────────────────────────────
 const {
@@ -150,7 +151,7 @@ function inlineMd(text) {
 }
 
 // ── Generate agent HTML ───────────────────────────────────────────────────────
-function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
+async function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
   const title = meta.name
     ? meta.name.charAt(0).toUpperCase() + meta.name.slice(1)
     : name.charAt(0).toUpperCase() + name.slice(1);
@@ -161,6 +162,19 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     : `<div class="avatar-fallback">${title[0]}</div>`;
 
   const accent = AGENT_COLORS[name] ?? '#6366f1';
+
+  // Generate QR code for npub
+  let qrHtml = '';
+  if (npub) {
+    try {
+      const qrDataUrl = await generateQRDataUrl(npub, { width: 200 });
+      if (qrDataUrl) {
+        qrHtml = `<div class="qr-section"><img class="qr-code" src="${qrDataUrl}" alt="QR code for ${npub}" title="Scan to load ${title} in your Nostr client"></div>`;
+      }
+    } catch (err) {
+      console.warn(`Failed to generate QR code for ${name}:`, err);
+    }
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -205,6 +219,11 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
     .hero .role { font-size:1rem; color:var(--blue-200); max-width:520px; margin:0 auto 1.25rem; line-height:1.6; }
     .npub-badge { display:inline-block; font-family:'Courier New',monospace; font-size:0.65rem; color:rgba(255,255,255,0.5); background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.15); border-radius:9999px; padding:0.2rem 0.75rem; word-break:break-all; }
 
+    /* QR CODE */
+    .qr-section { margin:1.5rem 0 0; }
+    .qr-code { width:160px; height:160px; background:white; padding:8px; border-radius:8px; display:inline-block; cursor:pointer; transition:transform 0.2s; }
+    .qr-code:hover { transform:scale(1.05); }
+
     /* CONTENT */
     .content-wrap { max-width:780px; margin:0 auto; padding:3rem 2rem 5rem; }
 
@@ -240,7 +259,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
   <nav>
     <div class="nav-inner">
       <span class="nav-logo">Goosie<span>.</span>Labs</span>
-      <a href="https://nsite.goosielabs.com/npub14qpe36rvq0l6m3crplsntmnkzjm04weqflq0veqc8ra5hz4lpvxqqkdffc/#formation" class="nav-back">← Back to V-Formation</a>
+      <a href="https://goosielabs.com/#formation" class="nav-back">← Back to V-Formation</a>
     </div>
   </nav>
 
@@ -250,6 +269,7 @@ function generateHtml({ name, meta, bodyHtml, photoUrl, npub, nsiteUrl }) {
       <h1>${title}</h1>
       <p class="role">${description}</p>
       ${npub ? `<div class="npub-badge">${npub}</div>` : ''}
+      ${qrHtml}
     </div>
   </div>
 
@@ -414,21 +434,34 @@ function ensureBlossomAllowed(pubkey, name) {
   return true;
 }
 
-// ── Update tile.html with nsite link ─────────────────────────────────────────
-function updateTileHtml(name, npub, nsiteUrl) {
+// ── Update tile.html with nsite link and QR code ───────────────────────────────
+async function updateTileHtml(name, npub, nsiteUrl) {
   const dir = path.join(KEYS_DIR, name);
   const tileFile = path.join(dir, 'tile.html');
   mkdirSync(dir, { recursive: true });
 
   const title = name.charAt(0).toUpperCase() + name.slice(1);
+
+  // Generate QR code for npub
+  let qrHtml = '';
+  try {
+    const qrDataUrl = await generateQRDataUrl(npub, { width: 180 });
+    if (qrDataUrl) {
+      qrHtml = `  <div class="agent-qr" style="margin:1rem 0; text-align:center;">\n    <img src="${qrDataUrl}" alt="QR code for ${npub}" title="Scan to open ${title} in Nostr client" style="width:140px; height:140px; display:inline-block; border-radius:4px;">\n  </div>\n`;
+    }
+  } catch (err) {
+    console.warn(`  Warning: Failed to generate QR code for ${name}: ${err.message}`);
+  }
+
   const nsiteLink = `  <div class="agent-links">\n    <a href="${nsiteUrl}" class="agent-link agent-link-nsite" target="_blank" rel="noopener">Meet ${title}</a>\n  </div>`;
 
   if (existsSync(tileFile)) {
     let existing = readFileSync(tileFile, 'utf8');
-    // Remove old nsite link block if present
+    // Remove old nsite link and QR code blocks if present
+    existing = existing.replace(/\n?  <div class="agent-qr"[\s\S]*?<\/div>\n/, '');
     existing = existing.replace(/\n?  <div class="agent-links">[\s\S]*?<\/div>/, '');
-    // Append link before the final closing </div> (agent-card)
-    const updated = existing.replace(/<\/div>\s*$/, `\n${nsiteLink}\n</div>`);
+    // Append QR code and link before the final closing </div> (agent-card)
+    const updated = existing.replace(/<\/div>\s*$/, `\n${qrHtml}${nsiteLink}\n</div>`);
     writeFileSync(tileFile, updated);
   } else {
     writeFileSync(tileFile, `<div class="agent-card" data-agent="${name}">
@@ -439,7 +472,7 @@ function updateTileHtml(name, npub, nsiteUrl) {
     <h3 class="agent-name">${title}</h3>
     <span class="agent-title">V-Formation Agent</span>
   </div>
-${nsiteLink}
+${qrHtml}${nsiteLink}
 </div>`);
   }
   console.log(c.ok(`  tile.html updated → ${nsiteUrl}`));
@@ -496,7 +529,7 @@ for (const name of agentFiles) {
   const nsiteUrl = `${NSITE_BASE}/${key.npub}/`;
   const photoUrl = photoHash ? `${BLOSSOM}/${photoHash}` : null;
   const bodyHtml = mdToHtml(body);
-  const html = generateHtml({
+  const html = await generateHtml({
     name,
     meta,
     bodyHtml,
@@ -532,7 +565,7 @@ for (const name of agentFiles) {
   }
 
   // 9. Update tile.html
-  updateTileHtml(name, key.npub, nsiteUrl);
+  await updateTileHtml(name, key.npub, nsiteUrl);
 
   results.push({ name, url: nsiteUrl });
 }
