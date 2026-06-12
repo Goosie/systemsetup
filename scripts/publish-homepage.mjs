@@ -355,6 +355,7 @@ async function generateHomepage() {
   html = html.replace(/<a href="#meedoen"[^>]*>Meedoen<\/a>/g, '');
   html = html.replace(/<a href="https:\/\/goosielabs\.com\/apps\/"[^>]*>Apps<\/a>/g, '');
   html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
+  html = html.replace(/>Het AI Ganzen Team<\/a>/, '>The AI Geese Team</a>');
   html = html.replace(/href="\/contact\/"/, 'href="/perry.html"');
   html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
   html = html.replace(/id="projecten"/g, 'id="projects"');
