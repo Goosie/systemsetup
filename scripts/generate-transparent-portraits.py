@@ -8,7 +8,7 @@ import numpy as np
 from collections import deque
 import os, shutil, sys
 
-def remove_background(input_path, output_path, tolerance=35):
+def remove_background(input_path, output_path, tolerance=35, top_padding=0.10):
     img = Image.open(input_path).convert('RGBA')
     data = np.array(img)
     corners = [data[5,5,:3], data[5,-5,:3], data[-5,5,:3], data[-5,-5,:3]]
@@ -32,7 +32,11 @@ def remove_background(input_path, output_path, tolerance=35):
             if 0 <= ny < h and 0 <= nx < w and not visited[ny,nx] and bg_mask[ny,nx]:
                 visited[ny,nx] = True; queue.append((ny,nx))
     data[visited, 3] = 0
-    Image.fromarray(data).save(output_path, 'PNG')
+    # Add transparent padding at the top so heads are never clipped in tiles
+    pad_px = int(h * top_padding)
+    pad = np.zeros((pad_px, w, 4), dtype=np.uint8)
+    padded = np.concatenate([pad, data], axis=0)
+    Image.fromarray(padded).save(output_path, 'PNG')
 
 src_base = '/home/deploy/agents'
 web_base = '/var/www/goosielabs/agents'
