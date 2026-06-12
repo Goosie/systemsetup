@@ -442,9 +442,11 @@ def remove_background(input_path, output_path, tolerance=35):
         top, bottom, left, right = rows.min(), rows.max(), cols.min(), cols.max()
         content = data[top:bottom+1, left:right+1]
         ch, cw = content.shape[:2]
-        pad = int(max(ch, cw) * 0.08)
-        canvas = np.zeros((ch+2*pad, cw+2*pad, 4), dtype=np.uint8)
-        canvas[pad:pad+ch, pad:pad+cw] = content
+        pad_top    = int(ch * 0.18)
+        pad_bottom = int(ch * 0.08)
+        pad_side   = int(cw * 0.10)
+        canvas = np.zeros((ch+pad_top+pad_bottom, cw+2*pad_side, 4), dtype=np.uint8)
+        canvas[pad_top:pad_top+ch, pad_side:pad_side+cw] = content
         result = Image.fromarray(canvas).resize((w, h), Image.LANCZOS)
     else:
         result = Image.fromarray(data)
