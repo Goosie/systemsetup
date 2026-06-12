@@ -937,6 +937,7 @@ async function handleGoosielabsMention(ev) {
   rewarded.add(pubkey);
   saveRewarded(rewarded);
 
+  const redeemUrl = `https://goosielabs.com/apps/proofofread/redeem/${code}`;
   const quizUrl = `${BOOK_URL}?voucher=${code}`;
 
   const message = `🪿 Welcome to Goosie Labs!
@@ -947,6 +948,9 @@ Thanks for posting about us. Here's your welcome voucher — ${WELCOME_SATS} sat
 
 **Step 1 — Read the book (3 pages):**
 👉 ${quizUrl}
+
+**Or skip straight to the quiz:**
+👉 ${redeemUrl}
 
 **Step 2 — Answer 5 questions correctly**
 
