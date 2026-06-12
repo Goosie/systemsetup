@@ -453,7 +453,7 @@ async function generateHomepage() {
   );
   // Perry's founder card — always first in the formation
   const perryCard = `      <div class="agent-card agent-card-founder" data-blockbirth="-2362201">
-        <div class="agent-avatar"><img src="/perry/perry-goose.jpg" alt="Perry"></div>
+        <div class="agent-avatar"><img src="/perry/perry-goose.png" alt="Perry"></div>
         <div class="agent-info">
           <div class="agent-name">Perry</div>
           <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
