@@ -128,6 +128,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} — Goosie Labs</title>
+  <link rel="icon" type="image/svg+xml" href="/goosie-favicon.svg">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -144,8 +145,9 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     body { font-family:var(--font-body); background:var(--white); color:var(--gray-800); font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; }
     nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-100); }
     .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
-    .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; }
-    .nav-logo span { color:var(--blue-400); }
+    .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; display:inline-flex; align-items:center; gap:10px; }
+    .nav-logo img { height:40px; width:auto; }
+    @media (max-width:600px) { .nav-logo img { height:32px; } }
     .nav-links { display:flex; gap:2rem; }
     .nav-link { font-size:14px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:color 0.2s; }
     .nav-link:hover, .nav-link-active { color:var(--blue-600); }
@@ -158,7 +160,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 <body>
   <nav>
     <div class="nav-inner">
-      <span class="nav-logo">Goosie<span>.</span>Labs</span>
+      <span class="nav-logo"><img src="/goosie-mark.svg" alt="" aria-hidden="true" width="40" height="40">Goosie Labs</span>
       <div class="nav-links">
       ${nav}
       </div>
@@ -181,7 +183,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
 async function generateHomepage() {
   const STATUS_LABELS  = { live:'Live', 'in-bouw':'In progress', experiment:'Experiment', archief:'Archive' };
   const STATUS_CLASSES = { live:'badge-live', 'in-bouw':'badge-building', experiment:'badge-experiment', archief:'badge-idea' };
-  const AGENT_COLORS   = { assistenty:'#6366f1', devy:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48', healthy:'#22c55e', backy:'#1e40af', coachy:'#d97706' , gander:'#374151' , cssy:'#374151' , thinky:'#374151' , creaty:'#374151' , prompty:'#374151' , toddy:'#374151'  , welcome:'#374151' };
+  const AGENT_COLORS   = { assistenty:'#6366f1', devy:'#0ea5e9', finny:'#10b981', ay:'#f59e0b', jurry:'#8b5cf6', secury:'#ef4444', testy:'#ec4899', checky:'#14b8a6', commy:'#f97316', designy:'#a855f7', nosty:'#06b6d4', docy:'#64748b', transy:'#e11d48', healthy:'#22c55e', backy:'#1e40af', coachy:'#d97706' , gander:'#374151' , cssy:'#374151' , thinky:'#374151' , creaty:'#374151' , prompty:'#374151' , toddy:'#374151'  , welcome:'#374151' , linky:'#374151' };
 
   // Read AGENT_ORDER from agents.json — all geese are included automatically
   let AGENT_ORDER = [];
@@ -348,7 +350,7 @@ async function generateHomepage() {
 
 
   // Nav: make logo non-clickable, remove unwanted links, translate labels
-  html = html.replace(/<a href="[^"]*" class="nav-logo">([^<]*<span>[^<]*<\/span>[^<]*)<\/a>/,
+  html = html.replace(/<a href="[^"]*" class="nav-logo">([\s\S]*?)<\/a>/,
     '<span class="nav-logo">$1</span>');
   html = html.replace(/<a href="\/inloggen\/"[^>]*>.*?<\/a>/g, '');
   html = html.replace(/<a href="\/en\/"[^>]*>[^<]*<\/a>/g, '');
@@ -361,7 +363,6 @@ async function generateHomepage() {
   html = html.replace(/id="projecten"/g, 'id="projects"');
 
   // Hero
-  html = html.replace('Open experimenteer-lab', 'Open experiment lab');
   html = html.replace('Een open lab voor Bitcoin, Nostr en AI', 'Making decentralized tech actually work for people');
   html = html.replace(
     /Ganzen vliegen in V-formatie[^<]+/,
