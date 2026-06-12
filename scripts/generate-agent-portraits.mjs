@@ -31,7 +31,7 @@ if (!OPENAI_KEY) {
   process.exit(1);
 }
 
-const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Classic cartoon animation style — same look as Assistenty the lab-coat goose, Devy the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
+const BASE_STYLE = 'flat 2D cartoon character illustration, thick black outlines, cel shading, vector art style, warm cream background, full body standing pose, adult white goose with expressive cartoon eyes, orange beak, orange feet, white feathers, high quality. Leave at least 20% empty space above the character\'s head. Classic cartoon animation style — same look as Assistenty the lab-coat goose, Devy the hard-hat goose, Finny the top-hat goose. NOT realistic, NOT 3D render, NOT photo — flat cartoon only';
 
 const agents = [
   {
@@ -120,8 +120,7 @@ const agents = [
   },
   {
     name: 'healthy',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Healthy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+    prompt: `${BASE_STYLE}. Healthy — server health monitor goose. Wearing a green paramedic vest with a red cross, holding a clipboard with vital signs chart, stethoscope around neck. Alert, dependable, always on watch.`,
   },
   {
     name: 'coachy',
