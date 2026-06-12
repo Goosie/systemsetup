@@ -702,7 +702,14 @@ async function getInboxRelays(pubkey) {
       if (relays.length > 0) return relays;
     }
   } catch {}
-  return [RELAY];
+  // No NIP-17 inbox found — fall back to public relays so strangers receive the DM
+  return [
+    RELAY,
+    'wss://relay.damus.io',
+    'wss://nos.lol',
+    'wss://relay.primal.net',
+    'wss://relay.nostr.band',
+  ];
 }
 
 async function sendReply(gooseSK, toPubkey, message) {
