@@ -1008,6 +1008,14 @@ Bedankt voor je post over ons. Als welkomstcadeautje krijg je ${WELCOME_SATS} sa
   try {
     await sendReply(welcomeGoose.sk, pubkey, message);
     console.log(`[nostr-listener] welcome: welcome token sent to ${pubkey.slice(0, 8)}…`);
+
+    // Notify Perry
+    const perryPubkey = loadWhitelist().perry_goosie;
+    if (perryPubkey) {
+      const npub = nip19.npubEncode(pubkey);
+      const notify = `🪿 Welcome sent ${WELCOME_SATS} sats to a new visitor!\n\nnostr:${npub}\n\nThey posted #goosielabs and got a Cashu welcome token. Token was delivered to their inbox.`;
+      await sendReply(welcomeGoose.sk, perryPubkey, notify).catch(() => {});
+    }
   } catch (e) {
     console.error(`[nostr-listener] welcome: DM failed: ${e.message}`);
   }
