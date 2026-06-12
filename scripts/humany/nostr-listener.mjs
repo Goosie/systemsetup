@@ -70,7 +70,7 @@ const WHITELIST  = '/home/deploy/whitelist.json';
 const WELCOME_SATS    = 21;
 const REWARDED_FILE   = '/home/deploy/logs/nostr-listener-rewarded.json';
 const VOUCHER_API_URL = 'http://127.0.0.1:3002';
-const BOOK_URL        = 'https://goosielabs.com/apps/proofofread/book/';
+const BOOK_URL        = 'https://goosielabs.com/apps/proofofread/book';
 // Filter on #goosielabs hashtag — no hardcoded pubkey needed
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
