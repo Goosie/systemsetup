@@ -116,8 +116,7 @@ const agents = [
   },
   {
     name: 'weathery',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Weathery — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+    prompt: `${BASE_STYLE}. Wearing a sky-blue weatherproof jacket with a small sun and cloud embroidered on the chest, holding a barometer in one wing and a wind vane in the other. Alert, observant expression — always scanning the horizon, always one step ahead of what's coming.`,
   },
   {
     name: 'healthy',
@@ -126,8 +125,7 @@ const agents = [
   },
   {
     name: 'coachy',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Coachy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+    prompt: `${BASE_STYLE}. Wearing a warm golden-yellow sports coach jacket with a whistle on a lanyard, holding a clipboard with encouragement notes and a sparkly pom-pom in the other wing. Warm, radiant smile with eyes that genuinely care — the goose who believes in you and shows up exactly when you need motivation.`,
   },
   {
     name: 'testy2',
@@ -141,8 +139,33 @@ const agents = [
   },
   {
     name: 'cssy',
+    prompt: `${BASE_STYLE}. Wearing a sleek mint-green and teal technical outfit with glowing CSS variable symbols embroidered in gold, holding a colour palette in one wing with vibrant swatches arranged perfectly, a luminous design token in the other. Calm, precise, confident expression — the architect of beauty and order who makes everything work together.`,
+  },
+  {
+    name: 'thinky',
+    prompt: `${BASE_STYLE}. Wearing a dark charcoal turtleneck and round wire-rimmed philosopher's glasses, arms folded with one wing raised and a single raised eyebrow — the classic Socratic pose of someone about to ask a devastating question. Holding a simple worn notebook. Sharp, sceptical, and entirely unimpressed.`,
+  },
+  {
+    name: 'creaty',
+    prompt: `${BASE_STYLE}. Wearing a vibrant kaleidoscopic artist's smock splattered with bright rainbow paint colours, holding a glowing paintbrush in one wing and a magical lightbulb that looks like an idea in the other. Playful, curious expression with a mischievous sparkle in the eye — the creative goose who sees connections everywhere and says "yes, and..." to every idea.`,
+  },
+  {
+    name: 'prompty',
+    prompt: `${BASE_STYLE}. Wearing a crisp white shirt with rolled-up sleeves and a craftsman's apron covered in precisely arranged words and symbols, holding a glowing quill pen in one wing and a polished magnifying glass in the other. Expression: focused and precise, the artisan who chooses every word with intention.`,
+  },
+  {
+    name: 'toddy',
+    prompt: `${BASE_STYLE}. Wearing a cosy olive-green cardigan with a small checklist badge pinned on, holding a tall steaming mug of tea in one wing and a neat paper to-do list in the other with several items already ticked off. Relaxed, organised, quietly satisfied expression — the goose who gets things done without making a fuss.`,
+  },
+  {
+    name: 'testgoose',
     // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Cssy — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+    prompt: `${BASE_STYLE}. Testgoose — V-formation agent. Wearing a neat professional outfit that fits their role.`,
+  },
+  {
+    name: 'welcome',
+    // TODO: replace outfit description with something role-specific
+    prompt: `${BASE_STYLE}. Welcome — V-formation agent. Wearing a neat professional outfit that fits their role.`,
   },
 ];
 

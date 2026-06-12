@@ -127,6 +127,42 @@ async function publishAsGoose(gooseName, content, pool) {
   }
 }
 
+async function createGooseSetupTodos(name) {
+  try {
+    // Create TODO tasks for the new goose setup
+    const todos = [
+      `@${capitalize(name)}: Fill in role description in ${AGENTS_DIR}/${name}/${name}.md`,
+      `@${capitalize(name)}: Update .claude/agents/${name}.md with quote + role + boundaries`,
+      `@${capitalize(name)}: Customize icon color in generate-agent-icons.mjs then regenerate`,
+      `@${capitalize(name)}: Add script at /home/deploy/scripts/${name}/index.mjs if periodic tasks needed`,
+      `@${capitalize(name)}: Add to goose-runner KEYS + switch case if has a script, restart goose-runner`,
+      `@${capitalize(name)}: Add to Blocky DEFAULT_SCHEDULE if needs periodic triggering`,
+    ];
+
+    let created = 0;
+    for (const todo of todos) {
+      try {
+        execSync(`node /home/deploy/nostr-todo-bot/cli.mjs add "${todo}"`, {
+          stdio: 'pipe',
+          timeout: 5000
+        });
+        created++;
+      } catch (e) {
+        // Log but continue creating other TODOs
+        if (e.code !== 'ETIMEDOUT') {
+          console.warn(`  ⚠️  TODO creation issue: ${e.message.split('\n')[0]}`);
+        }
+      }
+    }
+
+    if (created > 0) {
+      console.log(`  ✅ ${created}/${todos.length} setup TODOs created in Toddy`);
+    }
+  } catch (e) {
+    console.log(`  ⚠️  Could not create setup TODOs: ${e.message}`);
+  }
+}
+
 async function welcomeCeremony(newName, newNpub, pool) {
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
   const displayName = cap(newName);
@@ -384,6 +420,10 @@ async function newGoose(name) {
   // When adding a new step here that stores or embeds the goose name,
   // add the corresponding rename step in renameGoose() and tag it with
   // "// Mirror of newGoose step N" so the two functions stay in sync.
+  //
+  // Steps 7d (publish nsite page) and 7f (create TODOs) are auto-integrated:
+  // - 7d: publish-agent-pages automatically generates tile.html with QR code
+  // - 7f: createGooseSetupTodos creates TODO tasks for manual setup
   // ─────────────────────────────────────────────────────────────────────────
 
   if (!/^[a-z][a-z0-9-]*$/.test(name)) {
@@ -598,7 +638,11 @@ async function newGoose(name) {
     console.log(`  ⚠️  Flock section update failed: ${e.message}`);
   }
 
-  // 7f. Welcome ceremony — formation posts a public welcome
+  // 7f. Create setup TODOs in Toddy for the new goose
+  await createGooseSetupTodos(name);
+
+  // 7g. Welcome ceremony — formation posts a public welcome
+  // (Note: publish-agent-pages in step 7d already creates tile.html with QR code)
   await welcomeCeremony(name, npub, pool);
 
   // 8. Announce in formation chat

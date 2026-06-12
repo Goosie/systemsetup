@@ -62,6 +62,8 @@ const PROMPTS = {
 
   designy:    `${BASE} A color palette explosion — gradients morphing into wireframes morphing into polished interfaces, all layered in artistic chaos. Creative purple and violet energy.`,
 
+  cssy:       `${BASE} Flowing streams of glowing CSS code and design variables spiraling upward like liquid light, creating perfect harmony from structured code. Clean lines of pure color and light in mint green, soft cyan, and gold. Order and design made luminous.`,
+
   nosty:      `${BASE} Cryptographic keys rotating as constellations in deep space, NIP numbers floating like stars, a central Nostr logo pulsing purple. Identity and cosmos. Deep purple.`,
 
   docy:       `${BASE} An illuminated pathway leading through stages of a journey — a door, steps, guides, a welcome mat — all glowing gently. Slate blue-grey, welcoming, professional.`,
