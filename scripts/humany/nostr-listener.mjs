@@ -66,12 +66,11 @@ const RELAY      = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
 const AGENTS_DIR = '/home/deploy/agents';
 const WHITELIST  = '/home/deploy/whitelist.json';
 
-// ── Docy welcome token config ─────────────────────────────────────────────────
-const MINT_URL      = process.env.MINT_URL   ?? 'http://127.0.0.1:3338';
-const LNBITS_URL    = process.env.LNBITS_URL ?? 'http://127.0.0.1:5000';
-const WELCOME_SATS  = 21;
-const CASHU_LIB     = '/var/www/goosielabs/apps/catchzaps/node_modules/@cashu/cashu-ts/lib/cashu-ts.es.js';
-const REWARDED_FILE = '/home/deploy/logs/nostr-listener-rewarded.json';
+// ── Welcome voucher config ────────────────────────────────────────────────────
+const WELCOME_SATS    = 21;
+const REWARDED_FILE   = '/home/deploy/logs/nostr-listener-rewarded.json';
+const VOUCHER_API_URL = 'http://127.0.0.1:3002';
+const BOOK_URL        = 'https://goosielabs.com/apps/proofofread/book/';
 // Filter on #goosielabs hashtag — no hardcoded pubkey needed
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -888,63 +887,21 @@ const allowedSenders = getAllowedSenders();
 let ws;
 let reconnectTimer;
 
-// ── Docy welcome token handler ────────────────────────────────────────────────
+// ── Welcome voucher handler ───────────────────────────────────────────────────
 
-async function mintWelcomeToken() {
-  // Load Docy's wallet — she pays the Lightning invoice to mint the token
-  const docyWallet = JSON.parse(readFileSync(resolve(AGENTS_DIR, 'welcome/lnbits-wallet.json'), 'utf8'));
+function generateVoucherCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/I/1 confusion
+  const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `HONK-${part()}-${part()}`;
+}
 
-  // 1. Init cashu-ts (skip loadMint — keyset ID format mismatch with Nutshell v0.16+)
-  const { CashuMint, CashuWallet } = await import(CASHU_LIB);
-  const cashuMint   = new CashuMint(MINT_URL);
-  const cashuWallet = new CashuWallet(cashuMint);
-
-  // 2. Get active keyset explicitly
-  const keysResp = await cashuMint.getKeys();
-  const keyset   = keysResp.keysets[0];
-  if (!keyset) throw new Error('No keyset returned by mint');
-
-  // 3. Request mint quote
-  const mintQuote = await cashuWallet.createMintQuote(WELCOME_SATS);
-
-  // 4. Pay the Lightning invoice from Docy's LNbits wallet
-  const payRes = await fetch(`${LNBITS_URL}/api/v1/payments`, {
-    method: 'POST',
-    headers: { 'X-Api-Key': docyWallet.adminkey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ out: true, bolt11: mintQuote.request }),
-  });
-  if (!payRes.ok) throw new Error(`LNbits payment failed: ${payRes.status}`);
-
-  // 5. Poll until mint confirms payment
-  for (let i = 0; i < 10; i++) {
-    await new Promise(r => setTimeout(r, 1500));
-    const s = await cashuWallet.checkMintQuote(mintQuote.quote);
-    if (s.state === 'PAID') break;
-  }
-
-  // 6. Create blinded outputs and mint via REST (cashu-ts mintProofs fails on long keyset IDs)
-  const outputData  = await cashuWallet.createOutputData(WELCOME_SATS, keyset);
-  const blindedMsgs = outputData.map(o => o.blindedMessage);
-  const mintRes     = await fetch(`${MINT_URL}/v1/mint/bolt11`, {
+async function registerVoucher(code, pubkey) {
+  const res = await fetch(`${VOUCHER_API_URL}/api/voucher/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ quote: mintQuote.quote, outputs: blindedMsgs }),
+    body: JSON.stringify({ code, pubkey, sats: WELCOME_SATS }),
   });
-  if (!mintRes.ok) throw new Error(`Mint bolt11 failed: ${mintRes.status}`);
-  const { signatures } = await mintRes.json();
-
-  // 7. Construct proofs from blind signatures
-  const proofs = signatures.map((sig, i) => ({
-    id: keyset.id,
-    amount: outputData[i].blindedMessage.amount,
-    secret: outputData[i].secret,
-    C: sig.C_,
-  }));
-
-  // 8. Encode as cashuA — manual encoding because getEncodedToken also chokes on long keyset IDs
-  return 'cashuA' + Buffer.from(JSON.stringify({
-    token: [{ mint: MINT_URL, proofs }], unit: 'sat',
-  })).toString('base64');
+  if (!res.ok) throw new Error(`Voucher register failed: ${res.status}`);
 }
 
 async function handleGoosielabsMention(ev) {
@@ -966,36 +923,36 @@ async function handleGoosielabsMention(ev) {
     return;
   }
 
-  console.log(`[nostr-listener] welcome: new #goosielabs mention from ${pubkey.slice(0, 8)}… — minting ${WELCOME_SATS} sat welcome token`);
+  console.log(`[nostr-listener] welcome: new #goosielabs mention from ${pubkey.slice(0, 8)}… — generating voucher`);
 
-  let token;
+  const code = generateVoucherCode();
   try {
-    token = await mintWelcomeToken();
+    await registerVoucher(code, pubkey);
   } catch (e) {
-    console.error(`[nostr-listener] welcome: mint failed: ${e.message}`);
+    console.error(`[nostr-listener] welcome: voucher register failed: ${e.message}`);
     return;
   }
 
-  // Mark as rewarded before sending (prevents double-send if honk fails)
+  // Mark as rewarded before sending
   rewarded.add(pubkey);
   saveRewarded(rewarded);
 
-  // Send welcome DM via Docy
-  const docy = geese.find(g => g.name === 'docy');
-  if (!docy) {
-    console.error('[nostr-listener] docy: goose not loaded, cannot send DM');
-    return;
-  }
+  const quizUrl = `${BOOK_URL}?voucher=${code}`;
 
-  const redeemUrl = `https://wallet.cashu.me/#${token}`;
+  const message = `🪿 Welcome to Goosie Labs!
 
-  const message = `🪿 Welkom bij Goosie Labs!
+Thanks for posting about us. Here's your welcome voucher — ${WELCOME_SATS} sats waiting for you on the other side.
 
-Bedankt voor je post over ons. Als welkomstcadeautje krijg je ${WELCOME_SATS} sats — klik gewoon op de link om ze te claimen:
+**Your voucher code:** \`${code}\`
 
-👉 ${redeemUrl}
+**Step 1 — Read the book (3 pages):**
+👉 ${quizUrl}
 
-💡 Gebruik ze daarna voor **Proof of Read** op https://goosielabs.com/apps/proofofread/ — bewijs dat je een boek hebt gelezen en verdien een Nostr-badge + meer sats terug.
+**Step 2 — Answer 5 questions correctly**
+
+**Step 3 — Collect your ${WELCOME_SATS} sats + Nostr badge** 🏅
+
+The book is about Bitcoin, Lightning and Nostr — written by Docy, our onboarding goose. It's short, it's honest, and the questions can't be answered without actually reading it.
 
 — Welcome 🪿 (Goosie Labs)`;
 
@@ -1007,13 +964,13 @@ Bedankt voor je post over ons. Als welkomstcadeautje krijg je ${WELCOME_SATS} sa
 
   try {
     await sendReply(welcomeGoose.sk, pubkey, message);
-    console.log(`[nostr-listener] welcome: welcome token sent to ${pubkey.slice(0, 8)}…`);
+    console.log(`[nostr-listener] welcome: voucher ${code} sent to ${pubkey.slice(0, 8)}…`);
 
     // Notify Perry
     const perryPubkey = loadWhitelist().perry_goosie;
     if (perryPubkey) {
       const npub = nip19.npubEncode(pubkey);
-      const notify = `🪿 Welcome sent ${WELCOME_SATS} sats to a new visitor!\n\nnostr:${npub}\n\nThey posted #goosielabs and got a Cashu welcome token. Token was delivered to their inbox.`;
+      const notify = `🪿 Welcome sent a voucher to a new visitor!\n\nnostr:${npub}\n\nVoucher: ${code} (${WELCOME_SATS} sats)\nPosted #goosielabs and got sent to The Honk Standard.`;
       await sendReply(welcomeGoose.sk, perryPubkey, notify).catch(() => {});
     }
   } catch (e) {
