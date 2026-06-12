@@ -707,18 +707,23 @@ async function getInboxRelays(pubkey) {
 
 async function sendReply(gooseSK, toPubkey, message) {
   const inboxRelays = await getInboxRelays(toPubkey);
-  // Always also publish to our own relay as fallback
   const targetRelays = [...new Set([...inboxRelays, RELAY])];
   console.log(`[nostr-listener] docy: publishing DM to relays: ${targetRelays.join(', ')}`);
-  return new Promise((resolve) => {
-    const pool = new SimplePool();
-    const wrapped = buildGiftWrap(gooseSK, toPubkey, message);
-    Promise.allSettled([pool.publish(targetRelays, wrapped)]).then(() => {
-      pool.close(targetRelays);
-      resolve();
-    });
-    setTimeout(() => { pool.close(targetRelays); resolve(); }, 8_000);
-  });
+  const wrapped = buildGiftWrap(gooseSK, toPubkey, message);
+
+  // Publish to each relay individually so one auth-required relay can't crash everything
+  await Promise.allSettled(targetRelays.map(async (relayUrl) => {
+    try {
+      const pool = new SimplePool();
+      await Promise.race([
+        pool.publish([relayUrl], wrapped),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6_000)),
+      ]);
+      pool.close([relayUrl]);
+    } catch {
+      // Silently skip relays that require auth or are unreachable
+    }
+  }));
 }
 
 // ── Mention handler — kind:1 with #todo + @assistenty ────────────────────────
@@ -1145,6 +1150,13 @@ function connectPublicRelay(relayUrl) {
 }
 
 PUBLIC_RELAYS.forEach(connectPublicRelay);
+
+process.on('uncaughtException', (err) => {
+  console.error('[nostr-listener] uncaught exception (continuing):', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[nostr-listener] unhandled rejection (continuing):', reason);
+});
 
 process.on('SIGTERM', () => {
   console.log('[nostr-listener] shutting down');
