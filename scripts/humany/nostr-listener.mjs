@@ -942,9 +942,9 @@ async function handleGoosielabsMention(ev) {
   rewarded.add(pubkey);
   saveRewarded(rewarded);
 
-  const npubEncoded = nip19.npubEncode(pubkey);
-  const redeemUrl = `https://goosielabs.com/apps/proofofread/redeem/${code}?npub=${npubEncoded}`;
-  const quizUrl = `${BOOK_URL}?voucher=${code}&npub=${npubEncoded}`;
+  // Pass pubkey as hex — Amethyst intercepts npub1... in URLs as a profile link
+  const redeemUrl = `https://goosielabs.com/apps/proofofread/redeem/${code}?pk=${pubkey}`;
+  const quizUrl = `${BOOK_URL}?voucher=${code}&pk=${pubkey}`;
 
   const message = `🪿 Welcome to Goosie Labs!
 
