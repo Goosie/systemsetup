@@ -183,7 +183,36 @@ if (command === 'report') {
   } else {
     console.log('\n(dry-run — geen DM verstuurd)');
   }
+} else if (command === 'wallet-check') {
+  // Check Welcome's wallet balance — alert if below threshold
+  const THRESHOLD = 50; // sats
+  const LNBITS_URL = 'http://127.0.0.1:5000';
+  const walletJson = JSON.parse(readFileSync('/home/deploy/agents/welcome/lnbits-wallet.json', 'utf8'));
+
+  try {
+    const res = await fetch(`${LNBITS_URL}/api/v1/wallet`, {
+      headers: { 'X-Api-Key': walletJson.inkey },
+    });
+    const data = await res.json();
+    const sats = Math.floor(data.balance / 1000);
+
+    console.log(`💰 Welcome wallet balance: ${sats} sats`);
+
+    if (sats < THRESHOLD) {
+      const msg = `⚠️ Welcome's wallet is running low!\n\nBalance: ${sats} sats (threshold: ${THRESHOLD} sats)\n\nShe can't pay out ProofOfRead rewards until topped up.\nSend sats to: welcome@goosielabs.com\n\n— Finny 🪿`;
+      console.log(msg);
+      if (!DRY_RUN) {
+        await sendDM(msg);
+        console.log('✅ Low balance alert sent to Perry');
+      }
+    } else {
+      console.log(`✅ Balance OK — ${sats} sats (threshold: ${THRESHOLD})`);
+    }
+  } catch (err) {
+    console.error(`Wallet check failed: ${err.message}`);
+    process.exit(1);
+  }
 } else {
-  console.log(`Onbekend commando: ${command}\nGebruik: report [--dry-run]`);
+  console.log(`Onbekend commando: ${command}\nGebruik: report [--dry-run] | wallet-check [--dry-run]`);
   process.exit(1);
 }

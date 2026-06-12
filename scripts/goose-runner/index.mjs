@@ -238,7 +238,8 @@ async function dispatch(pool, event) {
       case 'gander': await handleScript(pool, 'gander', event, command); break;
       case 'cssy': await handleScript(pool, 'cssy', event, command); break;
       case 'commy': await handleScript(pool, 'commy', event, command); break;
-      case 'finny':      await handleScript(pool, 'finny',      event, command); break;
+      case 'finny':        await handleScript(pool, 'finny', event, command); break;
+      case 'finny-wallet': await handleScript(pool, 'finny', event, command); break;
       case 'scb-backup': await handleScript(pool, 'scb-backup', event, command); break;
       case 'thinky': await handleScript(pool, 'thinky', event, command); break;
       case 'creaty': await handleScript(pool, 'creaty', event, command); break;
