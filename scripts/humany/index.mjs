@@ -398,6 +398,69 @@ function generatePortrait(name) {
   return false;
 }
 
+function generateTransparentPng(name) {
+  const adult = `${AGENTS_DIR}/${name}/adult_${name}.jpg`;
+  const plain = `${AGENTS_DIR}/${name}/${name}.jpg`;
+  const src = existsSync(adult) ? adult : existsSync(plain) ? plain : null;
+  if (!src) return false;
+  const dstSrc = `${AGENTS_DIR}/${name}/${name}.png`;
+  const dstWeb = `${WEBROOT_AGENTS}/${name}/${name}.png`;
+  const pyScript = `/tmp/transparent_${name}.py`;
+  const code = `from PIL import Image
+import numpy as np, shutil, os
+from collections import deque
+
+def remove_background(input_path, output_path, tolerance=35):
+    img = Image.open(input_path).convert('RGBA')
+    data = np.array(img)
+    corners = [data[5,5,:3], data[5,-5,:3], data[-5,5,:3], data[-5,-5,:3]]
+    bg_color = np.mean(corners, axis=0)
+    rgb = data[:,:,:3].astype(float)
+    diff = np.sqrt(np.sum((rgb - bg_color)**2, axis=2))
+    bg_mask = diff < tolerance
+    h, w = data.shape[:2]
+    visited = np.zeros((h, w), dtype=bool)
+    queue = deque()
+    for y in range(h):
+        for x in [0, w-1]:
+            if not visited[y,x] and bg_mask[y,x]: queue.append((y,x)); visited[y,x] = True
+    for x in range(w):
+        for y in [0, h-1]:
+            if not visited[y,x] and bg_mask[y,x]: queue.append((y,x)); visited[y,x] = True
+    while queue:
+        y, x = queue.popleft()
+        for dy, dx in [(-1,0),(1,0),(0,-1),(0,1)]:
+            ny, nx = y+dy, x+dx
+            if 0 <= ny < h and 0 <= nx < w and not visited[ny,nx] and bg_mask[ny,nx]:
+                visited[ny,nx] = True; queue.append((ny,nx))
+    data[visited, 3] = 0
+    alpha = data[:,:,3]
+    rows = np.where(alpha.any(axis=1))[0]
+    cols = np.where(alpha.any(axis=0))[0]
+    if len(rows) and len(cols):
+        top, bottom, left, right = rows.min(), rows.max(), cols.min(), cols.max()
+        content = data[top:bottom+1, left:right+1]
+        ch, cw = content.shape[:2]
+        pad = int(max(ch, cw) * 0.08)
+        canvas = np.zeros((ch+2*pad, cw+2*pad, 4), dtype=np.uint8)
+        canvas[pad:pad+ch, pad:pad+cw] = content
+        result = Image.fromarray(canvas).resize((w, h), Image.LANCZOS)
+    else:
+        result = Image.fromarray(data)
+    result.save(output_path, 'PNG')
+
+remove_background('${src}', '${dstSrc}')
+os.makedirs('${WEBROOT_AGENTS}/${name}', exist_ok=True)
+shutil.copy2('${dstSrc}', '${dstWeb}')
+`;
+  try {
+    writeFileSync(pyScript, code);
+    execSync(`python3 ${pyScript}`, { stdio: 'pipe' });
+    return existsSync(dstSrc);
+  } catch {}
+  return false;
+}
+
 function addToAgentsJson(name, about) {
   const data = JSON.parse(readFileSync(AGENTS_JSON, 'utf8'));
   if (data.agents.some(a => a.name === name)) return false;
@@ -491,9 +554,18 @@ async function newGoose(name) {
       ? `  🎨 Portrait generated → /agents/${name}/${name}.jpg`
       : `  ⚠️  Portrait generation failed — retry: OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`
     );
+    if (portraitOk) {
+      console.log(`  🖼️  Removing background → generating transparent PNG...`);
+      const pngOk = generateTransparentPng(name);
+      console.log(pngOk
+        ? `  🖼️  Transparent PNG generated → /agents/${name}/${name}.png`
+        : `  ⚠️  PNG generation failed — run manually: bash /home/deploy/update-tiles.sh`
+      );
+    }
   } else {
     console.log(`  🎨 Portrait: OPENAI_API_KEY not set — run when ready:`);
     console.log(`     OPENAI_API_KEY=sk-... node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`);
+    console.log(`     Then run: bash /home/deploy/update-tiles.sh  (generates transparent PNG)`);
   }
 
   // 3. Update whitelist.json
