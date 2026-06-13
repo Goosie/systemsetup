@@ -24,7 +24,8 @@ const BLOSSOM     = 'http://127.0.0.1:3339';
 const RELAY       = 'ws://127.0.0.1:7778';
 const NOSTR_TOOLS = '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
 const WS_PATH     = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
-const ALL_RELAYS  = ['wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nos.lol', 'wss://relay.goosielabs.com'];
+const { INTERNAL_RELAY, PUBLISH_RELAYS } = await import('../relay-config.mjs');
+const ALL_RELAYS  = [INTERNAL_RELAY, ...PUBLISH_RELAYS];
 const BANNERS_DIR = `${AGENTS_DIR}/../goose-banners`;
 
 mkdirSync(BANNERS_DIR, { recursive: true });

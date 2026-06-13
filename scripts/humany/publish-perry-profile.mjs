@@ -4,6 +4,7 @@ import 'websocket-polyfill';
 import WebSocket from 'ws';
 import { finalizeEvent } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
+import { INTERNAL_RELAY, PUBLISH_RELAYS } from '../relay-config.mjs';
 
 const nsec = process.env.PERRY_NSEC;
 if (!nsec?.startsWith('nsec1')) { console.error('PERRY_NSEC not set'); process.exit(1); }
@@ -28,7 +29,7 @@ const event = finalizeEvent({
   content: JSON.stringify(profile),
 }, sk);
 
-const relays = ['ws://127.0.0.1:7778', 'wss://relay.damus.io', 'wss://relay.primal.net'];
+const relays = [INTERNAL_RELAY, ...PUBLISH_RELAYS];
 
 for (const url of relays) {
   await new Promise(resolve => {

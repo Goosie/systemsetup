@@ -21,12 +21,12 @@ import { resolve, join } from 'path';
 import { execSync } from 'child_process';
 import http from 'http';
 import { generateSecretKey, getPublicKey, finalizeEvent, SimplePool } from 'nostr-tools';
+import { INTERNAL_RELAY, PUBLISH_RELAYS } from '../relay-config.mjs';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const RELAY          = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
-const EXTERNAL_RELAYS = ['wss://relay.damus.io', 'wss://relay.primal.net'];
-const ALL_RELAYS     = [RELAY, ...EXTERNAL_RELAYS];
+const RELAY      = process.env.RELAY_URL ?? INTERNAL_RELAY;
+const ALL_RELAYS = [RELAY, ...PUBLISH_RELAYS];
 const AGENTS_DIR     = '/home/deploy/agents';
 const AGENTS_JSON    = `${AGENTS_DIR}/agents.json`;
 const NIP05_FILE     = '/var/www/goosielabs/.well-known/nostr.json';
