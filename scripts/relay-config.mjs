@@ -35,6 +35,7 @@ export const LOOKUP_RELAYS = [
   'wss://nos.lol',
   'wss://relay.primal.net',
   'wss://purplepag.es',
+  'wss://relay.snort.social',
 ];
 
 /**
