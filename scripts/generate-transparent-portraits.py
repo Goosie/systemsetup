@@ -8,7 +8,7 @@ import numpy as np
 from collections import deque
 import os, shutil, sys
 
-def remove_background(input_path, output_path, tolerance=35, top_padding=0.10):
+def remove_background(input_path, output_path, tolerance=35, top_padding=0.0):
     img = Image.open(input_path).convert('RGBA')
     data = np.array(img)
     corners = [data[5,5,:3], data[5,-5,:3], data[-5,5,:3], data[-5,-5,:3]]
@@ -32,11 +32,25 @@ def remove_background(input_path, output_path, tolerance=35, top_padding=0.10):
             if 0 <= ny < h and 0 <= nx < w and not visited[ny,nx] and bg_mask[ny,nx]:
                 visited[ny,nx] = True; queue.append((ny,nx))
     data[visited, 3] = 0
-    # Add transparent padding at the top so heads are never clipped in tiles
-    pad_px = int(h * top_padding)
-    pad = np.zeros((pad_px, w, 4), dtype=np.uint8)
-    padded = np.concatenate([pad, data], axis=0)
-    Image.fromarray(padded).save(output_path, 'PNG')
+    # Find bounding box of visible content
+    alpha = data[:,:,3]
+    rows = np.where(alpha.any(axis=1))[0]
+    cols = np.where(alpha.any(axis=0))[0]
+    if len(rows) and len(cols):
+        top, bottom = rows.min(), rows.max()
+        left, right = cols.min(), cols.max()
+        content = data[top:bottom+1, left:right+1]
+        # Add 8% padding around content
+        ch, cw = content.shape[:2]
+        pad = int(max(ch, cw) * 0.08)
+        new_h, new_w = ch + 2*pad, cw + 2*pad
+        canvas = np.zeros((new_h, new_w, 4), dtype=np.uint8)
+        canvas[pad:pad+ch, pad:pad+cw] = content
+        # Resize back to original square dimensions
+        result = Image.fromarray(canvas).resize((w, h), Image.LANCZOS)
+    else:
+        result = Image.fromarray(data)
+    result.save(output_path, 'PNG')
 
 src_base = '/home/deploy/agents'
 web_base = '/var/www/goosielabs/agents'

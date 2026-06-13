@@ -56,6 +56,7 @@ const KEYS = {
   'scb-backup': loadKey('devy'),
   toddy: loadKey('toddy'),
   welcome: loadKey('welcome'),
+  linky: loadKey('linky'),
   // ── NEW GEESE ──
 };
 
@@ -247,6 +248,7 @@ async function dispatch(pool, event) {
       case 'devy':    await handleScript(pool, 'devy',    event, command); break;
       case 'toddy': await handleScript(pool, 'toddy', event, command); break;
       case 'welcome': await handleScript(pool, 'welcome', event, command); break;
+      case 'linky': await handleScript(pool, 'linky', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {

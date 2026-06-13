@@ -35,6 +35,7 @@ const DEFAULT_SCHEDULE = {
   ay:      { interval_blocks: 1008, command: 'check',    description: '~1 week (woensdag-ritueel)' },
   backy:   { interval_blocks: 1000, command: 'snapshot', description: '~1 week'  },
   healthy: { interval_blocks: 4,    command: 'check',    description: '~40 min'  },
+  gander:  { interval_blocks: 1008, command: '1sept',    description: '~1 week'  },
   coachy:  { interval_blocks: 72,   command: 'check',    description: '~12 hours' },
   commy:   { interval_blocks: 3,    command: 'run',      description: '~30 min'  },
   finny:         { interval_blocks: 6,   command: 'report',       description: '~1 hour'  },

@@ -319,6 +319,49 @@ async function publishHonkTopic(ideaTitle, description, sourceUrl) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+if (cmd === '1sept') {
+  // Weekly summary: read 1sept.md and DM Perry with what's worth posting on September 1st
+  const septFile = '/home/deploy/1sept.md';
+  if (!existsSync(septFile)) {
+    console.log('[Gander] 1sept.md not found — nothing to report');
+    process.exit(0);
+  }
+  const septContent = readFileSync(septFile, 'utf8');
+  const date = new Date().toISOString().slice(0, 10);
+
+  // Extract the "What we built" list
+  const builtSection = septContent.match(/## What we built[\s\S]*?(?=\n## |\n---|\s*$)/)?.[0] ?? '';
+  const doneItems = [...builtSection.matchAll(/- \[x\] (.+)/g)].map(m => m[1]);
+  const openItems = [...builtSection.matchAll(/- \[ \] (.+)/g)].map(m => m[1]);
+
+  const ideasSection = septContent.match(/## Ideas for the post[\s\S]*?(?=\n## |\n---|\s*$)/)?.[0] ?? '';
+
+  const msg = [
+    `🪿 Gander weekly — September 1st briefing (${date})`,
+    ``,
+    `**What we have so far:**`,
+    ...(doneItems.length ? doneItems.map(i => `✅ ${i}`) : ['(none confirmed yet)']),
+    ``,
+    `**Still in the list:**`,
+    ...(openItems.slice(0, 5).map(i => `• ${i}`)),
+    ``,
+    `**Story angles:**`,
+    ideasSection
+      .split('\n')
+      .filter(l => l.startsWith('-'))
+      .slice(0, 4)
+      .map(l => l.replace(/^-\s*/, '• '))
+      .join('\n') || '(none yet)',
+    ``,
+    `Add things to /home/deploy/1sept.md as we build them. 🪿`,
+  ].join('\n');
+
+  console.log('[Gander] Sending 1sept weekly summary to Perry...');
+  honk(msg, 'perry', true);
+  console.log('[Gander] Done.');
+  process.exit(0);
+}
+
 if (cmd === 'balance') {
   const bal = await getBalance();
   console.log(`🪿 Gander wallet: ${bal} sats`);
@@ -333,6 +376,7 @@ if (cmd !== 'scout' || !topic) {
   console.log('  gander scout "topic"           — research + publish + DM Perry + Directory');
   console.log('  gander scout "topic" --dry-run — preview only');
   console.log('  gander balance                 — show wallet balance');
+  console.log('  gander 1sept                   — weekly September 1st summary DM to Perry');
   process.exit(0);
 }
 
