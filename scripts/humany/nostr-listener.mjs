@@ -692,7 +692,13 @@ async function sendReplyNip04(gooseSK, toPubkey, message) {
 
 async function getInboxRelays(pubkey) {
   // Look up recipient's NIP-17 inbox (kind:10050), fall back to our relay
-  const lookupRelays = ['wss://relay.damus.io', 'wss://nos.lol', RELAY.replace('127.0.0.1:7778', 'relay.goosielabs.com').replace('ws://', 'wss://')];
+  const lookupRelays = [
+    'wss://relay.damus.io',
+    'wss://nos.lol',
+    'wss://relay.primal.net',
+    'wss://relay.nostr.band',
+    RELAY.replace('127.0.0.1:7778', 'relay.goosielabs.com').replace('ws://', 'wss://'),
+  ];
   try {
     const pool = new SimplePool();
     const event = await pool.get(lookupRelays, { kinds: [10050], authors: [pubkey] });

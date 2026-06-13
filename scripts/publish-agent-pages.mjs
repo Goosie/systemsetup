@@ -33,6 +33,13 @@ const AGENTS_DIR   = '/home/deploy/.claude/agents';
 const KEYS_DIR     = '/home/deploy/agents';
 const BLOSSOM      = 'http://127.0.0.1:3339';
 const RELAY        = 'ws://127.0.0.1:7778';
+const PUBLIC_RELAYS = [
+  'wss://relay.goosielabs.com',
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.primal.net',
+  'wss://relay.nostr.band',
+];
 const NSITE_BASE   = 'https://nsite.goosielabs.com';
 const WHITELIST    = '/home/deploy/whitelist.json';
 const BLOSSOM_CFG  = '/home/deploy/blossom/config.yml';
@@ -352,35 +359,43 @@ async function uploadToBlossom(buf, contentType, filename, nsecHex) {
 }
 
 // ── Publish nsite manifest (Kind 15128) to relay ─────────────────────────────
-function publishNsiteManifest(nsecHex, files) {
-  return new Promise((resolve, reject) => {
-    const sk = Buffer.from(nsecHex, 'hex');
-    const tags = Object.entries(files).map(([filePath, sha256]) => ['path', filePath, sha256]);
-
-    const event = finalizeEvent({
-      kind: 15128,
-      created_at: Math.floor(Date.now() / 1000),
-      tags,
-      content: '',
-    }, sk);
-
-    const ws = new WebSocket(RELAY);
-    const timer = setTimeout(() => { ws.terminate(); reject(new Error('Relay timeout')); }, 8000);
-
-    ws.on('open', () => {
-      ws.send(JSON.stringify(['EVENT', event]));
-    });
-    ws.on('message', raw => {
-      const msg = JSON.parse(raw.toString());
-      if (msg[0] === 'OK') {
-        clearTimeout(timer);
-        ws.close();
-        if (msg[2]) resolve(event);
-        else reject(new Error(`Relay rejected event: ${msg[3]}`));
-      }
-    });
-    ws.on('error', e => { clearTimeout(timer); reject(e); });
+function publishToRelay(event, relayUrl) {
+  return new Promise((resolve) => {
+    try {
+      const ws = new WebSocket(relayUrl);
+      const timer = setTimeout(() => { ws.terminate(); resolve({ url: relayUrl, ok: false, err: 'timeout' }); }, 8000);
+      ws.on('open', () => ws.send(JSON.stringify(['EVENT', event])));
+      ws.on('message', raw => {
+        const msg = JSON.parse(raw.toString());
+        if (msg[0] === 'OK') { clearTimeout(timer); ws.close(); resolve({ url: relayUrl, ok: msg[2], err: msg[3] }); }
+      });
+      ws.on('error', e => { clearTimeout(timer); resolve({ url: relayUrl, ok: false, err: e.message }); });
+    } catch (e) {
+      resolve({ url: relayUrl, ok: false, err: e.message });
+    }
   });
+}
+
+async function publishNsiteManifest(nsecHex, files) {
+  const sk = Buffer.from(nsecHex, 'hex');
+  const tags = Object.entries(files).map(([filePath, sha256]) => ['path', filePath, sha256]);
+  const event = finalizeEvent({
+    kind: 15128,
+    created_at: Math.floor(Date.now() / 1000),
+    tags,
+    content: '',
+  }, sk);
+
+  // Internal relay first (required for local nsite gateway)
+  const internal = await publishToRelay(event, RELAY);
+  if (!internal.ok) throw new Error(`Internal relay rejected manifest: ${internal.err}`);
+
+  // Public relays for external nsite servers
+  const pubResults = await Promise.all(PUBLIC_RELAYS.map(r => publishToRelay(event, r)));
+  const okCount = pubResults.filter(r => r.ok).length;
+  console.log(c.ok(`  Published to ${okCount}/${PUBLIC_RELAYS.length} public relays`));
+
+  return event;
 }
 
 // ── Load or generate agent keypair ───────────────────────────────────────────

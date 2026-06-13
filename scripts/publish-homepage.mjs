@@ -28,6 +28,13 @@ const {
 // ── Config ───────────────────────────────────────────────────────────────────
 const BLOSSOM    = 'http://127.0.0.1:3339';
 const RELAY      = 'ws://127.0.0.1:7778';
+const PUBLIC_RELAYS = [
+  'wss://relay.goosielabs.com',
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.primal.net',
+  'wss://relay.nostr.band',
+];
 const NSITE_BASE = 'https://nsite.goosielabs.com';
 const APPS_DIR   = '/var/www/goosielabs/apps';
 const PAGES_DIR  = '/home/deploy/scripts/pages';
@@ -96,20 +103,39 @@ async function uploadToBlossom(buf, contentType, filename) {
   return hash;
 }
 
-function publishManifest(nsecHex, pubkey, files) {
-  return new Promise((resolve, reject) => {
-    const sk   = Buffer.from(nsecHex, 'hex');
-    const tags = Object.entries(files).map(([p, h]) => ['path', p, h]);
-    const ev   = finalizeEvent({ kind:15128, created_at:Math.floor(Date.now()/1000), tags, content:'' }, sk);
-    const ws   = new WebSocket(RELAY);
-    const t    = setTimeout(() => { ws.terminate(); reject(new Error('timeout')); }, 8000);
-    ws.on('open', () => ws.send(JSON.stringify(['EVENT', ev])));
-    ws.on('message', raw => {
-      const m = JSON.parse(raw.toString());
-      if (m[0]==='OK') { clearTimeout(t); ws.close(); m[2] ? resolve(ev) : reject(new Error(m[3])); }
-    });
-    ws.on('error', e => { clearTimeout(t); reject(e); });
+function publishToRelay(ev, relayUrl) {
+  return new Promise((resolve) => {
+    try {
+      const ws = new WebSocket(relayUrl);
+      const t  = setTimeout(() => { ws.terminate(); resolve({ url: relayUrl, ok: false, err: 'timeout' }); }, 8000);
+      ws.on('open', () => ws.send(JSON.stringify(['EVENT', ev])));
+      ws.on('message', raw => {
+        const m = JSON.parse(raw.toString());
+        if (m[0] === 'OK') { clearTimeout(t); ws.close(); resolve({ url: relayUrl, ok: m[2], err: m[3] }); }
+      });
+      ws.on('error', e => { clearTimeout(t); resolve({ url: relayUrl, ok: false, err: e.message }); });
+    } catch (e) {
+      resolve({ url: relayUrl, ok: false, err: e.message });
+    }
   });
+}
+
+async function publishManifest(nsecHex, pubkey, files) {
+  const sk   = Buffer.from(nsecHex, 'hex');
+  const tags = Object.entries(files).map(([p, h]) => ['path', p, h]);
+  const ev   = finalizeEvent({ kind:15128, created_at:Math.floor(Date.now()/1000), tags, content:'' }, sk);
+
+  // Always publish to internal relay first (required for local nsite gateway)
+  const internal = await publishToRelay(ev, RELAY);
+  if (!internal.ok) throw new Error(`Internal relay rejected manifest: ${internal.err}`);
+
+  // Also publish to public relays so external nsite servers can serve the site
+  const pubResults = await Promise.all(PUBLIC_RELAYS.map(r => publishToRelay(ev, r)));
+  const okCount = pubResults.filter(r => r.ok).length;
+  console.log(`\x1b[36m→\x1b[0m  Public relays: ${okCount}/${PUBLIC_RELAYS.length} accepted manifest`);
+  pubResults.filter(r => !r.ok).forEach(r => console.log(`  ⚠️  ${r.url}: ${r.err}`));
+
+  return ev;
 }
 
 // ── Shared nav + shell wrapper ────────────────────────────────────────────────

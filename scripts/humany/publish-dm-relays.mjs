@@ -16,7 +16,12 @@ import { resolve } from 'path';
 import { finalizeEvent, SimplePool } from 'nostr-tools';
 
 const RELAY          = 'ws://127.0.0.1:7778';
-const EXTERNAL_RELAYS = ['wss://relay.damus.io', 'wss://relay.primal.net'];
+const EXTERNAL_RELAYS = [
+  'wss://relay.damus.io',
+  'wss://relay.primal.net',
+  'wss://nos.lol',
+  'wss://relay.nostr.band',
+];
 const ALL_RELAYS     = [RELAY, ...EXTERNAL_RELAYS];
 const AGENTS_DIR     = '/home/deploy/agents';
 const DM_RELAY       = 'wss://relay.goosielabs.com';
