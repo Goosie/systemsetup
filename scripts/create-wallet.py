@@ -12,11 +12,13 @@ Exits 0 on success or if wallet already exists (idempotent).
 Exits 1 on error.
 """
 
-import json, sys, urllib.request, urllib.error
+import json, sys, sqlite3, urllib.request, urllib.error
 from pathlib import Path
 
-LNBITS_URL = 'http://127.0.0.1:5000'
-AGENTS_DIR  = Path('/home/deploy/agents')
+LNBITS_URL   = 'http://127.0.0.1:5000'
+AGENTS_DIR   = Path('/home/deploy/agents')
+LNBITS_DB    = Path('/home/deploy/lnbits/data/database.sqlite3')
+SUPERHERO_ID = 'fcbee03ef6d04b68b2ad4db3361e0002'
 
 if len(sys.argv) < 3:
     print('Usage: create-wallet.py <name> <displayName>', file=sys.stderr)
@@ -61,4 +63,14 @@ entry = {
 }
 wallet_file.parent.mkdir(parents=True, exist_ok=True)
 wallet_file.write_text(json.dumps(entry, indent=2) + '\n')
+
+# Move wallet to superhero so all goose wallets are visible in one place
+try:
+    db = sqlite3.connect(str(LNBITS_DB))
+    db.execute('UPDATE wallets SET user=? WHERE id=?', (SUPERHERO_ID, data['id']))
+    db.commit()
+    db.close()
+except Exception as e:
+    print(f'  ⚠️  Could not move wallet to superhero: {e}', file=sys.stderr)
+
 print(json.dumps(entry))
