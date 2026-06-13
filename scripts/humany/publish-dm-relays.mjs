@@ -14,15 +14,10 @@ import 'websocket-polyfill';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { finalizeEvent, SimplePool } from 'nostr-tools';
+import { INTERNAL_RELAY, PUBLISH_RELAYS } from '../relay-config.mjs';
 
-const RELAY          = 'ws://127.0.0.1:7778';
-const EXTERNAL_RELAYS = [
-  'wss://relay.damus.io',
-  'wss://relay.primal.net',
-  'wss://nos.lol',
-  'wss://relay.nostr.band',
-];
-const ALL_RELAYS     = [RELAY, ...EXTERNAL_RELAYS];
+const RELAY      = INTERNAL_RELAY;
+const ALL_RELAYS = [RELAY, ...PUBLISH_RELAYS];
 const AGENTS_DIR     = '/home/deploy/agents';
 const DM_RELAY       = 'wss://relay.goosielabs.com';
 

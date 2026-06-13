@@ -32,14 +32,8 @@ const {
 const AGENTS_DIR   = '/home/deploy/.claude/agents';
 const KEYS_DIR     = '/home/deploy/agents';
 const BLOSSOM      = 'http://127.0.0.1:3339';
-const RELAY        = 'ws://127.0.0.1:7778';
-const PUBLIC_RELAYS = [
-  'wss://relay.goosielabs.com',
-  'wss://relay.damus.io',
-  'wss://nos.lol',
-  'wss://relay.primal.net',
-  'wss://relay.nostr.band',
-];
+const { INTERNAL_RELAY, PUBLISH_RELAYS: PUBLIC_RELAYS } = await import('./relay-config.mjs');
+const RELAY        = INTERNAL_RELAY;
 const NSITE_BASE   = 'https://nsite.goosielabs.com';
 const WHITELIST    = '/home/deploy/whitelist.json';
 const BLOSSOM_CFG  = '/home/deploy/blossom/config.yml';

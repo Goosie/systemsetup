@@ -22,6 +22,7 @@ import { resolve } from 'path';
 import { execSync } from 'child_process';
 import WebSocket from 'ws';
 import { nip04, nip17, nip44, nip19, SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
+import { INTERNAL_RELAY, LOOKUP_RELAYS, PUBLIC_LISTEN_RELAYS } from '../relay-config.mjs';
 
 // ── Processed IDs — persisted so restarts don't replay old messages ───────────
 const PROCESSED_FILE = '/home/deploy/logs/nostr-listener-processed.json';
@@ -62,7 +63,7 @@ function logUsage(gooseName, model, inputTokens, outputTokens, toolCalls) {
   }
 }
 
-const RELAY      = process.env.RELAY_URL ?? 'ws://127.0.0.1:7778';
+const RELAY      = process.env.RELAY_URL ?? INTERNAL_RELAY;
 const AGENTS_DIR = '/home/deploy/agents';
 const WHITELIST  = '/home/deploy/whitelist.json';
 
@@ -692,13 +693,7 @@ async function sendReplyNip04(gooseSK, toPubkey, message) {
 
 async function getInboxRelays(pubkey) {
   // Look up recipient's NIP-17 inbox (kind:10050), fall back to our relay
-  const lookupRelays = [
-    'wss://relay.damus.io',
-    'wss://nos.lol',
-    'wss://relay.primal.net',
-    'wss://relay.nostr.band',
-    RELAY.replace('127.0.0.1:7778', 'relay.goosielabs.com').replace('ws://', 'wss://'),
-  ];
+  const lookupRelays = LOOKUP_RELAYS;
   try {
     const pool = new SimplePool();
     const event = await pool.get(lookupRelays, { kinds: [10050], authors: [pubkey] });
@@ -709,13 +704,7 @@ async function getInboxRelays(pubkey) {
     }
   } catch {}
   // No NIP-17 inbox found — fall back to public relays so strangers receive the DM
-  return [
-    RELAY,
-    'wss://relay.damus.io',
-    'wss://nos.lol',
-    'wss://relay.primal.net',
-    'wss://relay.nostr.band',
-  ];
+  return [RELAY, ...LOOKUP_RELAYS];
 }
 
 async function sendReply(gooseSK, toPubkey, message) {
@@ -1119,12 +1108,7 @@ function connect() {
 // ── Docy public relay watcher ─────────────────────────────────────────────────
 // Listens on major public relays for #goosielabs posts from strangers
 
-const PUBLIC_RELAYS = [
-  'wss://relay.damus.io',
-  'wss://nos.lol',
-  'wss://relay.primal.net',
-  'wss://relay.nostr.band',
-];
+const PUBLIC_RELAYS = PUBLIC_LISTEN_RELAYS;
 
 function connectPublicRelay(relayUrl) {
   let wsPublic;
