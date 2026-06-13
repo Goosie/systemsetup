@@ -673,7 +673,7 @@ function buildGiftWrap(senderSK, recipientPubkey, content) {
   }, wrapKey);
 }
 
-async function sendReplyNip04(gooseSK, toPubkey, message) {
+async function sendReplyNip04(gooseSK, toPubkey, message, relays) {
   const encrypted = await nip04.encrypt(gooseSK, toPubkey, message);
   const event = finalizeEvent({
     kind: 4,
@@ -681,13 +681,14 @@ async function sendReplyNip04(gooseSK, toPubkey, message) {
     tags: [['p', toPubkey]],
     content: encrypted,
   }, gooseSK);
+  const targetRelays = relays ?? [RELAY];
   return new Promise((resolve) => {
     const pool = new SimplePool();
-    Promise.allSettled([pool.publish([RELAY], event)]).then(() => {
-      pool.close([RELAY]);
+    Promise.allSettled(pool.publish(targetRelays, event)).then(() => {
+      pool.close(targetRelays);
       resolve();
     });
-    setTimeout(() => { pool.close([RELAY]); resolve(); }, 8_000);
+    setTimeout(() => { pool.close(targetRelays); resolve(); }, 8_000);
   });
 }
 
@@ -975,8 +976,12 @@ The book is about Bitcoin, Lightning and Nostr — written by Docy, our onboardi
   }
 
   try {
+    // NIP-17 gift-wrap (privacy-preserving, supported by Amethyst/0xchat)
     await sendReply(welcomeGoose.sk, pubkey, message);
-    console.log(`[nostr-listener] welcome: voucher ${code} sent to ${pubkey.slice(0, 8)}…`);
+    // NIP-04 fallback so clients like iris/Coarcle that don't support NIP-17 also receive the DM
+    const nip04Relays = [RELAY, ...LOOKUP_RELAYS];
+    await sendReplyNip04(welcomeGoose.sk, pubkey, message, nip04Relays).catch(() => {});
+    console.log(`[nostr-listener] welcome: voucher ${code} sent to ${pubkey.slice(0, 8)}… (NIP-17 + NIP-04)`);
 
     // Notify Perry
     const perryPubkey = loadWhitelist().perry_goosie;
