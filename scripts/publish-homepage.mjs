@@ -281,7 +281,7 @@ async function generateHomepage() {
     } catch { a.hasNsite = false; }
   }));
 
-  // Generate tile cards HTML
+  // Generate tile cards HTML — agent-card style: large icon left, info right
   const tilesHtml = tiles.map(t => {
     const status   = t.status ?? 'experiment';
     const label    = STATUS_LABELS[status] ?? status;
@@ -291,16 +291,22 @@ async function generateHomepage() {
     if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>`);
     if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>`);
     if (t.lnbits_inkey) links.push(`<button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="${t.lnbits_inkey}" data-app="${t.title ?? ''}">⚡ Donate</button>`);
-    const linksHtml = links.length ? `\n        <div class="project-links">\n          ${links.join('\n          ')}\n        </div>` : '';
-    const titleHtml = t.icon
-      ? `<div class="project-card-title"><img class="project-icon" src="${t.icon}" alt="${t.title ?? ''}" width="40" height="40"><div class="project-name">${t.title ?? ''}</div></div>`
-      : `<div class="project-name">${t.title ?? ''}</div>`;
+    const linksHtml = links.length ? `<div class="project-links">${links.join('\n          ')}</div>` : '';
+    const bg = t.icon_bg ?? '#6366f1';
+    const iconHtml = t.icon
+      ? `<div class="project-avatar" style="background:${bg}"><img src="${t.icon}" alt="${t.title ?? ''}" width="72" height="72"></div>`
+      : `<div class="project-avatar" style="background:${bg}">🪿</div>`;
+    const desc = (t.description ?? '').length > 100 ? (t.description ?? '').slice(0, 100) + '…' : (t.description ?? '');
     return `      <div class="project-card">
-        <div class="project-card-top">
-          ${titleHtml}
-          <span class="badge ${cssClass}">${label}</span>
+        ${iconHtml}
+        <div class="project-info">
+          <div class="project-card-top">
+            <div class="project-name">${t.title ?? ''}</div>
+            <span class="badge ${cssClass}">${label}</span>
+          </div>
+          <p class="project-desc">${desc}</p>
+          ${linksHtml}
         </div>
-        <p class="project-desc">${t.description ?? ''}</p>${linksHtml}
       </div>`;
   }).join('\n\n');
 
@@ -505,6 +511,32 @@ async function generateHomepage() {
   // Footer
   html = html.replace('open experimenten in Bitcoin, Nostr en AI', 'open experiments in Bitcoin, Nostr and AI');
   html = html.replace('Alles hier mag worden hergebruikt.', 'Everything here is free to reuse.');
+
+  // Project card redesign: agent-card style with large icon left, info right
+  html = html.replace(
+    '.project-card { background:var(--white); border:1px solid var(--gray-100); border-radius:16px; padding:1.75rem; display:flex; flex-direction:column; gap:0.75rem; transition:box-shadow 0.2s, transform 0.2s; }',
+    '.project-card { background:var(--white); border:1px solid var(--gray-100); border-radius:12px; padding:0.875rem 1rem; display:flex; flex-direction:row; align-items:flex-start; gap:0.875rem; transition:border-color 0.15s, box-shadow 0.15s; }'
+  );
+  html = html.replace(
+    '.project-card:hover { box-shadow:0 8px 32px rgba(12,68,124,0.1); transform:translateY(-2px); }',
+    '.project-card:hover { border-color:#c8dff6; box-shadow:0 2px 12px rgba(12,68,124,0.08); }'
+  );
+  html = html.replace(
+    '.project-card-top { display:flex; justify-content:space-between; align-items:flex-start; }',
+    '.project-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; } .project-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:0.3rem; } .project-avatar { width:72px; height:72px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:2rem; } .project-avatar img { width:100%; height:100%; object-fit:contain; display:block; }'
+  );
+  html = html.replace(
+    '.project-name { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--blue-900); }',
+    '.project-name { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--blue-900); }'
+  );
+  html = html.replace(
+    '.project-desc { font-size:0.92rem; line-height:1.65; color:var(--gray-600); flex:1; }',
+    '.project-desc { font-size:0.82rem; line-height:1.5; color:var(--gray-600); margin:0; }'
+  );
+  html = html.replace(
+    '.project-links { display:flex; gap:1.25rem; margin-top:0.5rem; flex-wrap:wrap; align-items:center; }',
+    '.project-links { display:flex; gap:0.75rem; margin-top:0.35rem; flex-wrap:wrap; align-items:center; }'
+  );
 
   // Wallet balance CSS + JS — fetches balances live from LNbits
   html = html.replace('</style>\n    <div class="agents-grid">', `</style>
