@@ -40,11 +40,15 @@ const BASE = 'Clean vector-style digital illustration, transparent background, '
   'Centred subject filling ~90% of the canvas, edge to edge, almost no empty space around it. Bold flat colours with subtle ' +
   'shading, crisp outlines. App icon aesthetic — immediately recognisable at small size.';
 
+// ── Aerial diorama style (new series) ────────────────────────────────────────
+// Perry's recipe: bird's-eye diorama, goose shadow, same flat hand as the geese portraits.
+const AERIAL = 'flat 2D cartoon illustration, thick black outlines, cel shading, vector art style, warm cream background, high quality. High-angle bird\'s-eye view, looking down at a small scene from above — what a goose sees while flying over it. A subtle semi-transparent goose-shaped shadow falls softly across the scene, like a light grey silhouette — not solid black, barely-there. Centred composition with even empty space around it so it reads cleanly as a square app icon. Classic cartoon animation style, the same flat look as the Goosie Labs geese. NOT realistic, NOT 3D render, NOT photo, no text, no letters — flat cartoon only.';
+
 // ── Per-app prompts ───────────────────────────────────────────────────────────
 const apps = [
   {
     name: 'gameofthegoose',
-    prompt: `${BASE} Bird's-eye view looking straight down at a colourful spiral board game path winding across a lush green landscape — numbered tiles, a small castle, a bridge over a river, a tiny tavern, rolling hills. The kind of destination a flying bird spots from above and thinks "let's land there". Vibrant greens, warm golds, terracotta reds. Top-down map aesthetic, rich and inviting. No birds, no animals, no characters — only the landscape and the path.`,
+    prompt: `flat 2D cartoon illustration, thick black outlines, cel shading, vector art style, warm cream background, high quality. A simple spiral board game path on a calm green field, seen slightly from above. Just the winding path with a few numbered tiles — calm, minimal, lots of breathing room. Warm greens and soft golds. In the bottom-left corner, very small and subtle, three small goose silhouettes flying in a V-formation — noticeable but still secondary, like a charming detail rather than the main element. NOT realistic, NOT 3D render, NOT photo, no text — flat cartoon only.`,
   },
   {
     name: 'catchzaps',
