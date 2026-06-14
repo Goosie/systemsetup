@@ -100,7 +100,7 @@ const apps = [
   },
   {
     name: 'dilemma',
-    prompt: `${BASE} A fork in a glowing path, one branch gold and one branch purple, with a question mark hovering at the split. Deep purple tones.`,
+    prompt: `${BASE} Bird's-eye view looking straight down at a path that splits into two completely different landscapes — one side lush green meadows leading to a sunny village, the other side a dramatic mountain pass leading to a misty castle. The split is right at the centre, a clear fork in the road. Rich purples and golds. The kind of crossroads a flying bird spots and thinks "which way do I go?". No birds, no animals, no characters — only the landscape and the forking path.`,
   },
   {
     name: 'satquiz',
