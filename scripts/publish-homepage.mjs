@@ -164,14 +164,14 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     }
     body { font-family:var(--font-body); background:var(--white); color:var(--gray-800); font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; }
     nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-100); }
-    .nav-inner { max-width:1080px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-inner { max-width:1400px; margin:0 auto; padding:0 2rem; height:64px; display:flex; align-items:center; justify-content:space-between; }
     .nav-logo { font-family:var(--font-display); font-size:18px; color:var(--blue-800); letter-spacing:-0.02em; cursor:default; display:inline-flex; align-items:center; gap:10px; }
     .nav-logo img { height:40px; width:auto; }
     @media (max-width:600px) { .nav-logo img { height:32px; } }
     .nav-links { display:flex; gap:2rem; }
     .nav-link { font-size:14px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:color 0.2s; }
     .nav-link:hover, .nav-link-active { color:var(--blue-600); }
-    .page-content { max-width:1080px; margin:0 auto; padding:3rem 2rem 6rem; }
+    .page-content { max-width:1400px; margin:0 auto; padding:3rem 2rem 6rem; }
     footer { border-top:1px solid var(--gray-100); padding:2rem; text-align:center; font-size:0.8rem; color:var(--gray-400); }
     footer a { color:var(--gray-400); }
     .nsite-badge { display:inline-block; background:#1e1b4b; color:#818cf8; border:1px solid #312e81; border-radius:9999px; padding:1px 8px; font-size:0.65rem; font-weight:700; margin-left:0.5rem; vertical-align:middle; }
@@ -432,7 +432,7 @@ async function generateHomepage() {
 <section class="geese-live" id="geese-live">
   <style>
     .geese-live { padding:4rem 2rem; background:#fff; border-top:1px solid #f0f0ec; }
-    .geese-live-inner { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1fr 2fr; gap:4rem; align-items:start; }
+    .geese-live-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:1fr 2fr; gap:4rem; align-items:start; }
     @media(max-width:720px){ .geese-live-inner { grid-template-columns:1fr; gap:2rem; } }
     .geese-live-label { font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#378add; margin-bottom:0.75rem; }
     .geese-live-title { font-size:1.75rem; font-weight:700; line-height:1.2; color:#0a0a08; margin-bottom:1rem; }
