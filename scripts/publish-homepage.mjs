@@ -16,7 +16,7 @@
  */
 
 import { createHash } from 'crypto';
-import { readFileSync, existsSync, readdirSync, mkdirSync, copyFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, copyFileSync } from 'fs';
 import path from 'path';
 import WebSocket from '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 
@@ -404,9 +404,15 @@ async function generateHomepage() {
   );
 
   // Regenerate tiles between markers from live tile.json data
-  html = html.replace(
-    /<!-- APPS-TILES-START -->[\s\S]*?<!-- APPS-TILES-END -->/,
-    `<!-- APPS-TILES-START -->\n${tilesHtml}\n      <!-- APPS-TILES-END -->`
+  const tilesReplacement = `<!-- APPS-TILES-START -->\n${tilesHtml}\n      <!-- APPS-TILES-END -->`;
+  html = html.replace(/<!-- APPS-TILES-START -->[\s\S]*?<!-- APPS-TILES-END -->/, tilesReplacement);
+
+  // Write tiles back to homepage_base.html so the file stays in sync with published content
+  const baseHtml = readFileSync(`${PAGES_DIR}/homepage_base.html`, 'utf8');
+  writeFileSync(
+    `${PAGES_DIR}/homepage_base.html`,
+    baseHtml.replace(/<!-- APPS-TILES-START -->[\s\S]*?<!-- APPS-TILES-END -->/, tilesReplacement),
+    'utf8'
   );
 
   // ── Geese live feed — inject before V-Formation section ─────────────────────
