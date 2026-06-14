@@ -2,6 +2,7 @@
 set -e
 
 APPNAME=$1
+EMOJI_GLYPH=${2:-uni2B50}   # optional: e.g. u1F4CB, uni26A1 — defaults to ⭐
 APPDIR="/var/www/goosielabs/apps/$APPNAME"
 CLAUDE_MD="/home/deploy/.claude/CLAUDE.md"
 DATUM=$(date +%Y-%m-%d)
@@ -81,10 +82,12 @@ TILEJSON
 fi
 
 echo "🎨 App icon genereren..."
-mkdir -p "$APPDIR/public/icons" "$APPDIR/dist/icons"
-node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" 2>&1
+mkdir -p "$APPDIR/public/icons" "$APPDIR/dist/icons" "$APPDIR/icons"
+node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" "$EMOJI_GLYPH" 2>&1
 cp "$APPDIR/public/icons/icon-192.png" "$APPDIR/dist/icons/" 2>/dev/null || true
 cp "$APPDIR/public/icons/icon-512.png" "$APPDIR/dist/icons/" 2>/dev/null || true
+cp "$APPDIR/public/icons/icon-192.png" "$APPDIR/icons/" 2>/dev/null || true
+cp "$APPDIR/public/icons/icon-512.png" "$APPDIR/icons/" 2>/dev/null || true
 echo "🎨 Icon klaar — pas icon_bg aan in tile.json en hergeneer met:"
 echo "   node /var/www/goosielabs/generate-icons.mjs $APPNAME <#kleur> [emoji-glyph]"
 
