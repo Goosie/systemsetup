@@ -136,7 +136,7 @@ async function publishManifest(nsecHex, pubkey, files) {
 function shell(title, bodyHtml, lang='nl', activePage='') {
   const navLinks = [
     { href: './',           label: 'Home',    key: 'home' },
-    { href: '/perry.html',  label: 'Perry',   key: 'perry' },
+    { href: '/creators.html',  label: 'Creators',   key: 'creators' },
   ];
   const nav = navLinks.map(l =>
     `<a href="${l.href}" class="nav-link${activePage===l.key?' nav-link-active':''}">${l.label}</a>`
@@ -193,7 +193,7 @@ function shell(title, bodyHtml, lang='nl', activePage='') {
     <span class="nsite-badge">nsite</span> ·
     <a href="nostr:perry@goosielabs.com">Nostr DM</a> ·
     <a href="lightning:perry@goosielabs.com">⚡ perry@goosielabs.com</a> ·
-    <a href="https://goosielabs.com/perry.html">Perry Smit</a>
+    <a href="https://goosielabs.com/creators.html">About the creators</a>
   </footer>
 </body>
 </html>`;
@@ -384,7 +384,7 @@ async function generateHomepage() {
   html = html.replace(/<a href="https:\/\/goosielabs\.com\/apps\/"[^>]*>Apps<\/a>/g, '');
   html = html.replace(/>Projecten<\/a>/, '>Projects</a>');
   html = html.replace(/>Het AI Ganzen Team<\/a>/, '>The AI Geese Team</a>');
-  html = html.replace(/href="\/contact\/"/, 'href="/perry.html"');
+  html = html.replace(/href="\/contact\/"/, 'href="/creators.html"');
   html = html.replace(/<a href="#projecten"/g, '<a href="#projects"');
   html = html.replace(/id="projecten"/g, 'id="projects"');
 
@@ -493,7 +493,7 @@ async function generateHomepage() {
             <a href="lightning:perry@goosielabs.com" class="agent-donate" title="Donate to Perry — splits across all geese">donate</a>
           </div>
         </div>
-        <div class="agent-links"><a href="/perry.html" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>
+        <div class="agent-links"><a href="/creators.html" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>
       </div>`;
 
   // Regenerate agent cards
