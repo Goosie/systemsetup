@@ -23,7 +23,7 @@ import WebSocket from '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.
 const {
   finalizeEvent,
   nip19,
-} = await import('/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js');
+} = await import('/var/www/goosielabs/apps/bookwriter/node_modules/nostr-tools/lib/esm/index.js');
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const BLOSSOM    = 'http://127.0.0.1:3339';
@@ -46,7 +46,7 @@ if (!PERRY_NSEC || !PERRY_NSEC.startsWith('nsec1')) {
 const nsecBytes = nip19.decode(PERRY_NSEC).data;
 const nsecHex   = Buffer.from(nsecBytes).toString('hex');
 const pubkeyHex = await (async () => {
-  const { getPublicKey } = await import('/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js');
+  const { getPublicKey } = await import('/var/www/goosielabs/apps/bookwriter/node_modules/nostr-tools/lib/esm/index.js');
   return getPublicKey(nsecBytes);
 })();
 const npub = nip19.npubEncode(pubkeyHex);
@@ -288,9 +288,9 @@ async function generateHomepage() {
     const cssClass = STATUS_CLASSES[status] ?? 'badge-idea';
     const links = [];
     if (t.url) links.push(`<a href="${t.url}" class="project-link">Open app</a>`);
-    if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener">GitHub</a>`);
+    if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>`);
     if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>`);
-    if (t.lnbits_inkey) links.push(`<button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="${t.lnbits_inkey}" data-app="${t.title ?? ''}">⚡ Donate</button>`);
+    if (t.lnbits_inkey) links.push(`<button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="${t.lnbits_inkey}" data-app="${t.title ?? ''}" aria-label="Donate" title="Donate">⚡</button>`);
     const linksHtml = links.length ? `<div class="project-links">${links.join('\n          ')}</div>` : '';
     const bg = t.icon_bg ?? '#6366f1';
     const iconHtml = t.icon
