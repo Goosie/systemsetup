@@ -2,7 +2,10 @@
 set -e
 
 APPNAME=$1
-EMOJI_GLYPH=${2:-uni2B50}   # optional: e.g. u1F4CB, uni26A1 — defaults to ⭐
+# Optional 2nd arg: one-line scene description for the AERIAL icon (what the goose sees from above).
+# If set + OPENAI_API_KEY available → AI-illustrated aerial icon. Else falls back to emoji placeholder.
+SCENE=${2:-}
+EMOJI_GLYPH=${3:-uni2B50}   # only used in fallback mode
 APPDIR="/var/www/goosielabs/apps/$APPNAME"
 CLAUDE_MD="/home/deploy/.claude/CLAUDE.md"
 DATUM=$(date +%Y-%m-%d)
@@ -83,13 +86,28 @@ fi
 
 echo "🎨 App icon genereren..."
 mkdir -p "$APPDIR/public/icons" "$APPDIR/dist/icons" "$APPDIR/icons"
-node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" "$EMOJI_GLYPH" 2>&1
+
+# Source shared API keys for OPENAI_API_KEY
+[[ -f /home/deploy/.env.services ]] && source /home/deploy/.env.services
+
+if [[ -n "$SCENE" && -n "$OPENAI_API_KEY" ]]; then
+    echo "   → AERIAL series (scene: $SCENE)"
+    OPENAI_API_KEY="$OPENAI_API_KEY" node /home/deploy/systemsetup/scripts/generate-app-icons-ai.mjs \
+        --name "$APPNAME" --scene "$SCENE" 2>&1 || {
+        echo "⚠️  AERIAL icon failed — falling back to emoji placeholder"
+        node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" "$EMOJI_GLYPH" 2>&1
+    }
+else
+    [[ -z "$SCENE" ]] && echo "   (geen scene meegegeven — placeholder; geef scene als 2e arg voor AERIAL)"
+    node /var/www/goosielabs/generate-icons.mjs "$APPNAME" "$DEFAULT_COLOR" "$EMOJI_GLYPH" 2>&1
+fi
+
 cp "$APPDIR/public/icons/icon-192.png" "$APPDIR/dist/icons/" 2>/dev/null || true
 cp "$APPDIR/public/icons/icon-512.png" "$APPDIR/dist/icons/" 2>/dev/null || true
 cp "$APPDIR/public/icons/icon-192.png" "$APPDIR/icons/" 2>/dev/null || true
 cp "$APPDIR/public/icons/icon-512.png" "$APPDIR/icons/" 2>/dev/null || true
-echo "🎨 Icon klaar — pas icon_bg aan in tile.json en hergeneer met:"
-echo "   node /var/www/goosielabs/generate-icons.mjs $APPNAME <#kleur> [emoji-glyph]"
+echo "🎨 Icon klaar. Hergeneer met:"
+echo "   node /home/deploy/systemsetup/scripts/generate-app-icons-ai.mjs --name $APPNAME --scene \"<scene>\""
 
 if [ ! -f "$APPDIR/juridischadvies.md" ]; then
     cat > "$APPDIR/juridischadvies.md" << JURIDISCH

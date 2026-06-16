@@ -42,7 +42,7 @@ const BASE = 'Clean vector-style digital illustration, transparent background, '
 
 // ── Aerial diorama style (new series) ────────────────────────────────────────
 // Perry's recipe: bird's-eye diorama, goose shadow, same flat hand as the geese portraits.
-const AERIAL = 'flat 2D cartoon illustration, thick black outlines, cel shading, vector art style, warm cream background, high quality. High-angle bird\'s-eye view, looking down at a small scene from above — what a goose sees while flying over it. A subtle semi-transparent goose-shaped shadow falls softly across the scene, like a light grey silhouette — not solid black, barely-there. Centred composition with even empty space around it so it reads cleanly as a square app icon. Classic cartoon animation style, the same flat look as the Goosie Labs geese. NOT realistic, NOT 3D render, NOT photo, no text, no letters — flat cartoon only.';
+const AERIAL = 'flat 2D cartoon illustration, thick black outlines, cel shading, vector art style, warm cream background, high quality. High-angle bird\'s-eye view, looking down at a small scene from above — what a goose sees while flying over it. In one corner of the icon, three small semi-transparent goose-shaped shadows flying together in a V-formation — a light grey silhouette of three geese, barely-there, drifting across the corner of the scene. Always three geese in V-formation, never one. Centred composition with even empty space around it so it reads cleanly as a square app icon. Classic cartoon animation style, the same flat look as the Goosie Labs geese. NOT realistic, NOT 3D render, NOT photo, no text, no letters — flat cartoon only.';
 
 // ── Per-app prompts ───────────────────────────────────────────────────────────
 const apps = [
@@ -51,88 +51,68 @@ const apps = [
     prompt: `flat 2D cartoon illustration, thick black outlines, cel shading, vector art style, warm cream background, high quality. A simple spiral board game path on a calm green field, seen slightly from above. Just the winding path with a few numbered tiles — calm, minimal, lots of breathing room. Warm greens and soft golds. In the bottom-left corner, very small and subtle, three small goose silhouettes flying in a V-formation — noticeable but still secondary, like a charming detail rather than the main element. NOT realistic, NOT 3D render, NOT photo, no text — flat cartoon only.`,
   },
   {
-    name: 'catchzaps',
-    prompt: `${BASE} A glowing orange lightning bolt striking a location pin on a stylised city map. Electric energy radiating outward. Bold orange and deep navy.`,
-  },
-  {
     name: 'zaphunt',
-    prompt: `${BASE} A golden magnifying glass with a lightning bolt inside it, surrounded by small glowing sats coins. Treasure-hunt energy. Deep orange and gold tones.`,
+    prompt: `${AERIAL} The scene: an old weathered treasure map laid out flat on the ground, with a bold red X marking the spot, a dotted route winding across it, and a few golden sats coins scattered around the edges of the map. Warm parchment tones, deep orange and gold accents. Adventure and treasure-hunt energy.`,
   },
   {
     name: 'honkbadge',
-    prompt: `${BASE} A shiny award medal with a goose silhouette embossed in the centre, hanging from a vibrant ribbon. Amber and gold tones. Prestigious and clean.`,
+    prompt: `${AERIAL} The scene: a shiny round award medal resting on a soft surface, with a small goose silhouette embossed in the centre of the medal and a vibrant amber ribbon laid out in a gentle curve beside it. A few tiny golden sparkles around the edge. Warm amber, gold and cream tones. Prestigious, earned, celebratory.`,
   },
   {
     name: 'honkference',
-    prompt: `${BASE} A stylised microphone with sound waves forming the shape of a flock of geese flying outward. Purple and indigo tones. Conference energy.`,
+    prompt: `${AERIAL} The scene: a small stage podium with a microphone standing on top, viewed from above, with three rows of tiny audience seats arranged in a soft curve in front of it, and a few sound-wave arcs radiating from the mic. Warm indigo, soft purple and cream tones with a hint of gold on the microphone. Conference and shared-attention energy.`,
   },
   {
     name: 'honkensus',
-    prompt: `${BASE} Three overlapping speech bubbles forming a Venn diagram, each with a small checkmark. Consensus and agreement visualised. Dark slate blue with white accents.`,
-  },
-  {
-    name: 'swarm',
-    prompt: `${BASE} A V-formation of glowing bird silhouettes flying in perfect formation, viewed from slightly below against a dark sky. Deep navy and electric blue.`,
-  },
-  {
-    name: 'vformation',
-    prompt: `${BASE} Abstract circuit-board pattern shaped like a V-formation of birds, with glowing nodes at each position. Dark background, neon teal and purple accents.`,
+    prompt: `${AERIAL} The scene: three small wooden voting tokens arranged in a triangle on a soft surface, each marked with a tiny checkmark, with three speech bubbles meeting and overlapping at a single point in the centre where a small gold star sits — the moment of agreement. Calm slate-blue, warm cream and soft gold tones. Consensus and quiet decision-making.`,
   },
   {
     name: 'lastwill',
-    prompt: `${BASE} A sealed envelope with a wax seal, partially wrapped in a golden chain with a padlock. Dark navy background feel, gold and white tones. Secure, solemn.`,
+    prompt: `${AERIAL} The scene: an elegant hourglass standing upright on a polished wooden desk, sand softly flowing from the top chamber to the bottom, with a folded sealed letter resting beside it and a small brass key next to the letter. Warm cream and parchment tones with deep navy accents and a hint of gold on the hourglass frame. Solemn, timeless, the quiet weight of a legacy.`,
   },
   {
     name: 'mint',
-    prompt: `${BASE} A gleaming gold coin with a lightning bolt on one face, minting sparks around it. Teal and gold tones. Clean monetary energy.`,
-  },
-  {
-    name: 'weddendat',
-    prompt: `${BASE} Two cartoon hands about to shake, each holding a glowing lightning bolt token. Bold purple and electric white. A bet being sealed.`,
+    prompt: `${AERIAL} The scene: a small coin-mint press standing on a workshop surface, with neat stacks of golden coins beside it and a single freshly-stamped coin in the foreground showing a lightning bolt on its face. A few minting sparks around the press. Warm teal, gleaming gold, soft cream tones. Clean monetary energy.`,
   },
   {
     name: 'proofofread',
-    prompt: `${BASE} An open book with a glowing NFC/badge seal floating above the page, small lightning bolts as page markers. Dark green and gold tones. Knowledge verified.`,
+    prompt: `${AERIAL} The scene: an open book lying on a warm wooden desk, with round reading glasses resting on one page and a small ceramic mug of steaming tea or coffee beside it. Cosy and inviting. Warm browns, soft cream pages, deep green and gold accents. Knowledge and quiet study.`,
   },
   {
     name: 'proofofmove',
-    prompt: `${BASE} A human silhouette in motion with a glowing green overlay perfectly matching the pose. Movement-detection energy. Dark green and bright lime.`,
+    prompt: `${AERIAL} The scene: a yoga or training mat laid out on a wooden floor, with the outline of a person mid-movement drawn cleanly on the mat — one limb glowing bright lime-green to show a correct alignment, another limb softly red to show needs-adjustment. A small lightning-bolt spark hovers above. Fresh greens, warm wood tones, soft red accent. Movement-coaching energy.`,
   },
   {
     name: 'feedback',
-    prompt: `${BASE} A speech bubble with a small lightning bolt inside, floating above a simplified star rating. Teal and white. Clean feedback energy.`,
+    prompt: `${AERIAL} The scene: a small wooden feedback drop-box sitting on a soft surface, with a folded paper note being slipped into the slot from above, and a row of three small gold stars floating next to it. A tiny lightning-bolt spark next to the box hints at sats. Warm teal, cream and gold tones. Clean, honest feedback energy.`,
   },
   {
     name: 'dilemma',
-    prompt: `${BASE} Bird's-eye view looking straight down at a path that splits into two completely different landscapes — one side lush green meadows leading to a sunny village, the other side a dramatic mountain pass leading to a misty castle. The split is right at the centre, a clear fork in the road. Rich purples and golds. The kind of crossroads a flying bird spots and thinks "which way do I go?". No birds, no animals, no characters — only the landscape and the forking path.`,
+    prompt: `${AERIAL} The scene: a forked dirt path splitting into two directions across a soft green meadow, with a single shiny gold coin resting right at the junction where the path divides. Calm greens, warm earth tones, glinting gold. A quiet crossroads moment — which way to go?`,
   },
   {
     name: 'satquiz',
-    prompt: `${BASE} A glowing question mark made of stacked Bitcoin sats coins. Orange and deep amber. Quiz-meets-lightning energy.`,
+    prompt: `${AERIAL} The scene: a quiz card lying face-up on a warm surface, with a bold question mark printed on it, three small golden sats coins stacked neatly beside the card, and a tiny lightning-bolt spark hovering above the top coin. Warm orange, deep amber and cream tones. Playful quiz energy with a Bitcoin reward feel.`,
   },
   {
     name: 'toddy',
-    prompt: `${BASE} A clean checklist with three items, the top one ticked in bright green with a small lightning bolt beside it. Fresh green and white. Satisfying productivity.`,
-  },
-  {
-    name: 'gooseprogrammer',
-    prompt: `${BASE} A cartoon goose head wearing developer headphones and tiny glasses, with a glowing code bracket </ > as a halo. Indigo and white. Nerdy and fun.`,
+    prompt: `${AERIAL} The scene: a small wooden clipboard lying on a soft surface with a checklist of three handwritten items, the top one ticked in bright green, a tiny pencil resting diagonally across the clipboard, and a small lightning-bolt spark next to the ticked item. Fresh green, warm wood and cream tones. Satisfying, productive, calm.`,
   },
   {
     name: 'georgie',
-    prompt: `${BASE} A stylised hand-drawn map fragment with a glowing location pin, mountains and a winding road. Earthy terracotta and parchment tones. Adventure and place.`,
-  },
-  {
-    name: 'sofia',
-    prompt: `${BASE} A paper airplane made of a boarding pass, trailing a small flock of bird icons. Sky blue and white. Group travel lightness.`,
+    prompt: `${AERIAL} The scene: a hand-drawn parchment map laid flat on a soft surface, showing a winding road curving past small mountains, with a single bright red location pin standing upright at the most important point on the map and a tiny compass rose in one corner. Warm terracotta, soft cream parchment and deep forest-green accents. Place, journey and discovery.`,
   },
   {
     name: 'zinin',
-    prompt: `${BASE} Two glowing thought bubbles drifting together and merging into one bright shared bubble with a small heart spark. Warm rose and white. Serendipitous connection.`,
+    prompt: `${AERIAL} The scene: two winding footpaths approaching each other through a soft green meadow and meeting in the middle at a small clearing, where two speech bubbles float above the meeting point and overlap to form a single shared heart-spark in their overlap. Calm greens, warm rose and cream tones. Serendipitous connection — two people landing on the same thought at the same moment.`,
+  },
+  {
+    name: 'skein',
+    prompt: `${AERIAL} The scene: several translucent weekly calendar grids gently overlapping on a soft surface, most cells lightly shaded as busy, and one single cell at the centre glowing warm gold where all the calendars line up — the shared free moment. A tiny bicycle and a tiny doorway icon rest near the glowing cell, hinting at the resources being matched. Calm sky-blue, warm cream, soft slate and a single bright gold accent. Quiet coordination, privacy, the moment of overlap.`,
   },
   {
     name: 'bookwriter',
-    prompt: `${BASE} A quill pen writing glowing text that trails off into a Nostr lightning-zap pattern. Dark amber and gold on deep brown. Creative and electric.`,
+    prompt: `${AERIAL} The scene: a writer's wooden desk seen from above, with a half-finished manuscript page in the centre, a quill pen resting across it mid-stroke leaving a trail of ink that curls into a small lightning-zap spark, a small stack of finished pages beside it and an ink-pot in the corner. Deep amber, warm brown and soft gold tones. Creative, focused, slightly electric.`,
   },
 ];
 
@@ -205,13 +185,32 @@ async function saveIcon(appName, imageB64OrUrl) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-const cliArg = process.argv[2];
-const targets = cliArg ? apps.filter(a => a.name === cliArg) : apps;
+// Two modes:
+//   node generate-app-icons-ai.mjs <appname>              # from `apps` array
+//   node generate-app-icons-ai.mjs --name <n> --scene "…"  # ad-hoc AERIAL scene
+const argv = process.argv.slice(2);
+function flag(name) {
+  const i = argv.indexOf(name);
+  return i >= 0 ? argv[i + 1] : null;
+}
+const adHocName  = flag('--name');
+const adHocScene = flag('--scene');
 
-if (targets.length === 0) {
-  console.error(`❌ Unknown app: ${cliArg}`);
-  console.error(`   Available: ${apps.map(a => a.name).join(', ')}`);
-  process.exit(1);
+let targets;
+if (adHocName && adHocScene) {
+  targets = [{
+    name: adHocName,
+    prompt: `${AERIAL} The scene: ${adHocScene}`,
+  }];
+} else {
+  const cliArg = argv[0];
+  targets = cliArg ? apps.filter(a => a.name === cliArg) : apps;
+  if (targets.length === 0) {
+    console.error(`❌ Unknown app: ${cliArg}`);
+    console.error(`   Available: ${apps.map(a => a.name).join(', ')}`);
+    console.error(`   Or use ad-hoc: --name <n> --scene "<one-line scene>"`);
+    process.exit(1);
+  }
 }
 
 console.log(`\n🎨 Generating ${targets.length} AI app icon(s) via gpt-image-1\n`);
