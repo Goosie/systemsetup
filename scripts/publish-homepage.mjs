@@ -467,6 +467,7 @@ async function generateHomepage() {
   window.GEESE_DATA=${JSON.stringify({ pubkeys: goosePubkeys, names: gooseNames, avatars: gooseAvatars, colors: gooseColors })};
   </script>
   <script src="/geese-feed.js?v=${Date.now()}" defer></script>
+  <script src="/donate.js?v=${Date.now()}" defer></script>
   <!-- inline script intentionally minimal — logic lives in /geese-feed.js -->
 </section>
 `;
