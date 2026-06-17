@@ -18,7 +18,10 @@
 import 'dotenv/config';
 import { chromium } from 'playwright';
 import { readFileSync } from 'fs';
-import 'websocket-polyfill';
+import WebSocket from 'ws';
+// nostr-tools' relay code looks up globalThis.WebSocket; Node 20 has no
+// native WebSocket so polyfill with ws.
+globalThis.WebSocket = WebSocket;
 import { finalizeEvent } from 'nostr-tools/pure';
 import { Relay } from 'nostr-tools/relay';
 
@@ -34,9 +37,12 @@ const {
   SKEINY_KEY_PATH = '/home/deploy/agents/skeiny/nostr-key.json',
   HEADED,
   DRY_RUN,
+  MOCK_SF,
 } = process.env;
 
-if (!SF_EMAIL || !SF_PASSWORD) {
+const mock = !!MOCK_SF;
+
+if (!mock && (!SF_EMAIL || !SF_PASSWORD)) {
   console.error('FATAL: SF_EMAIL / SF_PASSWORD not configured. Copy .env.example to .env and fill in.');
   process.exit(1);
 }
@@ -50,7 +56,34 @@ const headless = !HEADED;
 const dryRun = !!DRY_RUN;
 
 console.log(`[poll] ${new Date().toISOString()} — start`);
-console.log(`[poll] login=${SF_LOGIN_URL} headless=${headless} bikes=${bikeIds.length} dry=${dryRun}`);
+console.log(`[poll] login=${SF_LOGIN_URL} headless=${headless} bikes=${bikeIds.length} dry=${dryRun} mock=${mock}`);
+
+// Fake trips for MOCK_SF mode — three plausible bookings over the next ~7 days
+// so the published event has real shape without touching SamenFietsen.
+function mockTrips() {
+  const now = Date.now();
+  const oneHour = 3_600_000;
+  return [
+    {
+      bikeId: bikeIds[0],
+      bikeName: 'MOCK Fiets',
+      start: new Date(now + 1 * 86_400_000 + 9 * oneHour).toISOString(),
+      end:   new Date(now + 1 * 86_400_000 + 11 * oneHour).toISOString(),
+    },
+    {
+      bikeId: bikeIds[0],
+      bikeName: 'MOCK Fiets',
+      start: new Date(now + 3 * 86_400_000 + 13 * oneHour).toISOString(),
+      end:   new Date(now + 3 * 86_400_000 + 15 * oneHour).toISOString(),
+    },
+    {
+      bikeId: bikeIds[0],
+      bikeName: 'MOCK Fiets',
+      start: new Date(now + 6 * 86_400_000 + 17 * oneHour).toISOString(),
+      end:   new Date(now + 6 * 86_400_000 + 18 * oneHour).toISOString(),
+    },
+  ];
+}
 
 // ── Headless browser login ───────────────────────────────────────────────────
 // Logs in via the visible form and captures any Authorization header / cookie
@@ -200,13 +233,19 @@ async function publish(trips) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 try {
-  const auth = await loginAndCaptureToken();
-  if (!auth.bearer && !auth.cookies?.length) {
-    throw new Error('No bearer or cookies captured — login likely failed (check SELECTORS or run with HEADED=1)');
+  let trips;
+  if (mock) {
+    trips = mockTrips();
+    console.log(`[poll] MOCK_SF — skipping SamenFietsen login + query, using ${trips.length} fake trips`);
+  } else {
+    const auth = await loginAndCaptureToken();
+    if (!auth.bearer && !auth.cookies?.length) {
+      throw new Error('No bearer or cookies captured — login likely failed (check SELECTORS or run with HEADED=1)');
+    }
+    console.log(`[poll] login ok — bearer=${auth.bearer ? 'yes' : 'no'} cookies=${auth.cookies.length}`);
+    trips = await queryTrips(auth);
+    console.log(`[poll] fetched ${trips.length} trips for ${bikeIds.length} bikes`);
   }
-  console.log(`[poll] login ok — bearer=${auth.bearer ? 'yes' : 'no'} cookies=${auth.cookies.length}`);
-  const trips = await queryTrips(auth);
-  console.log(`[poll] fetched ${trips.length} trips for ${bikeIds.length} bikes`);
   await publish(trips);
   console.log(`[poll] done`);
 } catch (err) {
