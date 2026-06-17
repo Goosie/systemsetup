@@ -1,0 +1,20 @@
+# SamenFietsen poller — schedules 3 random polls/day and publishes to the relay.
+# Copy to /etc/systemd/system/ and: sudo systemctl daemon-reload && sudo systemctl enable --now skein-samenfietsen-poller
+
+[Unit]
+Description=Skein SamenFietsen poller (3x/day)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/scripts/skein-samenfietsen
+EnvironmentFile=/home/deploy/scripts/skein-samenfietsen/.env
+ExecStart=/usr/bin/node schedule.mjs
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

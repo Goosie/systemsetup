@@ -598,6 +598,10 @@ async function newGoose(name) {
   const idx = (Object.keys(existing).length - 2) % colors.length;
   const { color, bgColor } = colors[idx];
 
+  if (!existsSync(GOOSE_CONFIG)) {
+    console.log(`  ⏭  Goose config file not found (${GOOSE_CONFIG}) — skipping vformation tile registration`);
+    return;
+  }
   let config = readFileSync(GOOSE_CONFIG, 'utf8');
   const newEntry =
     `  '${pk}': {\n` +
