@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
-const NOSTR_TOOLS  = '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+const NOSTR_TOOLS  = '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
 const WS_PATH      = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 const HEALTHY_KEY  = '/home/deploy/agents/healthy/nostr-key.json';
 const WHITELIST    = '/home/deploy/whitelist.json';
