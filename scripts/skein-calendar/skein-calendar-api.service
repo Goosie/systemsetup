@@ -1,0 +1,20 @@
+# Skein → Google Calendar bridge
+# Copy to /etc/systemd/system/ and run: sudo systemctl daemon-reload && sudo systemctl enable --now skein-calendar-api
+
+[Unit]
+Description=Skein Calendar API (Google Calendar bridge)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/scripts/skein-calendar
+EnvironmentFile=/home/deploy/scripts/skein-calendar/.env
+ExecStart=/usr/bin/node index.mjs
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
