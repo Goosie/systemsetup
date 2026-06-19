@@ -25,13 +25,21 @@ globalThis.WebSocket = WebSocket;
 import { finalizeEvent } from 'nostr-tools/pure';
 import { Relay } from 'nostr-tools/relay';
 
+// SAFETY: the default URLs point at a non-resolvable host. Even if someone
+// accidentally `systemctl enable --now skein-samenfietsen-poller`, the poller
+// will refuse to start unless the host has been explicitly edited away from
+// the sentinel. To actually use, replace BLOCK-EDIT-BEFORE-USING with the
+// real SamenFietsen domain in .env. MOCK_SF=1 bypasses the SF calls entirely
+// so this check doesn't apply.
+const BLOCK_SENTINEL = 'BLOCK-EDIT-BEFORE-USING';
+
 const {
-  SF_LOGIN_URL = 'https://my.samenfietsen.nl/inloggen',
+  SF_LOGIN_URL = `https://${BLOCK_SENTINEL}.samenfietsen.invalid/inloggen`,
   SF_EMAIL,
   SF_PASSWORD,
   SF_LOCATION_ID,
   SF_BIKE_IDS,                // comma-separated
-  SF_GRAPHQL = 'https://api.samenfietsen.nl/graphql',
+  SF_GRAPHQL = `https://${BLOCK_SENTINEL}.samenfietsen.invalid/graphql`,
   RELAY_URL = 'wss://relay.goosielabs.com',
   RANGE_DAYS = '21',
   SKEINY_KEY_PATH = '/home/deploy/agents/skeiny/nostr-key.json',
@@ -41,6 +49,18 @@ const {
 } = process.env;
 
 const mock = !!MOCK_SF;
+
+if (!mock) {
+  // Hard fail-safe: refuse to run if either URL still carries the sentinel.
+  for (const [name, url] of [['SF_LOGIN_URL', SF_LOGIN_URL], ['SF_GRAPHQL', SF_GRAPHQL]]) {
+    if (url.includes(BLOCK_SENTINEL) || url.endsWith('.invalid') || url.includes('.invalid/')) {
+      console.error(`FATAL: ${name} still uses the BLOCK sentinel (${url}).`);
+      console.error('Edit .env to point at the real SamenFietsen host before enabling the poller.');
+      console.error('Or run with MOCK_SF=1 to use fake data without touching SamenFietsen.');
+      process.exit(2);
+    }
+  }
+}
 
 if (!mock && (!SF_EMAIL || !SF_PASSWORD)) {
   console.error('FATAL: SF_EMAIL / SF_PASSWORD not configured. Copy .env.example to .env and fill in.');
