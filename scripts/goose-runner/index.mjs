@@ -57,6 +57,8 @@ const KEYS = {
   toddy: loadKey('toddy'),
   welcome: loadKey('welcome'),
   linky: loadKey('linky'),
+  skeiny: loadKey('skeiny'),
+  'onboarding-clawback': loadKey('welcome'), // app maintenance — signs as Welcome (the onboarding goose)
   // ── NEW GEESE ──
 };
 
@@ -249,6 +251,8 @@ async function dispatch(pool, event) {
       case 'toddy': await handleScript(pool, 'toddy', event, command); break;
       case 'welcome': await handleScript(pool, 'welcome', event, command); break;
       case 'linky': await handleScript(pool, 'linky', event, command); break;
+      case 'skeiny': await handleScript(pool, 'skeiny', event, command); break;
+      case 'onboarding-clawback': await handleScript(pool, 'onboarding-clawback', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {

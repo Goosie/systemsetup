@@ -35,7 +35,6 @@ const DEFAULT_SCHEDULE = {
   ay:      { interval_blocks: 1008, command: 'check',    description: '~1 week (woensdag-ritueel)' },
   backy:   { interval_blocks: 1000, command: 'snapshot', description: '~1 week'  },
   healthy: { interval_blocks: 4,    command: 'check',    description: '~40 min'  },
-  gander:  { interval_blocks: 1008, command: '1sept',    description: '~1 week'  },
   coachy:  { interval_blocks: 72,   command: 'check',    description: '~12 hours' },
   commy:   { interval_blocks: 3,    command: 'run',      description: '~30 min'  },
   finny:         { interval_blocks: 6,   command: 'report',       description: '~1 hour'  },
@@ -43,6 +42,7 @@ const DEFAULT_SCHEDULE = {
   'scb-backup': { interval_blocks: 144,  command: 'backup',   description: '~1 day'   },
   'regenerate-tiles': { interval_blocks: 144, command: 'regen', description: '~1 day (keep agent ages fresh)' },
   gander:  { interval_blocks: 1008, command: 'scout "nostr use cases people want"', description: '~1 week' },
+  'onboarding-clawback': { interval_blocks: 144, command: 'run', description: '~1 day — reclaim expired ProofOfRead onboarding earmarks' },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -244,6 +244,11 @@ async function onBlock(height) {
     return;
   }
 
+  // Ignore duplicate / stale updates — mempool.space pushes the same block in
+  // repeated messages. Only act (announce + schedule) on a genuinely new block,
+  // so exactly one announcement goes out per mined block.
+  if (height <= currentBlock) return;
+
   currentBlock = height;
   console.log(`\n⛏️  Block ${height}`);
   await publishBlockAnnouncement(height);
@@ -313,15 +318,20 @@ function connectMempool() {
 async function showSchedule() {
   const MEMPOOL_API = process.env.MEMPOOL_API ?? 'http://100.111.14.11:3006';
 
-  // Current block height — lokale node eerst
+  // Current block height — lokale node eerst, valt terug bij 502/parse-fail
+  async function fetchHeight(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const n = parseInt((await res.text()).trim(), 10);
+    if (!Number.isFinite(n)) throw new Error('non-numeric response');
+    return n;
+  }
   let currentHeight = 0;
   try {
-    const res = await fetch(`${MEMPOOL_API}/api/blocks/tip/height`);
-    currentHeight = parseInt(await res.text());
+    currentHeight = await fetchHeight(`${MEMPOOL_API}/api/blocks/tip/height`);
   } catch {
     try {
-      const res = await fetch('https://mempool.space/api/blocks/tip/height');
-      currentHeight = parseInt(await res.text());
+      currentHeight = await fetchHeight('https://mempool.space/api/blocks/tip/height');
     } catch { currentHeight = 0; }
   }
 
