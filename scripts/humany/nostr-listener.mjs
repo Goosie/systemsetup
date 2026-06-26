@@ -967,6 +967,10 @@ Thanks for posting about us. Here's your welcome voucher — ${WELCOME_SATS} sat
 
 The book is about Bitcoin, Lightning and Nostr — written by Docy, our onboarding goose. It's short, it's honest, and the questions can't be answered without actually reading it.
 
+**Know someone who's never touched Bitcoin?**
+Send them this link — no Nostr, no app, no sign-up. They'll read the book, earn their first 21 sats, and get a Nostr account right in their browser:
+👉 https://goosielabs.com/apps/proofofread/start
+
 — Welcome 🪿 (Goosie Labs)`;
 
   const welcomeGoose = geese.find(g => g.name === 'welcome');
