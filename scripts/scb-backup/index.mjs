@@ -7,6 +7,8 @@
  *   2. TLS cert check — replaces + restarts LNbits if changed
  *   3. LNbits SQLite databases — keeps 14 versions
  *   4. LNbits .env + lnd-certs — keeps 14 versions
+ *   4b. Cashu mint ledger (nutshell mint.sqlite3) — keeps 14 versions + offsite.
+ *       If lost, every issued Cashu token is unredeemable.
  *
  * Usage:
  *   node index.mjs           # full backup
@@ -27,7 +29,11 @@ const LOCAL_CERT  = '/home/deploy/lnbits/lnd-certs/tls.cert';
 
 const SCB_DIR     = '/home/deploy/backups/lnd-scb';
 const LNBITS_DIR  = '/home/deploy/backups/lnbits';
+const MINT_DIR    = '/home/deploy/backups/nutshell';
+const MINT_DB     = '/home/deploy/nutshell/data/mint/mint.sqlite3';
 const KEEP        = 14;
+
+let mintBackupDest = null; // set in §4b, offsited in §5
 
 function md5(path) {
   return createHash('md5').update(readFileSync(path)).digest('hex');
@@ -159,6 +165,32 @@ if (DRY_RUN) {
   }
 }
 
+// ── 4b. Cashu mint ledger backup ──────────────────────────────────────────────
+// The nutshell mint ledger records every outstanding ecash liability (Welcome's
+// 21-sat welcome tokens, onboarding rewards). Lose it and every token ever issued
+// becomes permanently unredeemable. sqlite3 .backup is safe while the mint runs.
+
+console.log(`\n🥜 Cashu mint ledger backup`);
+
+if (!existsSync(MINT_DIR)) mkdirSync(MINT_DIR, { recursive: true });
+
+if (DRY_RUN) {
+  console.log(`   Dry-run — would backup: ${MINT_DB}`);
+} else if (!existsSync(MINT_DB)) {
+  console.error(`  ❌ mint ledger not found: ${MINT_DB}`);
+} else {
+  const dest = join(MINT_DIR, `mint.${ts}.sqlite3`);
+  try {
+    execSync(`sqlite3 ${MINT_DB} ".backup '${dest}'"`, { stdio: 'pipe' });
+    const size = statSync(dest).size;
+    mintBackupDest = dest; // offsite the atomic copy, not the live file
+    console.log(`  ✅ mint.sqlite3 → ${size} bytes`);
+    pruneDir(MINT_DIR, 'mint.', KEEP);
+  } catch (e) {
+    console.error(`  ❌ mint backup failed: ${e.message}`);
+  }
+}
+
 // ── 5. Offsite copy to Umbrel ─────────────────────────────────────────────────
 // Second physical location — if DigitalOcean goes down, recovery is possible from Umbrel.
 
@@ -169,6 +201,8 @@ const OFFSITE_FILES = [
   { src: '/home/deploy/lnbits/data/database.sqlite3',          name: 'database.sqlite3' },
   { src: '/home/deploy/lnbits/data/ext_splitpayments.sqlite3', name: 'ext_splitpayments.sqlite3' },
   { src: '/home/deploy/lnbits/.env',                           name: 'lnbits.env' },
+  // Offsite the atomic mint backup made in §4b (not the live file).
+  ...(mintBackupDest ? [{ src: mintBackupDest, name: 'nutshell-mint.sqlite3' }] : []),
 ];
 
 if (DRY_RUN) {
