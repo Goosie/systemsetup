@@ -184,33 +184,43 @@ if (command === 'report') {
     console.log('\n(dry-run — geen DM verstuurd)');
   }
 } else if (command === 'wallet-check') {
-  // Check Welcome's wallet balance — alert if below threshold
-  const THRESHOLD = 50; // sats
+  // Check the payout wallets — alert Perry if any is below its threshold.
   const LNBITS_URL = 'http://127.0.0.1:5000';
-  const walletJson = JSON.parse(readFileSync('/home/deploy/agents/welcome/lnbits-wallet.json', 'utf8'));
+  const WALLETS = [
+    { label: 'Welcome',              file: '/home/deploy/agents/welcome/lnbits-wallet.json',  threshold: 50,  topup: 'welcome@goosielabs.com',     purpose: 'voucher payouts' },
+    { label: 'ProofOfRead onboarding', file: '/home/deploy/people/onboarding/lnbits-wallet.json', threshold: 210, topup: 'onboarding@goosielabs.com', purpose: 'beginner /start rewards' },
+  ];
 
-  try {
-    const res = await fetch(`${LNBITS_URL}/api/v1/wallet`, {
-      headers: { 'X-Api-Key': walletJson.inkey },
-    });
-    const data = await res.json();
-    const sats = Math.floor(data.balance / 1000);
-
-    console.log(`💰 Welcome wallet balance: ${sats} sats`);
-
-    if (sats < THRESHOLD) {
-      const msg = `⚠️ Welcome's wallet is running low!\n\nBalance: ${sats} sats (threshold: ${THRESHOLD} sats)\n\nShe can't pay out ProofOfRead rewards until topped up.\nSend sats to: welcome@goosielabs.com\n\n— Finny 🪿`;
-      console.log(msg);
-      if (!DRY_RUN) {
-        await sendDM(msg);
-        console.log('✅ Low balance alert sent to Perry');
+  const low = [];
+  for (const w of WALLETS) {
+    try {
+      const wallet = JSON.parse(readFileSync(w.file, 'utf8'));
+      const res = await fetch(`${LNBITS_URL}/api/v1/wallet`, { headers: { 'X-Api-Key': wallet.inkey } });
+      const data = await res.json();
+      const sats = Math.floor((data.balance ?? 0) / 1000);
+      if (sats < w.threshold) {
+        console.log(`⚠️  ${w.label}: ${sats} sats (below ${w.threshold})`);
+        low.push({ ...w, sats });
+      } else {
+        console.log(`✅ ${w.label}: ${sats} sats (threshold ${w.threshold})`);
       }
-    } else {
-      console.log(`✅ Balance OK — ${sats} sats (threshold: ${THRESHOLD})`);
+    } catch (err) {
+      console.error(`Wallet check failed for ${w.label}: ${err.message}`);
     }
-  } catch (err) {
-    console.error(`Wallet check failed: ${err.message}`);
-    process.exit(1);
+  }
+
+  if (low.length > 0) {
+    const lines = low.map(w =>
+      `• ${w.label}: ${w.sats} sats (need ${w.threshold}) — for ${w.purpose}\n  Top up: ${w.topup}`
+    ).join('\n\n');
+    const msg = `⚠️ Payout wallet${low.length > 1 ? 's' : ''} running low!\n\n${lines}\n\nWithout sats, rewards can't pay out.\n\n— Finny 🪿`;
+    console.log(`\n${msg}`);
+    if (!DRY_RUN) {
+      await sendDM(msg);
+      console.log('✅ Low balance alert sent to Perry');
+    }
+  } else {
+    console.log('✅ All payout wallets above threshold');
   }
 } else {
   console.log(`Onbekend commando: ${command}\nGebruik: report [--dry-run] | wallet-check [--dry-run]`);
