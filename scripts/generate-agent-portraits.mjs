@@ -171,11 +171,11 @@ const agents = [
   },
   {
     name: 'skeiny',
-    prompt: `${BASE_STYLE}. Skeiny — V-formation agent. Wearing a unique outfit that reflects their role and personality.`,
+    prompt: `${BASE_STYLE}. Wearing a cozy knitted purple cardigan, gathering several colourful strands of yarn with one wing that weave together into a single neat thread, holding a small wall calendar with a tiny padlock charm clipped to it in the other wing. Gentle, organised, thoughtful expression — the goose who quietly weaves everyone's free moments into one shared time while keeping each calendar private.`,
   },
   {
     name: 'splitty',
-    prompt: `${BASE_STYLE}. Splitty — V-formation agent. Wearing a unique outfit that reflects their role and personality.`,
+    prompt: `${BASE_STYLE}. Wearing an emerald-green money-changer's eyeshade visor and a green leather coin-apron with rows of little pouches, cheerfully fanning out a spray of shiny gold Bitcoin coins from one wing so they split and fly off in several directions, a small brass balance scale balanced in the other wing. Generous, fair, beaming smile — the flock's treasurer goose who shares every sat that comes in equally with the whole flock.`,
   },
 ];
 
