@@ -20,13 +20,15 @@ import path from 'path';
 import WebSocket from '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 import { generateQRDataUrl } from './lib/qr-code-util.mjs';
 
-// ── nostr-tools (ESM, via import()) ──────────────────────────────────────────
+// ── nostr-tools (resolved from this script's own node_modules, not an app's) ──
+// Was hardcoded to apps/catchzaps/node_modules — broke when that app changed.
+// Stable install lives in /home/deploy/systemsetup/node_modules.
 const {
   generateSecretKey,
   getPublicKey,
   finalizeEvent,
   nip19,
-} = await import('/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js');
+} = await import('nostr-tools');
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const AGENTS_DIR   = '/home/deploy/.claude/agents';

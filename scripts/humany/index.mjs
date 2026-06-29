@@ -214,39 +214,50 @@ async function publishChat(pool, content) {
 }
 
 async function updateSplitTargets() {
+  // Splitty is the flock's distribution hub: incoming sats to Splitty's wallet
+  // are auto-split over every goose (except Splitty itself) + Perry's personal
+  // wallet. Called on every newgoose so a new goose is auto-added to the split.
   const LNBITS_DB = '/home/deploy/lnbits/data/database.sqlite3';
   try {
-    // Get Perry's adminkey from LNbits DB
-    const result = execSync(
-      `sqlite3 "${LNBITS_DB}" "SELECT adminkey FROM wallets WHERE name='Perry' LIMIT 1;"`,
-      { encoding: 'utf8' }
-    ).trim();
-    if (!result) { console.log('  ⚠️  Split targets: Perry wallet not found in DB'); return; }
-    const perryAdminkey = result;
+    const splittyWalletFile = resolve(AGENTS_DIR, 'splitty', 'lnbits-wallet.json');
+    if (!existsSync(splittyWalletFile)) {
+      console.log('  ⚠️  Split targets: Splitty wallet not found — skipping');
+      return;
+    }
+    const sourceAdminkey = JSON.parse(readFileSync(splittyWalletFile, 'utf8')).adminkey;
 
-    // Build targets from all geese with a wallet file
-    const geese = readdirSync(AGENTS_DIR)
-      .filter(n => existsSync(resolve(AGENTS_DIR, n, 'lnbits-wallet.json')))
+    // Targets = all geese with a wallet file, except Splitty itself
+    const targets = readdirSync(AGENTS_DIR)
+      .filter(n => n !== 'splitty' && existsSync(resolve(AGENTS_DIR, n, 'lnbits-wallet.json')))
       .map(n => {
         const w = JSON.parse(readFileSync(resolve(AGENTS_DIR, n, 'lnbits-wallet.json'), 'utf8'));
         return { name: n, wallet_id: w.wallet_id };
       })
       .filter(g => g.wallet_id);
 
-    if (!geese.length) return;
+    // + Perry's personal wallet (he shares in the flock income too)
+    const perryWalletId = execSync(
+      `sqlite3 "${LNBITS_DB}" "SELECT id FROM wallets WHERE name='Perry' LIMIT 1;"`,
+      { encoding: 'utf8' }
+    ).trim();
+    if (perryWalletId && !targets.some(t => t.wallet_id === perryWalletId)) {
+      targets.push({ name: 'perry', wallet_id: perryWalletId });
+    }
 
-    const pct = Math.round(100 / geese.length * 10000) / 10000;
-    const targets = geese.map((g, i) => ({
+    if (!targets.length) return;
+
+    const n = targets.length;
+    const pct = Math.round(100 / n * 10000) / 10000;
+    const body = JSON.stringify({ targets: targets.map((g, i) => ({
       wallet:  g.wallet_id,
-      percent: i === geese.length - 1 ? Math.round((100 - pct * (geese.length - 1)) * 10000) / 10000 : pct,
+      percent: i === n - 1 ? Math.round((100 - pct * (n - 1)) * 10000) / 10000 : pct,
       alias:   g.name,
-    }));
+    })) });
 
-    const body = JSON.stringify({ targets });
     await new Promise((resolve, reject) => {
       const req = http.request(`${LNBITS_URL}/splitpayments/api/v1/targets`, {
         method: 'PUT',
-        headers: { 'X-Api-Key': perryAdminkey, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+        headers: { 'X-Api-Key': sourceAdminkey, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
       }, res => {
         let data = '';
         res.on('data', d => data += d);
@@ -256,7 +267,7 @@ async function updateSplitTargets() {
       req.write(body);
       req.end();
     });
-    console.log(`  💸 Split targets updated: ${geese.length} geese × ${pct}% each`);
+    console.log(`  💸 Splitty split updated: ${n} targets × ~${pct}% each`);
   } catch (e) {
     console.log(`  ⚠️  Split targets update failed: ${e.message}`);
   }
@@ -598,23 +609,25 @@ async function newGoose(name) {
   const idx = (Object.keys(existing).length - 2) % colors.length;
   const { color, bgColor } = colors[idx];
 
-  if (!existsSync(GOOSE_CONFIG)) {
-    console.log(`  ⏭  Goose config file not found (${GOOSE_CONFIG}) — skipping vformation tile registration`);
-    return;
+  // vformation tile registration — skip (and continue!) if the app is gone.
+  // (Previously this did `return`, which aborted wallet/profile/badge/ceremony.)
+  if (existsSync(GOOSE_CONFIG)) {
+    let config = readFileSync(GOOSE_CONFIG, 'utf8');
+    const newEntry =
+      `  '${pk}': {\n` +
+      `    name: '${capitalize(name)}',\n` +
+      `    emoji: '🪿',\n` +
+      `    color: '${color}',\n` +
+      `    bgColor: '${bgColor}',\n` +
+      `    role: 'Pending',\n` +
+      `  },\n` +
+      `  // ── NEW GEESE ──`;
+    config = config.replace('  // ── NEW GEESE ──', newEntry);
+    writeFileSync(GOOSE_CONFIG, config);
+    console.log(`  ✅ Registered in gooseConfig.ts`);
+  } else {
+    console.log(`  ⏭  vformation app not present — skipping tile registration, continuing`);
   }
-  let config = readFileSync(GOOSE_CONFIG, 'utf8');
-  const newEntry =
-    `  '${pk}': {\n` +
-    `    name: '${capitalize(name)}',\n` +
-    `    emoji: '🪿',\n` +
-    `    color: '${color}',\n` +
-    `    bgColor: '${bgColor}',\n` +
-    `    role: 'Pending',\n` +
-    `  },\n` +
-    `  // ── NEW GEESE ──`;
-  config = config.replace('  // ── NEW GEESE ──', newEntry);
-  writeFileSync(GOOSE_CONFIG, config);
-  console.log(`  ✅ Registered in gooseConfig.ts`);
 
   // 2f. LNbits wallet + Lightning Address
   console.log(`  ⚡ Creating LNbits wallet for ${capitalize(name)}...`);
@@ -643,13 +656,19 @@ async function newGoose(name) {
   // 6c. Issue NIP-58 formation badge from Assistenty
   await issueBadgeAward(pool, pk, capitalize(name));
 
-  // 7. Rebuild vformation dashboard
-  console.log(`  🏗️  Rebuilding vformation...`);
-  execSync('NODE_OPTIONS=--max-old-space-size=1024 npm run build', {
-    cwd: VFORMATION_DIR,
-    stdio: 'pipe',
-  });
-  console.log(`  ✅ Dashboard rebuilt`);
+  // 7. Rebuild vformation dashboard (skip gracefully if the app is gone)
+  if (existsSync(GOOSE_CONFIG)) {
+    console.log(`  🏗️  Rebuilding vformation...`);
+    try {
+      execSync('NODE_OPTIONS=--max-old-space-size=1024 npm run build', {
+        cwd: VFORMATION_DIR,
+        stdio: 'pipe',
+      });
+      console.log(`  ✅ Dashboard rebuilt`);
+    } catch (e) {
+      console.log(`  ⚠️  vformation rebuild failed (skipping): ${e.message}`);
+    }
+  }
 
   // 7b. Add to AGENT_ORDER + AGENT_COLORS in publish-homepage.mjs
   try {

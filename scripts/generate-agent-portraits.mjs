@@ -169,6 +169,14 @@ const agents = [
     name: 'linky',
     prompt: `${BASE_STYLE}. Linky — LinkedIn communication goose. Wearing a sharp navy blue business suit with a striped tie, holding a shiny smartphone showing a social media feed. Confident, polished, ready to network.`,
   },
+  {
+    name: 'skeiny',
+    prompt: `${BASE_STYLE}. Skeiny — V-formation agent. Wearing a unique outfit that reflects their role and personality.`,
+  },
+  {
+    name: 'splitty',
+    prompt: `${BASE_STYLE}. Splitty — V-formation agent. Wearing a unique outfit that reflects their role and personality.`,
+  },
 ];
 
 async function generateImage(prompt) {
