@@ -314,7 +314,7 @@ async function generateHomepage() {
   const WEBROOT_AGENTS = '/var/www/goosielabs/agents';
 
   // Generate agent cards HTML
-  const agentCardsHtml = agents.map(a => {
+  const agentCards = agents.map(a => {
     const color    = AGENT_COLORS[a.name] ?? '#6366f1';
     const nsiteUrl = `https://nsite.goosielabs.com/${a.npub}/`;
     const title    = a.name.charAt(0).toUpperCase() + a.name.slice(1);
@@ -363,7 +363,7 @@ async function generateHomepage() {
           ${walletLine}
         </div>${promptLink}`;
     return `      <div class="agent-card" data-blockbirth="${a.blockbirth || ''}">${inner}\n      </div>`;
-  }).join('\n');
+  });
 
   // Use WP export as base (carries full CSS + layout), then patch all Dutch text
   let html = readFileSync(`${PAGES_DIR}/homepage_base.html`, 'utf8');
@@ -481,7 +481,7 @@ async function generateHomepage() {
     '>AI-ganzen met elk een eigen identiteit op Nostr — klik om hun rol en instructies te lezen.<',
     '>AI geese each with their own Nostr identity — click to read their role and instructions.<'
   );
-  // Perry's founder card — always first in the formation
+  // Perry's founder card — second, right after Splitty
   const perryCard = `      <div class="agent-card agent-card-founder" data-blockbirth="-2362201">
         <div class="agent-avatar"><img src="/perry/perry-goose.png" alt="Perry"></div>
         <div class="agent-info">
@@ -489,17 +489,23 @@ async function generateHomepage() {
           <div class="agent-desc">Founder &amp; Lead Goose — builder at the intersection of Bitcoin, Nostr and AI.</div>
           <div class="agent-birth" style="font-size:0.72rem;color:#888780;margin-top:0.4rem">⛏ #-2,362,201 · Age <span class="goose-age">…</span> blocks</div>
           <div class="agent-wallet" data-inkey="02b25e836ae5480eb087b93f6b3ab41a" data-walletid="c9ac4e7c136e4fa49e8ee2b7471382e2" style="margin-top:0.35rem">
-            <span class="agent-balance">⚡ splits across all geese</span>
-            <a href="lightning:perry@goosielabs.com" class="agent-donate" title="Donate to Perry — splits across all geese">donate</a>
+            <span class="agent-balance">⚡ <span class="balance-sats">…</span> sats</span>
           </div>
         </div>
         <div class="agent-links"><a href="/creators.html" class="agent-link" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></a></div>
       </div>`;
 
+  // Order the V-Formation: Splitty's tile top-left, Perry second, then the rest
+  const splittyIdx = agents.findIndex(a => a.name === 'splitty');
+  const orderedCards = [];
+  if (splittyIdx !== -1) orderedCards.push(agentCards[splittyIdx]);
+  orderedCards.push(perryCard);
+  agents.forEach((a, i) => { if (i !== splittyIdx) orderedCards.push(agentCards[i]); });
+
   // Regenerate agent cards
   html = html.replace(
     /<!-- AGENTS-TILES-START -->[\s\S]*?<!-- AGENTS-TILES-END -->/,
-    `<!-- AGENTS-TILES-START -->\n${perryCard}\n${agentCardsHtml}\n<!-- AGENTS-TILES-END -->`
+    `<!-- AGENTS-TILES-START -->\n${orderedCards.join('\n')}\n<!-- AGENTS-TILES-END -->`
   );
 
   // Join / contact section
