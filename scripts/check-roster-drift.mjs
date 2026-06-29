@@ -85,7 +85,6 @@ try {
 
 // ── generator lists + cross-repo roster (presence only → warnings) ──────────────
 for (const [label, path] of [
-  ['generate-agent-icons.mjs', F.icons],
   ['generate-agent-portraits.mjs', F.portraits],
   ['gooseAgents.ts (gameofthegoose)', F.gooseAgents],
 ]) {
@@ -93,6 +92,13 @@ for (const [label, path] of [
   if (!set) { warn(label, 'bestand niet gevonden'); continue; }
   for (const n of gooseNames) if (!set.has(n)) warn(label, `${n}: ontbreekt`);
   for (const n of set) if (!geese[n]) warn(label, `${n}: stale entry (geen agent-map)`);
+}
+
+// Icon + portrait are derived from the DALL-E portrait (not the old composite
+// generator) — so check the actual files exist per goose.
+for (const n of gooseNames) {
+  if (!existsSync(resolve(AGENTS_DIR, n, 'icon-192.png'))) warn('agent-icon', `${n}: icon-192.png ontbreekt`);
+  if (!existsSync(resolve(AGENTS_DIR, n, `${n}.jpg`)))      warn('agent-portrait', `${n}: ${n}.jpg ontbreekt`);
 }
 
 // ── Report ──────────────────────────────────────────────────────────────────────

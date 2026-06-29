@@ -342,18 +342,9 @@ function addToNip05(name, pubkeyHex) {
   return true;
 }
 
-function addToIconsGenerator(name) {
-  let content = readFileSync(GENERATE_ICONS_MJS, 'utf8');
-  if (content.includes(`name: '${name}'`)) return false;
-  const label = capitalize(name);
-  const newEntry = `  { name: '${name}', bg: '#374151', symbol: 'uni2728', label: '${label}' }, // gray — ✨ placeholder — ask @designy for final bg+symbol`;
-  content = content.replace(
-    /(\{ name: 'docy'[^\n]+\n)/,
-    `$1${newEntry}\n`
-  );
-  writeFileSync(GENERATE_ICONS_MJS, content);
-  return true;
-}
+// (addToIconsGenerator + generateIcon removed — a new goose's icon is now derived
+//  from its DALL-E portrait by generate-agent-portraits.mjs, never the old
+//  composite/placeholder icon.)
 
 function addToPortraitsGenerator(name) {
   let content = readFileSync(GENERATE_PORTRAITS, 'utf8');
@@ -367,20 +358,6 @@ function addToPortraitsGenerator(name) {
   content = content.replace(/^(\];)/m, `${newEntry}\n$1`);
   writeFileSync(GENERATE_PORTRAITS, content);
   return true;
-}
-
-function generateIcon(name) {
-  try {
-    execSync(`cd ${GOOSIELABS_DIR} && node generate-agent-icons.mjs 2>&1 | grep "✓ ${name}" || true`, { stdio: 'pipe' });
-    const src = `${AGENTS_DIR}/${name}/icon-192.png`;
-    const dst = `${WEBROOT_AGENTS}/${name}`;
-    if (existsSync(src)) {
-      mkdirSync(dst, { recursive: true });
-      execSync(`cp ${src} ${dst}/`);
-      return true;
-    }
-  } catch {}
-  return false;
 }
 
 function getOpenAIKey() {
@@ -404,6 +381,11 @@ function generatePortrait(name) {
     if (existsSync(src)) {
       mkdirSync(dst, { recursive: true });
       execSync(`cp ${src} ${dst}/`);
+      // copy the portrait-derived icons too (written by generate-agent-portraits.mjs)
+      for (const ic of ['icon-192.png', 'icon-512.png']) {
+        const isrc = `${AGENTS_DIR}/${name}/${ic}`;
+        if (existsSync(isrc)) execSync(`cp ${isrc} ${dst}/`);
+      }
       return true;
     }
   } catch {}
@@ -550,21 +532,13 @@ async function newGoose(name) {
   const agentsAdded = addToAgentsJson(name, about);
   console.log(`  📋 agents.json: ${capitalize(name)} ${agentsAdded ? 'added' : '(already exists)'}`);
 
-  // 2d. @Designy — agent icon (goose + symbol composite)
-  console.log(`  🎨 @Designy: generating icon for ${capitalize(name)}...`);
-  addToIconsGenerator(name);
-  const iconOk = generateIcon(name);
-  console.log(iconOk
-    ? `  🎨 Icon generated → /agents/${name}/icon-192.png (placeholder — update bg+symbol in generate-agent-icons.mjs)`
-    : `  ⚠️  Icon generation failed — run manually: cd /var/www/goosielabs && node generate-agent-icons.mjs`
-  );
-
-  // 2e. @Designy — portrait via DALL-E (gpt-image-1)
+  // 2d. @Designy — DALL-E portrait (gpt-image-1). The icon (icon-192/512) is
+  // derived from this portrait by the generator — never a composite/placeholder.
   addToPortraitsGenerator(name);
-  console.log(`  🎨 @Designy: generating DALL-E portrait for ${capitalize(name)}...`);
+  console.log(`  🎨 @Designy: generating DALL-E portrait + icon for ${capitalize(name)}...`);
   const portraitOk = generatePortrait(name);
   console.log(portraitOk
-    ? `  🎨 Portrait generated → /agents/${name}/${name}.jpg`
+    ? `  🎨 Portrait + icon generated → /agents/${name}/${name}.jpg + icon-192/512.png`
     : `  ⚠️  Portrait generation failed — retry: node /home/deploy/scripts/generate-agent-portraits.mjs ${name}`
   );
   if (portraitOk) {

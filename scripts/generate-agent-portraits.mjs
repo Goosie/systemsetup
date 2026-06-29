@@ -21,6 +21,20 @@
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import https from 'https';
+import { execSync } from 'child_process';
+
+// Derive icon-192/512 as a centre-cropped square of the DALL-E portrait, so the
+// icon is ALWAYS the real DALL-E art — never the old composite/placeholder icon.
+function writeSquareIcons(dir, name) {
+  const py = [
+    'from PIL import Image',
+    `img = Image.open(${JSON.stringify(join(dir, `${name}.jpg`))}).convert("RGB")`,
+    'w, h = img.size; s = min(w, h); l = (w - s) // 2; t = (h - s) // 2',
+    'img = img.crop((l, t, l + s, t + s))',
+    `for px in (192, 512): img.resize((px, px), Image.LANCZOS).save(${JSON.stringify(join(dir, 'icon-'))} + str(px) + ".png")`,
+  ].join('\n');
+  execSync('python3', { input: py });
+}
 
 const AGENTS_DIR = '/home/deploy/agents';
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
@@ -249,7 +263,8 @@ for (const { name, prompt } of targets) {
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, `adult_${name}.jpg`), buf);
     writeFileSync(join(dir, `${name}.jpg`), buf);  // active portrait used by homepage
-    console.log(`✓  saved to agents/${name}/adult_${name}.jpg`);
+    try { writeSquareIcons(dir, name); } catch (e) { console.log(`  ⚠️ icon-derive: ${e.message}`); }
+    console.log(`✓  saved to agents/${name}/${name}.jpg (+ icon-192/512 from portrait)`);
   } catch (err) {
     console.log(`❌  ${err.message}`);
   }
