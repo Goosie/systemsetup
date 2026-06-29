@@ -127,11 +127,6 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a warm golden-yellow sports coach jacket with a whistle on a lanyard, holding a clipboard with encouragement notes and a sparkly pom-pom in the other wing. Warm, radiant smile with eyes that genuinely care — the goose who believes in you and shows up exactly when you need motivation.`,
   },
   {
-    name: 'testy2',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Testy2 — V-formation agent. Wearing a neat professional outfit that fits their role.`,
-  },
-  {
     name: 'gander',
     // TODO: replace outfit description with something role-specific
     prompt: `${BASE_STYLE}. Gander — V-formation agent. Wearing a neat professional outfit that fits their role.`,
@@ -155,11 +150,6 @@ const agents = [
   {
     name: 'toddy',
     prompt: `${BASE_STYLE}. Wearing a cosy olive-green cardigan with a small checklist badge pinned on, holding a tall steaming mug of tea in one wing and a neat paper to-do list in the other with several items already ticked off. Relaxed, organised, quietly satisfied expression — the goose who gets things done without making a fuss.`,
-  },
-  {
-    name: 'testgoose',
-    // TODO: replace outfit description with something role-specific
-    prompt: `${BASE_STYLE}. Testgoose — V-formation agent. Wearing a neat professional outfit that fits their role.`,
   },
   {
     name: 'welcome',
