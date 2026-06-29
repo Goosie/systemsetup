@@ -745,6 +745,15 @@ async function newGoose(name) {
   console.log(`\n✅ ${capitalize(name)} is now part of the V-Formation!`);
   console.log(`   NIP-05: ${name}@goosielabs.com`);
   console.log(`   npub:   ${npub}`);
+
+  // Roster drift-check — flag any derived file that didn't pick up the new goose
+  try {
+    console.log(`\n🔎 Roster drift-check:`);
+    execSync('node /home/deploy/systemsetup/scripts/check-roster-drift.mjs', { stdio: 'inherit' });
+  } catch {
+    console.log(`  ⚠️  Drift gevonden — los op (zie hierboven) of run sync.`);
+  }
+
   console.log(`\n📝 Next steps (manual):`);
   console.log(`   1. Edit ${agentDir}/${name}.md — replace description: + role`);
   console.log(`   2. Edit /home/deploy/.claude/agents/${name}.md — fill in quote + role + boundaries`);

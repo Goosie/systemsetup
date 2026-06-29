@@ -12,6 +12,19 @@
 import { checkConfig } from './skills/check.js';
 import { advies } from './skills/advies.js';
 import { overview } from './skills/overview.js';
+import { execSync } from 'child_process';
+
+// Roster drift-check — compares agents/*/nostr-key.json (source of truth) against
+// all derived files (agents.json, whitelist, nostr.json, icon/portrait lists,
+// gooseAgents.ts). Reports only; exits 1 on hard drift.
+function runDrift() {
+  console.log(`\n🔎 Roster drift-check:`);
+  try {
+    execSync('node /home/deploy/systemsetup/scripts/check-roster-drift.mjs', { stdio: 'inherit' });
+  } catch {
+    console.log('  ⚠️  Drift gevonden — zie hierboven.');
+  }
+}
 
 const command = process.argv[2] || 'overview';
 
@@ -29,6 +42,11 @@ console.log(`──────────────────────�
 switch (command) {
   case 'check':
     await checkConfig(PATHS);
+    runDrift();
+    break;
+
+  case 'drift':
+    runDrift();
     break;
 
   case 'advies':
@@ -41,7 +59,7 @@ switch (command) {
 
   default:
     console.log(`Onbekend commando: "${command}"`);
-    console.log(`Gebruik: check | advies | overview`);
+    console.log(`Gebruik: check | drift | advies | overview`);
     process.exit(1);
 }
 
