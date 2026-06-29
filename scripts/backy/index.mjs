@@ -25,6 +25,7 @@ const AGENTS_DIR = '/home/deploy/agents';
 const STARTUP_TS    = Math.floor(Date.now() / 1000);
 const PERRY_PUBKEY  = 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 const BLOCKY_PUBKEY = 'd4e2e205c8e1437b40b635a88ca85c44f5f4b18539e8c09551d9ce0f200ff71b';
+const KEEP_SNAPSHOTS = 7;  // prune: keep the newest N goosielab-* snapshots, delete older
 
 // Load all whitelisted pubkeys — everyone on the whitelist can send commands
 function loadAllowedSenders() {
@@ -50,6 +51,7 @@ const COMMANDS = {
   '/help':     { desc: 'Toon beschikbare commando\'s',              fn: handleHelp },
   '/snapshot': { desc: 'Maak een DigitalOcean server snapshot',     fn: handleSnapshot },
   '/status':   { desc: 'Bekijk recente DO snapshots',               fn: handleStatus },
+  '/prune':    { desc: `Ruim oude snapshots op (houd laatste ${KEEP_SNAPSHOTS})`, fn: handlePrune },
   '/ping':     { desc: 'Test of Backy bereikbaar is',               fn: handlePing },
 };
 
@@ -84,6 +86,8 @@ async function handleSnapshot({ reply }) {
   } catch (err) {
     console.error(`[Backy] handleSnapshot fout: ${err.message}`);
     reply(`✗ Snapshot kon niet starten: ${err.message}`);
+    // Loud failure: post publicly too, so a dead DO-token never rots silently again.
+    await publishNote(`⚠️ Backy: snapshot kon NIET starten — ${err.message.slice(0, 140)}. Check de DO-token / het dashboard. #vformation`);
     return;
   }
 
@@ -93,6 +97,14 @@ async function handleSnapshot({ reply }) {
       console.log(`[Backy] Snapshot voltooid: ${result.name}`);
       honk('backy', `✓ Snapshot klaar: ${result.name}\nVeilig om de droplet te upgraden. 🚀`, 'perry');
       await publishNote(`📦 Backy: snapshot '${result.name}' voltooid — server klaar voor upgrade. #vformation`);
+      // Prune: keep the newest N snapshots so the daily cadence doesn't pile up (cost).
+      try {
+        const p = await pruneSnapshots();
+        if (p.deleted) {
+          console.log(`[Backy] Prune: ${p.deleted} oude snapshots verwijderd, ${p.kept} bewaard`);
+          honk('backy', `🧹 ${p.deleted} oude snapshot(s) opgeruimd — ${p.kept} bewaard.`, 'perry');
+        }
+      } catch (e) { console.error(`[Backy] Prune fout: ${e.message}`); }
     } else if (status === 'timeout') {
       console.warn(`[Backy] Snapshot timeout na 45 min: ${result.name}`);
       honk('backy', `⚠ Snapshot ${result.name} — timeout na 45 min. Check het DO dashboard.`, 'perry');
@@ -130,6 +142,19 @@ async function handleStatus({ reply }) {
   }
 }
 
+async function handlePrune({ reply }) {
+  if (!DO_TOKEN || !DROPLET_ID) { reply('✗ DO_API_TOKEN ontbreekt'); return; }
+  try {
+    const p = await pruneSnapshots();
+    reply(p.deleted
+      ? `🧹 ${p.deleted} oude snapshot(s) verwijderd — ${p.kept} bewaard (van ${p.total}).`
+      : `Niets te prunen — ${p.total} snapshot(s), limiet is ${KEEP_SNAPSHOTS}.`);
+  } catch (err) {
+    reply(`✗ Prune mislukt: ${err.message}`);
+    await publishNote(`⚠️ Backy: snapshot-prune mislukt — ${err.message.slice(0, 140)}. #vformation`);
+  }
+}
+
 // ── DO API ────────────────────────────────────────────────────────────────────
 
 async function createSnapshot() {
@@ -142,6 +167,36 @@ async function createSnapshot() {
   const data = await resp.json();
   if (!resp.ok) throw new Error(JSON.stringify(data));
   return { name, actionId: data.action?.id, status: data.action?.status };
+}
+
+// List our goosielab-* droplet snapshots, newest first.
+async function listGoosieSnapshots() {
+  const resp = await fetch(`https://api.digitalocean.com/v2/droplets/${DROPLET_ID}/snapshots?per_page=100`, {
+    headers: { 'Authorization': `Bearer ${DO_TOKEN}` },
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(JSON.stringify(data));
+  return (data.snapshots ?? [])
+    .filter(s => (s.name || '').startsWith('goosielab'))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+// Keep the newest `keep` snapshots, delete the older ones. Returns {kept,deleted,total}.
+async function pruneSnapshots(keep = KEEP_SNAPSHOTS) {
+  const snaps = await listGoosieSnapshots();
+  const toDelete = snaps.slice(keep);
+  let deleted = 0;
+  for (const s of toDelete) {
+    try {
+      const resp = await fetch(`https://api.digitalocean.com/v2/snapshots/${s.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${DO_TOKEN}` },
+      });
+      if (resp.ok || resp.status === 204) { deleted++; console.log(`[Backy] Snapshot verwijderd: ${s.name}`); }
+      else console.error(`[Backy] Prune kon ${s.name} niet verwijderen: HTTP ${resp.status}`);
+    } catch (e) { console.error(`[Backy] Prune fout (${s.name}): ${e.message}`); }
+  }
+  return { kept: Math.min(snaps.length, keep), deleted, total: snaps.length };
 }
 
 // Poll DO action every 60s until completed/errored, then call onDone(status).
