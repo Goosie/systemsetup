@@ -598,10 +598,10 @@ Als ik er niet meer ben, zijn **Rens** en **Mart** bevoegd om Goosie Labs voort 
 1. **Verbinding maken met de server:** `ssh deploy` — je hebt mijn SSH-sleutel of wachtwoord nodig (staat in mijn wachtwoordmanager)
 2. **Overzicht krijgen:** `tmux ls` en `ls /var/www/goosielabs/apps/`
 3. **Alle beschikbare commando's zien:** typ `goosie` in de terminal — toont een overzicht van newapp, openapp, gans, tmux-sneltoetsen etc. (bronbestand: `~/.bashrc.d/goosie.sh`)
-4. **AI-assistent starten:** `claude` in de terminal — Assistenty kent alles
-5. **Vraag Assistenty** gewoon in het Nederlands wat je wilt weten
+4. **AI-assistent starten:** `claude` in de terminal — de assistent kent het hele project
+5. **Vraag de assistent** gewoon in het Nederlands wat je wilt weten
 
-Assistenty is geconfigureerd om dit project te begrijpen. Als je de server opent en `claude` typt, kun je gewoon vragen: *"Wat is de status van dit project?"* of *"Wat zijn de openstaande taken?"*
+De assistent is geconfigureerd om dit project te begrijpen. Als je de server opent en `claude` typt, kun je gewoon vragen: *"Wat is de status van dit project?"* of *"Wat zijn de openstaande taken?"*
 
 ---
 
