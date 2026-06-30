@@ -197,7 +197,7 @@ In LastPass vind je onder andere:
 
 Alle code staat op GitHub:
 - **Organisatie:** https://github.com/Goosie
-- **Credentials:** Opgeslagen in `~/.git-credentials` op de server (HTTPS tokens)
+- **Credentials:** GitHub-toegang loopt via de `gh` CLI (al ingelogd als "Goosie"). Controleer met `gh auth status`; `gh auth setup-git` koppelt git eraan. Het token staat in `~/.config/gh/` — niet meer in `~/.git-credentials`.
 
 Elke app heeft z'n eigen privé repo. Als je iets wilt openmaken of archiveren: ga naar GitHub, ga naar de repo, settings → "Archive this repository" of "Delete this repository".
 
