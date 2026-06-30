@@ -45,7 +45,7 @@ De server is gehuurd. Als je hem wilt afsluiten: opzeg het abonnement bij Digita
 
 | Dienst | Wat het is | Adres |
 |--------|-----------|-------|
-| **WordPress** | De hoofdwebsite + app-overzicht | goosielabs.com |
+| **Homepage (nsite)** | De hoofdwebsite + app-overzicht — gehost via nsite op Blossom (gedecentraliseerd, geen WordPress meer) | goosielabs.com |
 | **Nostr relay** | Mijn eigen berichtenserver (strfry) | wss://relay.goosielabs.com |
 | **Cashu mint** | Digitale contant-geld machine (Nutshell) | mint.goosielabs.com |
 | **LNbits** | Lightning wallet backend voor apps | lnbits.goosielabs.com |
@@ -455,7 +455,7 @@ Dit is mijn eigen Nostr-berichtenserver. Alle apps sturen berichten hier langs.
 ├── systemsetup/        ← Server setup scripts
 ├── templates/
 │   └── nostr-boilerplate/  ← Template voor nieuwe apps
-├── CLAUDE.md           ← Instructies voor de AI (Astrid)
+├── CLAUDE.md           ← Instructies voor de AI (Assistenty)
 ├── backup.sh           ← Backup script
 └── whenidie.md         ← Dit bestand
 
@@ -577,10 +577,10 @@ cat /home/deploy/whitelist.json
 1. **Verbinding maken met de server:** `ssh deploy` — je hebt mijn SSH-sleutel of wachtwoord nodig (staat in mijn wachtwoordmanager)
 2. **Overzicht krijgen:** `tmux ls` en `ls /var/www/goosielabs/apps/`
 3. **Alle beschikbare commando's zien:** typ `goosie` in de terminal — toont een overzicht van newapp, openapp, gans, tmux-sneltoetsen etc. (bronbestand: `~/.bashrc.d/goosie.sh`)
-4. **AI-assistent starten:** `claude` in de terminal — Astrid kent alles
-5. **Vraag Astrid** gewoon in het Nederlands wat je wilt weten
+4. **AI-assistent starten:** `claude` in de terminal — Assistenty kent alles
+5. **Vraag Assistenty** gewoon in het Nederlands wat je wilt weten
 
-Astrid is geconfigureerd om dit project te begrijpen. Als je de server opent en `claude` typt, kun je gewoon vragen: *"Wat is de status van dit project?"* of *"Wat zijn de openstaande taken?"*
+Assistenty is geconfigureerd om dit project te begrijpen. Als je de server opent en `claude` typt, kun je gewoon vragen: *"Wat is de status van dit project?"* of *"Wat zijn de openstaande taken?"*
 
 ---
 
@@ -751,7 +751,7 @@ Example (both lists should be identical):
 ```yaml
     pubkeys:
       - "NEW_PUBKEY_HEX"        # You (new owner)
-      - "008a049c363920..."      # Astrid (keep agent keys)
+      - "008a049c363920..."      # Assistenty (keep agent keys)
       - "0cd2e60d422b94..."      # Danky
       ... etc
 ```
@@ -838,7 +838,7 @@ The agent keypairs are stored in JSON files. If you want the AI team to have fre
 
 ```bash
 # For each agent, generate a new keypair and update the file
-# Example for Astrid:
+# Example for Assistenty:
 node --input-type=module << 'EOF'
 import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
 import { nip19 } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
@@ -853,7 +853,7 @@ const data = {
   nsecHex: Buffer.from(sk).toString('hex'),
 };
 writeFileSync('/home/deploy/agents/astrid/nostr-key.json', JSON.stringify(data, null, 2));
-console.log('Astrid new npub:', data.npub);
+console.log('Assistenty new npub:', data.npub);
 EOF
 ```
 
@@ -884,7 +884,7 @@ curl -s https://nsite.goosielabs.com | head -5
 
 ---
 
-#### 9. Update CLAUDE.md so Astrid knows the new owner
+#### 9. Update CLAUDE.md so Assistenty knows the new owner
 
 ```bash
 nano /home/deploy/.claude/CLAUDE.md
