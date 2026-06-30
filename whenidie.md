@@ -50,7 +50,6 @@ De server is gehuurd. Als je hem wilt afsluiten: opzeg het abonnement bij Digita
 | **Cashu mint** | Digitale contant-geld machine (Nutshell) | mint.goosielabs.com |
 | **LNbits** | Lightning wallet backend voor apps | lnbits.goosielabs.com |
 | **Apps** | Alle mini-applicaties | goosielabs.com/apps/\<naam\> |
-| **IDidHere** | App op eigen subdomein | goosielabs.com/apps/ididhere/ |
 
 ### Services herstarten (als iets kapot gaat)
 
