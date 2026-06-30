@@ -463,17 +463,19 @@ Dit is mijn eigen Nostr-berichtenserver. Alle apps sturen berichten hier langs.
 /var/www/goosielabs/
 ├── (oude WordPress-bestanden — niet meer de live homepage; die draait nu via nsite/Blossom)
 ├── apps/
-│   ├── catchzaps/      ← CatchZaps
+│   ├── iris/           ← Iris (Nostr client)
+│   ├── gameofthegoose/ ← GameOfTheGoose
 │   ├── zaphunt/        ← ZapHunt
-│   ├── ididhere/       ← IDidHere
+│   ├── proofofread/    ← ProofOfRead
 │   ├── zinin/          ← ZinIn
 │   ├── lastwill/       ← LastWill
 │   ├── dilemma/        ← Dilemma
 │   ├── feedback/       ← Feedback
-│   ├── weddendat/      ← Weddendat
-│   ├── nospass/        ← Nospass
-│   ├── sofia/          ← Sofia
-│   └── proofofmove/    ← ProofOfMove
+│   ├── bookwriter/     ← Bookwriter
+│   ├── honkference/    ← Honkference
+│   ├── skein/          ← Skein
+│   ├── proofofmove/    ← ProofOfMove
+│   └── …               ← (+ enkele experimentele mappen, zie de app-lijst hierboven)
 └── generate-icons.mjs  ← App-icoon generator
 ```
 
