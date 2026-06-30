@@ -416,7 +416,7 @@ Je hoeft dit niet allemaal te kennen, maar dit is wat er gebruikt wordt:
 | **NIP-07** | Login via browser-extensie (Alby, nos2x) | Privésleutel verlaat nooit je apparaat |
 | **Lightning** | Betalingen in Bitcoin | Direct, goedkoop, wereldwijd |
 | **Cashu** | Digitale cash tokens | Privé, niet traceerbaar |
-| **WordPress** | Hoofdwebsite | Simpel te beheren |
+| **nsite + Blossom** | Hoofdwebsite (gedecentraliseerd) | Bestanden gesigneerd met je Nostr-sleutel, opgeslagen op Blossom |
 | **Nginx** | Webserver | Stuurt verkeer naar de juiste app |
 | **Ubuntu 24.04** | Server OS | Stabiel, veel ondersteuning |
 
