@@ -459,7 +459,7 @@ Dit is mijn eigen Nostr-berichtenserver. Alle apps sturen berichten hier langs.
 └── whenidie.md         ← Dit bestand
 
 /var/www/goosielabs/
-├── (WordPress bestanden)
+├── (oude WordPress-bestanden — niet meer de live homepage; die draait nu via nsite/Blossom)
 ├── apps/
 │   ├── catchzaps/      ← CatchZaps
 │   ├── zaphunt/        ← ZapHunt
