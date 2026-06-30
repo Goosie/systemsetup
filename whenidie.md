@@ -258,6 +258,8 @@ De naam "V-formatie" komt van hoe ganzen vliegen: de voorste gans breekt de wind
 | **Transy** | Vertaler & lokalisatie — vertaalt de apps naar NL/DE/ES | Typ `@transy` in gesprek |
 | **Finny** | Chief Financial Goose — bewaakt kosten en inkomsten in sats | Typ `@finny` in gesprek |
 
+> Dit zijn de **belangrijkste** ganzen. De volledige V-formatie telt inmiddels **~33 ganzen** (o.a. Backy voor backups, Secury voor beveiliging, Coachy, Gander, Cssy, Splitty, Skeiny, Welcome…). Volledige lijst: `jq -r '.agents[].name' /home/deploy/agents/agents.json`.
+
 **Wat is Claude Code?**
 Dit is de AI-tool waarmee ik bouw. Gemaakt door Anthropic. Je start het met het commando `claude` in de terminal. Assistenty "leeft" in de configuratiebestanden en weet alles over het project.
 
