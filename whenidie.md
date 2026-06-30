@@ -94,9 +94,9 @@ De server (goosielabs.com) maakt verbinding met de Umbrel via **Tailscale** (een
 | Wat | Hoe | Gevolg als Umbrel uit staat |
 |-----|-----|-----------------------------|
 | **Blockchain scan** (perry.html) | Mempool API op poort 3006 | ⚠️ Niet erg — scan slaat over, rest van de pagina werkt gewoon |
-| **Lightning betalingen** (apps) | NWC via Alby Hub → LNbits | 🔴 Kritisch — alle Lightning betalingen in apps stoppen |
-| **Cashu mint** | Via LNbits → Alby Hub | 🔴 Kritisch — mint.goosielabs.com kan geen tokens aanmaken |
-| **LNbits** | Via NWC naar Alby Hub | 🔴 Kritisch — alle app-wallets in LNbits werken niet |
+| **Lightning betalingen** (apps) | LNbits → LND direct via Tailscale (LndRestWallet) | 🔴 Kritisch — alle Lightning betalingen in apps stoppen |
+| **Cashu mint** | Via LNbits (die direct met de LND node praat) | 🔴 Kritisch — mint.goosielabs.com kan geen tokens aanmaken |
+| **LNbits** | Direct met LND via Tailscale (LndRestWallet, geen NWC meer) | 🔴 Kritisch — alle app-wallets in LNbits werken niet |
 
 **Kort gezegd:**
 - Umbrel even uit voor een update (paar minuten): apps geven een betaalfout, maar herstellen vanzelf zodra Umbrel terug is.
