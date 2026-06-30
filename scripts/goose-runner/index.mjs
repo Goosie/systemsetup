@@ -54,6 +54,7 @@ const KEYS = {
   prompty: loadKey('prompty'),
   devy:       loadKey('devy'),
   'scb-backup': loadKey('devy'),
+  'whenidie-review': loadKey('assistenty'),
   toddy: loadKey('toddy'),
   welcome: loadKey('welcome'),
   linky: loadKey('linky'),
@@ -245,6 +246,7 @@ async function dispatch(pool, event) {
       case 'finny':        await handleScript(pool, 'finny', event, command); break;
       case 'finny-wallet': await handleScript(pool, 'finny', event, command); break;
       case 'scb-backup': await handleScript(pool, 'scb-backup', event, command); break;
+      case 'whenidie-review': await handleScript(pool, 'whenidie-review', event, command); break;
       case 'thinky': await handleScript(pool, 'thinky', event, command); break;
       case 'creaty': await handleScript(pool, 'creaty', event, command); break;
       case 'prompty': await handleScript(pool, 'prompty', event, command); break;

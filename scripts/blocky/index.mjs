@@ -44,6 +44,7 @@ const DEFAULT_SCHEDULE = {
   gander:  { interval_blocks: 1008, command: 'scout "nostr use cases people want"', description: '~1 week' },
   'onboarding-clawback': { interval_blocks: 144, command: 'run', description: '~1 day — reclaim expired ProofOfRead onboarding earmarks' },
   splitty: { interval_blocks: 6, command: 'sweep', description: '~1 hour — sweep rounding dust into the flock (no-op when empty)' },
+  'whenidie-review': { interval_blocks: 4320, command: 'remind', description: '~1 month — remind Perry to review the family handover doc (whenidie.md)' },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
