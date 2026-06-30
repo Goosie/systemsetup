@@ -58,7 +58,7 @@ sudo systemctl restart strfry       # Nostr relay
 sudo systemctl restart lnbits       # Lightning wallets
 sudo systemctl restart nutshell     # Cashu mint
 sudo nginx -s reload                # Webserver
-sudo systemctl restart catchzaps-api # CatchZaps backend
+sudo systemctl restart ganzenbord-server # GameOfTheGoose backend (poort 3021)
 ```
 
 ---
