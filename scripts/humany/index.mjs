@@ -672,6 +672,7 @@ async function newGoose(name) {
   try {
     execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
     console.log(`  ✅ Homepage tiles updated`);
+    try { execSync('/home/deploy/.local/bin/sync-configs --only apps', { stdio: 'pipe' }); console.log('  🔁 gooseAgents.ts regenerated in all apps'); } catch {}
   } catch (e) {
     console.log(`  ⚠️  Tiles update failed — run manually: bash /home/deploy/update-tiles.sh`);
   }
@@ -1004,6 +1005,7 @@ async function renameGoose(oldName, newName) {
   try {
     execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
     console.log(`  ✅ Homepage tiles updated`);
+    try { execSync('/home/deploy/.local/bin/sync-configs --only apps', { stdio: 'pipe' }); console.log('  🔁 gooseAgents.ts regenerated in all apps'); } catch {}
   } catch {
     console.log(`  ⚠️  Tiles update failed — run manually: bash /home/deploy/update-tiles.sh`);
   }
@@ -1188,6 +1190,7 @@ async function deleteGoose(name) {
   try {
     execSync('bash /home/deploy/update-tiles.sh', { stdio: 'pipe' });
     console.log(`  ✅ Homepage updated`);
+    try { execSync('/home/deploy/.local/bin/sync-configs --only apps', { stdio: 'pipe' }); console.log('  🔁 gooseAgents.ts regenerated in all apps'); } catch {}
   } catch {}
 
   // 12. Restart goose-runner + blocky
@@ -1226,10 +1229,15 @@ switch (cmd) {
   case 'status':
     status();
     break;
+  case 'flock':
+    updateFlockSectionInAll();
+    console.log('✅ Regenerated the "## The Flock" table in all .claude/agents/*.md (source: agents/<name>/<name>.md descriptions)');
+    break;
   default:
     console.log('Commands:');
     console.log('  newgoose <name>           Onboard a new goose into the V-Formation');
     console.log('  renamegoose <old> <new>   Rename a goose across all systems');
     console.log('  deletegoose <name>        Remove a goose from the V-Formation');
+    console.log('  flock                     Regenerate the flock table in all agent prompts');
     console.log('  status                    Formation health overview');
 }
