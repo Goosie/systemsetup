@@ -245,7 +245,7 @@ De naam "V-formatie" komt van hoe ganzen vliegen: de voorste gans breekt de wind
 |------|-------------|---------------|
 | **Assistenty** | Mijn persoonlijke lab-assistent. Kent alles, houdt bij waar ik was, maakt overzichten. | De standaard assistent in Claude Code |
 | **Blocky** | **De klok van de V-Formatie.** Luistert naar Bitcoin-blokken en triggert andere ganzen op het juiste moment. Geen cron, geen server-klok — Bitcoin is het ritme. | `goosie blocky schedule` voor overzicht |
-| **Healthy** | Server health monitor. Stuurt elke ~30 minuten een Nostr DM naar Perry met de status van de server (RAM, swap, disk, services). Rood = probleem. | `goosie healthy check` of wacht op DM |
+| **Healthy** | Server health monitor. Stuurt elke ~40 minuten een Nostr DM naar Perry met de status van de server (RAM, swap, disk, services). Rood = probleem. | `goosie healthy check` of wacht op DM |
 | **Jurry** | Juridisch adviseur. Controleert alle apps op juridische risico's (privacywet, gokwet, erfrecht etc.) | `goosie jurry overview` in terminal |
 | **Ay** | AI-configuratie specialist. Checkt of alle ganzen-configuraties kloppen | `goosie ay check` in terminal |
 | **Testy** | QA-tester. Test apps, maakt testdata aan | `goosie testy <appnaam> test` in terminal |
