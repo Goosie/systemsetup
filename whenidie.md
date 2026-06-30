@@ -486,9 +486,7 @@ Dit is mijn eigen Nostr-berichtenserver. Alle apps sturen berichten hier langs.
 Jurry heeft alle apps beoordeeld (laatste check: 21 mei 2026).
 
 **Hoog risico (juridisch consult aanbevolen voor launch):**
-- **Weddendat** — valt mogelijk onder de Wet op de Kansspelen
 - **LastWill** — raakt aan erfrecht; is géén juridisch geldig testament
-- **CatchZaps** — locatiedata + betalingen combinatie
 - **ZapHunt** — AI-aansprakelijkheid + deposito-structuur
 
 **Gemiddeld risico:**
