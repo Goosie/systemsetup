@@ -210,29 +210,34 @@ Elke app heeft z'n eigen privé repo. Als je iets wilt openmaken of archiveren: 
 
 | App | Wat het doet | Adres |
 |-----|-------------|-------|
+| **Iris** | Nostr-webclient (geforkt) met ingebouwde Cashu-wallet | goosielabs.com/apps/iris |
 | **Routstr** | Nostr-identiteitsinfrastructuur voor organisaties — mijn meest volwassen project | goosielabs.com |
 | **Goosie Mint** | Cashu ecash mint — digitale cash die je privé kunt uitgeven | mint.goosielabs.com |
 
-### IN BOUW — Hier was ik mee bezig
+### IN BOUW — Hier was/ben ik mee bezig
 
-| App | Wat het doet | Locatie op server | Repo |
-|-----|-------------|------------------|------|
-| **CatchZaps** | Drop sats (mini-Bitcoin) op de kaart. Anderen lopen erheen en vangen ze op | /apps/catchzaps | github.com/Goosie/catchzaps |
-| **ZapHunt** | Bouw een quiz-speurtocht met AI-hulp. Prize pool via Lightning. Spelers verdienen sats per goed antwoord | /apps/zaphunt | github.com/Goosie/zaphunt |
-| **IDidHere** | Bucket list van wat je wil doen en waar. Bewijs wat je gedaan hebt als badge in je Nostr-identiteit | goosielabs.com/apps/ididhere/ | github.com/Goosie/ididhere |
-| **ZinIn** | Als twee mensen op hetzelfde moment ergens zin in hebben zonder het van elkaar te weten, brengt deze app hen samen | /apps/zinin | github.com/Goosie/zinin-demo |
-| **LastWill** | Digitale nalatenschap op Nostr. Dead man's switch: druk regelmatig op "I'm still alive" anders worden je versleutelde acties uitgevoerd | /apps/lastwill | github.com/Goosie/lastwill |
-| **Dilemma** | Post een dilemma met een sat-bounty. Anderen geven advies, de gemeenschap stemt, jij kiest de winnaar — die de sats krijgt | /apps/dilemma | github.com/Goosie/dilemma |
-| **Feedback** | Eerlijke anonieme feedback op ideeën/producten. Anoniem via Nostr-cryptografie. Invuller krijgt direct sats betaald | /apps/feedback | github.com/Goosie/feedback |
-| **Weddendat** | P2P wedden met sats. Gooi een weddenschap op tafel, tegenpartij accepteert, arbiter beslist, Lightning betaalt automatisch | /apps/weddendat | github.com/Goosie/weddendat |
-| **Nospass** | Wachtwoord-achtig iets op Nostr (nog niet uitgewerkt) | /apps/nospass | github.com/Goosie/nospass |
+| App | Wat het doet | Locatie |
+|-----|-------------|---------|
+| **GameOfTheGoose** | Multiplayer Ganzenbord op Nostr; echte identiteiten, een levend bord (apps worden vakjes), sats via Lightning | /apps/gameofthegoose |
+| **ZapHunt** | Quiz-speurtocht met AI-hulp. Prize pool via Lightning, sats per goed antwoord | /apps/zaphunt |
+| **ProofOfRead** | Scan een ISBN, betaal sats, AI-quiz over het boek → Nostr-badge als bewijs | /apps/proofofread |
+| **ZinIn** | Als twee mensen op hetzelfde moment ergens zin in hebben zonder het van elkaar te weten, brengt deze app hen samen | /apps/zinin |
+| **LastWill** | Digitale nalatenschap op Nostr. Dead man's switch: druk regelmatig op "I'm still alive", anders worden je versleutelde acties uitgevoerd | /apps/lastwill |
+| **Dilemma** | Post een dilemma met een sat-bounty. Anderen adviseren, de gemeenschap stemt, jij kiest de winnaar — die de sats krijgt | /apps/dilemma |
+| **Feedback** | Eerlijke anonieme feedback via Nostr-cryptografie. Invuller krijgt direct sats betaald | /apps/feedback |
+| **Bookwriter** | Een thriller schrijven met AI: flarden inspiratie → boek, publiceer op Nostr | /apps/bookwriter |
+| **Honkference** | Nostr-conferentie-app; presenter krijgt split-view, deelnemers theaterweergave | /apps/honkference |
+| **Skein** | Privacy-vriendelijke beschikbaarheids-matcher (agenda's + boekbare bronnen). Alleen vrij/bezet gaat over de lijn, de agenda blijft privé | /apps/skein |
 
 ### EXPERIMENT — Verkend, niet af
 
 | App | Wat het doet | Locatie |
 |-----|-------------|---------|
-| **Sofia** | Nostr reisapp voor groepstrips — privé trip-coördinatie zonder Facebook | /apps/sofia |
 | **ProofOfMove** | Train bewegingen: je schaduw over een avatar corrigeert je in realtime. Correct = sats verdienen | /apps/proofofmove |
+
+> **Repo's** staan op github.com/Goosie. Er staan op de server nog meer onaffe/experimentele app-mappen (o.a. `georgie`, `honkbadge`, `satquiz`, `nospass`, `honkensus`) die ik niet allemaal heb uitgewerkt of gedocumenteerd — zie `/var/www/goosielabs/apps/`.
+>
+> **Afgevoerd sinds een vorige versie van dit document:** CatchZaps, IDidHere, Weddendat en Sofia bestaan niet meer op de server.
 
 ---
 
