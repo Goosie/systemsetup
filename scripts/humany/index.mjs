@@ -1069,6 +1069,13 @@ async function deleteGoose(name) {
 
   console.log(`\n🗑️  Humany: deleting "${name}"...\n`);
 
+  // Capture the LNbits wallet id before the agent dir (with lnbits-wallet.json) is removed.
+  let walletId = '';
+  try {
+    const wf = resolve(agentDir, 'lnbits-wallet.json');
+    if (existsSync(wf)) walletId = JSON.parse(readFileSync(wf, 'utf8')).wallet_id || '';
+  } catch {}
+
   // 1. agents/<name>/ directory
   rmSync(agentDir, { recursive: true, force: true });
   console.log(`  🗑️  agents/${name}/ removed`);
@@ -1102,6 +1109,14 @@ async function deleteGoose(name) {
     icons = icons.replace(new RegExp(`\\s*\\{\\s*name:\\s*'${name}'[^}]+\\},?[^\\n]*\\n`, 'g'), '\n');
     writeFileSync(iconsPath, icons);
     console.log(`  🎨 generate-agent-icons.mjs: ${name} removed`);
+  }
+
+  // 5b. generate-agent-portraits.mjs — the goose's prompt entry (multi-line block)
+  if (existsSync(GENERATE_PORTRAITS)) {
+    let pg = readFileSync(GENERATE_PORTRAITS, 'utf8');
+    pg = pg.replace(new RegExp(`\\n\\s*\\{\\s*name:\\s*'${name}',[\\s\\S]*?\\n\\s*\\},`, 'g'), '');
+    writeFileSync(GENERATE_PORTRAITS, pg);
+    console.log(`  🎨 generate-agent-portraits.mjs: ${name} removed`);
   }
 
   // 6. publish-homepage.mjs — AGENT_ORDER + AGENT_COLORS
@@ -1146,6 +1161,27 @@ async function deleteGoose(name) {
     console.log(`  📚 Agent prompts: flock section updated`);
   } catch {}
 
+  // 10b. webroot agent assets (portrait + icons)
+  const webDir = `${WEBROOT_AGENTS}/${name}`;
+  if (existsSync(webDir)) {
+    rmSync(webDir, { recursive: true, force: true });
+    console.log(`  🖼️  webroot agents/${name}/ removed`);
+  }
+
+  // 10c. Deactivate the LNbits wallet (LNbits has no true-delete API)
+  if (walletId) {
+    try {
+      execSync(`sqlite3 "/home/deploy/lnbits/data/database.sqlite3" "UPDATE wallets SET deleted=1, name='${capitalize(name)}-RETIRED' WHERE id='${walletId}';"`, { stdio: 'pipe' });
+      console.log(`  ⚡ LNbits wallet deactivated (${walletId.slice(0, 8)}…)`);
+    } catch (e) { console.log(`  ⚠️  Wallet deactivation failed: ${e.message}`); }
+  }
+
+  // 10d. Rebuild Splitty's split so the removed goose drops out + percentages recompute
+  if (name !== 'splitty') {
+    try { await updateSplitTargets(); console.log(`  💸 Splitty split rebuilt without ${name}`); }
+    catch (e) { console.log(`  ⚠️  Split rebuild failed: ${e.message}`); }
+  }
+
   // 11. Rebuild vformation + homepage
   console.log(`  🏗️  Rebuilding vformation...`);
   try { execSync('NODE_OPTIONS=--max-old-space-size=1024 npm run build', { cwd: VFORMATION_DIR, stdio: 'pipe' }); } catch {}
@@ -1158,9 +1194,7 @@ async function deleteGoose(name) {
   try { execSync('sudo systemctl restart goose-runner blocky', { stdio: 'pipe' }); console.log(`  🔄 Services restarted`); } catch {}
 
   console.log(`\n✅ ${capitalize(name)} has left the V-Formation.\n`);
-  console.log(`📝 Manual cleanup:`);
-  console.log(`   - LNbits wallet still exists (deactivate manually in LNbits if needed)`);
-  console.log(`   - nsite page still on relay (publishes from goose key — expires naturally)`);
+  console.log(`📝 Note: already-published Nostr events (kind:0, badge, ceremony, nsite page) stay on the relay — they fade/expire naturally and can't be unpublished.`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
