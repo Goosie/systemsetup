@@ -765,7 +765,7 @@ sudo systemctl restart blossom
 #### 5. Update NIP-05 verification
 
 NIP-05 is how Nostr clients verify identities like `perry@goosielabs.com`.
-The file is served from WordPress.
+The file is served as a static file by nginx from `/var/www/goosielabs/.well-known/`.
 
 ```bash
 nano /var/www/goosielabs/.well-known/nostr.json
