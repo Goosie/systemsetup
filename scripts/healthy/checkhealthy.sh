@@ -58,17 +58,23 @@ else
   ok "RAM: ${FREE_MB}MB vrij van ${TOTAL_MB}MB"
 fi
 
-# Swap
+# Swap — high swap only hurts under real memory pressure. "Cold" swap (idle pages
+# parked by the kernel, no thrashing) is normal, so FAIL only when swap is high
+# AND free RAM is nearly gone; otherwise it's just an informational warning.
 SWAP_USED=$(free -m | awk '/^Swap:/{print $3}')
 SWAP_TOTAL=$(free -m | awk '/^Swap:/{print $2}')
+MEM_AVAIL=$(free -m | awk '/^Mem:/{print $7}')
 if [ "$SWAP_TOTAL" -eq 0 ]; then
   warn "Geen swap actief — risico bij OOM"
   ((WARNINGS++))
-elif [ "$SWAP_USED" -gt $((SWAP_TOTAL * 80 / 100)) ]; then
-  fail "Swap bijna vol: ${SWAP_USED}MB van ${SWAP_TOTAL}MB"
+elif [ "$SWAP_USED" -gt $((SWAP_TOTAL * 80 / 100)) ] && [ "$MEM_AVAIL" -lt 400 ]; then
+  fail "Swap vol + RAM krap: ${SWAP_USED}/${SWAP_TOTAL}MB swap, nog ${MEM_AVAIL}MB RAM vrij"
   ((ISSUES++))
+elif [ "$SWAP_USED" -gt $((SWAP_TOTAL * 80 / 100)) ]; then
+  warn "Swap hoog: ${SWAP_USED}/${SWAP_TOTAL}MB — maar ${MEM_AVAIL}MB RAM vrij (koud, geen thrashing)"
+  ((WARNINGS++))
 else
-  ok "Swap: ${SWAP_USED}MB van ${SWAP_TOTAL}MB in gebruik"
+  ok "Swap: ${SWAP_USED}/${SWAP_TOTAL}MB (${MEM_AVAIL}MB RAM vrij)"
 fi
 
 # Disk
