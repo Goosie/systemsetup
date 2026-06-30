@@ -254,7 +254,7 @@ De naam "V-formatie" komt van hoe ganzen vliegen: de voorste gans breekt de wind
 | **Finny** | Chief Financial Goose — bewaakt kosten en inkomsten in sats | Typ `@finny` in gesprek |
 
 **Wat is Claude Code?**
-Dit is de AI-tool waarmee ik bouw. Gemaakt door Anthropic. Je start het met het commando `claude` in de terminal. Astrid "leeft" in de configuratiebestanden en weet alles over het project.
+Dit is de AI-tool waarmee ik bouw. Gemaakt door Anthropic. Je start het met het commando `claude` in de terminal. Assistenty "leeft" in de configuratiebestanden en weet alles over het project.
 
 ---
 
