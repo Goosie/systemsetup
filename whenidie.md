@@ -575,6 +575,24 @@ cat /home/deploy/whitelist.json
 
 ---
 
+## Wie mag dit overnemen — Rens & Mart (noodherstel)
+
+Als ik er niet meer ben, zijn **Rens** en **Mart** bevoegd om Goosie Labs voort te zetten, over te dragen of netjes af te sluiten. Zij beslissen samen.
+
+**Eerste keuze — wat wil je met het project?**
+- **A. Voortzetten** → volg "Als je het wilt voortzetten" hieronder.
+- **B. Afsluiten** → volg "Als je het wilt afsluiten" hieronder (haal eerst de sats van de Lightning node).
+- **C. Overdragen** → draag de toegang over aan wie verdergaat, daarna zoals A of B.
+
+**Wat je nodig hebt voor toegang** (staat verspreid in dit document):
+- **Wachtwoordmanager (LastPass)** — server, DigitalOcean, domein, Alby Hub/Umbrel. Zie "Wachtwoordmanager".
+- **Mijn telefoon (2FA)** — nodig voor inlog op Umbrel en DigitalOcean. Zonder de telefoon kom je er niet in.
+- **De seed phrase (24 woorden)** — voor de Bitcoin/Lightning node. Zie "De seed phrase — KRITIEK".
+
+> ⚠️ **Perry, nog zelf in te vullen (alleen jij weet dit):** wie van Rens/Mart heeft of krijgt de **LastPass-master**, de **telefoon (2FA)** en weet de **locatie van de seed phrase**? Zonder die drie kan niemand erbij. Leg dit fysiek vast (bijv. bij een notaris of op een afgesproken plek) en noteer het hier — dit is de échte sleutel tot herstel.
+
+---
+
 ## Als je het wilt voortzetten
 
 1. **Verbinding maken met de server:** `ssh deploy` — je hebt mijn SSH-sleutel of wachtwoord nodig (staat in mijn wachtwoordmanager)
@@ -672,8 +690,8 @@ SSH to the server, then run:
 
 ```bash
 node --input-type=module << 'EOF'
-import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
-import { nip19 } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
+import { nip19 } from '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
 
 const sk = generateSecretKey();
 const pk = getPublicKey(sk);
@@ -843,8 +861,8 @@ The agent keypairs are stored in JSON files. If you want the AI team to have fre
 # For each agent, generate a new keypair and update the file
 # Example for Assistenty:
 node --input-type=module << 'EOF'
-import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
-import { nip19 } from '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+import { generateSecretKey, getPublicKey } from '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
+import { nip19 } from '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
 import { writeFileSync } from 'fs';
 
 const sk = generateSecretKey();
