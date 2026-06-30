@@ -26,19 +26,22 @@ check_service() {
 # ── Systeem ────────────────────────────────────────────────────────────────────
 section "Systeem"
 
-# Load average
-LOAD=$(cat /proc/loadavg | awk '{print $1}')
+# Load average — use the 15-minute figure (field 3) so transient build spikes
+# don't trip the alarm; threshold is per-core (load ÷ cores):
+#   verhoogd at load/core ≥ 1.0   ·   hoog at load/core ≥ 2.0
+LOAD=$(cat /proc/loadavg | awk '{print $3}')
 CORES=$(nproc)
 LOAD_INT=$(echo "$LOAD * 100" | bc | cut -d. -f1)
-THRESHOLD=$((CORES * 100))
-if [ "$LOAD_INT" -gt "$THRESHOLD" ]; then
-  fail "Load hoog: $LOAD (cores: $CORES)"
+WARN_AT=$((CORES * 100))   # load/core ≥ 1.0
+FAIL_AT=$((CORES * 200))   # load/core ≥ 2.0
+if [ "$LOAD_INT" -gt "$FAIL_AT" ]; then
+  fail "Load hoog (15m): $LOAD over $CORES cores"
   ((ISSUES++))
-elif [ "$LOAD_INT" -gt "$((THRESHOLD / 2))" ]; then
-  warn "Load verhoogd: $LOAD (cores: $CORES)"
+elif [ "$LOAD_INT" -gt "$WARN_AT" ]; then
+  warn "Load verhoogd (15m): $LOAD over $CORES cores"
   ((WARNINGS++))
 else
-  ok "Load: $LOAD (cores: $CORES)"
+  ok "Load: $LOAD (15m, $CORES cores)"
 fi
 
 # RAM
