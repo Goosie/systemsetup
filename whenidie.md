@@ -250,7 +250,7 @@ De naam "V-formatie" komt van hoe ganzen vliegen: de voorste gans breekt de wind
 | **Ay** | AI-configuratie specialist. Checkt of alle ganzen-configuraties kloppen | `goosie ay check` in terminal |
 | **Testy** | QA-tester. Test apps, maakt testdata aan | `goosie testy <appnaam> test` in terminal |
 | **Devy** | DevOps rol — git, backups, server-onderhoud | Typ `@devy` in gesprek met Assistenty |
-| **Transy** | Chief Reality Officer — stelt de kritische vragen | Typ `@transy` in gesprek |
+| **Transy** | Vertaler & lokalisatie — vertaalt de apps naar NL/DE/ES | Typ `@transy` in gesprek |
 | **Finny** | Chief Financial Goose — bewaakt kosten en inkomsten in sats | Typ `@finny` in gesprek |
 
 **Wat is Claude Code?**
