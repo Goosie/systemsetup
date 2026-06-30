@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
- * Gitty — GitHub goose for the Goosie Labs V-Formation
+ * Gitty — git goosie for the Goosie Labs V-Formation
  *
- * Manages GitHub repos under the Goosie organisation.
- * Uses the `gh` CLI (already authenticated as Goosie).
+ * Manages both remotes:
+ *   • GitHub (Goosie org) via the `gh` CLI — the commands below
+ *   • the self-hosted Gitea mirror (Tailscale 100.111.14.11) via `mirror.mjs`
  *
  * Commands:
  *   create-repo <name>   Create a private GitHub repo under Goosie/<name>
  *   push <name>          Set remote + push app to GitHub
  *   status               Show GitHub status for all apps
  *   sync-all             Create + push any app that is missing on GitHub
+ *   mirror <subcmd>      Run a Gitea-mirror command (create-repo|push|status|sync-all)
  */
 
 import { execSync, execFileSync } from 'child_process';
@@ -150,7 +152,7 @@ async function syncAll() {
 
 const [cmd, ...args] = process.argv.slice(2);
 
-console.log('🐙 Gitty — GitHub Goose');
+console.log('🐙 Gitty — Git Goosie (GitHub + Gitea mirror)');
 console.log('────────────────────────');
 
 switch (cmd) {
@@ -172,10 +174,18 @@ switch (cmd) {
   case 'sync-all':
     await syncAll();
     break;
+  case 'mirror': {
+    // Gitea self-hosted mirror (Tailscale 100.111.14.11) — delegates to mirror.mjs
+    try {
+      execSync(`node /home/deploy/scripts/gitty/mirror.mjs ${args.join(' ')}`, { stdio: 'inherit' });
+    } catch { process.exit(1); }
+    break;
+  }
   default:
     console.log('Commands:');
     console.log('  create-repo <name>   Create a private GitHub repo under Goosie/<name>');
     console.log('  push <name>          Set remote + push app to GitHub');
     console.log('  status               Show GitHub status for all apps');
     console.log('  sync-all             Create + push any app missing on GitHub');
+    console.log('  mirror <subcmd>      Gitea mirror: create-repo | push | status | sync-all');
 }

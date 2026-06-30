@@ -39,7 +39,6 @@ const KEYS = {
   ay: loadKey('ay'),
   humany: loadKey('humany'),
   gitty: loadKey('gitty'),
-  gitea: loadKey('gitea'),
   directory: loadKey('directory'),
   healthy: loadKey('healthy'),
   coachy: loadKey('coachy'),
@@ -231,7 +230,6 @@ async function dispatch(pool, event) {
       case 'ay': await handleScript(pool, 'ay', event, command); break;
       case 'humany': await handleScript(pool, 'humany', event, command); break;
       case 'gitty': await handleScript(pool, 'gitty', event, command); break;
-      case 'gitea': await handleScript(pool, 'gitea', event, command); break;
       case 'directory': await handleScript(pool, 'directory', event, command); break;
       case 'healthy': await handleScript(pool, 'healthy', event, command); break;
       case 'coachy': await handleScript(pool, 'coachy', event, command); break;

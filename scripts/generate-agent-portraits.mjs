@@ -113,10 +113,6 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a sturdy utility vest with multiple pockets stuffed with hard drives and USB sticks, holding a silver portable hard drive in one wing and pressing a large "BACKUP" button with the other. Dependable, prepared, the goose who makes sure nothing is ever lost.`,
   },
   {
-    name: 'gitea',
-    prompt: `${BASE_STYLE}. Wearing a dark olive server-admin hoodie with a small tea-cup logo on the chest, sitting at a miniature rack server with glowing LED lights, one wing resting on a mechanical keyboard. Calm, focused, the reliable keeper of all the code.`,
-  },
-  {
     name: 'gitty',
     prompt: `${BASE_STYLE}. Wearing a casual dark denim jacket covered in colourful git-branch sticker patches, holding a tablet showing a branching git graph in bright colours. Sharp, fast, always knows where every branch leads.`,
   },
