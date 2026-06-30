@@ -109,10 +109,6 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a sharp navy-blue tailored suit with a crisp white shirt and a subtle compass-rose tie pin, holding a leather portfolio under one wing and a golden compass in the other. Distinguished, approachable, the visionary director who sees the big horizon — a goose you would call for a serious conversation.`,
   },
   {
-    name: 'supporty',
-    prompt: `${BASE_STYLE}. Wearing a light blue polo shirt with a small headset on one ear and a friendly open-winged pose as if welcoming someone. Holds a clipboard with a checklist. Warm, approachable smile — the goose who always has time for your question.`,
-  },
-  {
     name: 'backy',
     prompt: `${BASE_STYLE}. Wearing a sturdy utility vest with multiple pockets stuffed with hard drives and USB sticks, holding a silver portable hard drive in one wing and pressing a large "BACKUP" button with the other. Dependable, prepared, the goose who makes sure nothing is ever lost.`,
   },
@@ -127,10 +123,6 @@ const agents = [
   {
     name: 'humany',
     prompt: `${BASE_STYLE}. Wearing a smart coral-pink blazer with a "WELCOME" name badge pinned on, holding a golden onboarding folder in one wing and extending the other wing in a warm handshake greeting. Warm, professional, the goose every new recruit meets first.`,
-  },
-  {
-    name: 'weathery',
-    prompt: `${BASE_STYLE}. Wearing a sky-blue weatherproof jacket with a small sun and cloud embroidered on the chest, holding a barometer in one wing and a wind vane in the other. Alert, observant expression — always scanning the horizon, always one step ahead of what's coming.`,
   },
   {
     name: 'healthy',
@@ -168,10 +160,6 @@ const agents = [
   {
     name: 'welcome',
     prompt: `${BASE_STYLE}. Wearing a cheerful orange welcome vest with a glowing golden name tag that reads "Welcome". Holding a small gift envelope with a lightning bolt symbol on it. Warm, friendly smile — the goose you'd want to meet first at any door.`,
-  },
-  {
-    name: 'linky',
-    prompt: `${BASE_STYLE}. Linky — LinkedIn communication goose. Wearing a sharp navy blue business suit with a striped tie, holding a shiny smartphone showing a social media feed. Confident, polished, ready to network.`,
   },
   {
     name: 'skeiny',

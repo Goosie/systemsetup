@@ -41,8 +41,6 @@ const KEYS = {
   gitty: loadKey('gitty'),
   gitea: loadKey('gitea'),
   directory: loadKey('directory'),
-  supporty: loadKey('supporty'),
-  weathery: loadKey('weathery'),
   healthy: loadKey('healthy'),
   coachy: loadKey('coachy'),
   gander: loadKey('gander'),
@@ -57,7 +55,6 @@ const KEYS = {
   'whenidie-review': loadKey('assistenty'),
   toddy: loadKey('toddy'),
   welcome: loadKey('welcome'),
-  linky: loadKey('linky'),
   skeiny: loadKey('skeiny'),
   'onboarding-clawback': loadKey('welcome'), // app maintenance — signs as Welcome (the onboarding goose)
   splitty: loadKey('splitty'),
@@ -236,8 +233,6 @@ async function dispatch(pool, event) {
       case 'gitty': await handleScript(pool, 'gitty', event, command); break;
       case 'gitea': await handleScript(pool, 'gitea', event, command); break;
       case 'directory': await handleScript(pool, 'directory', event, command); break;
-      case 'supporty': await handleScript(pool, 'supporty', event, command); break;
-      case 'weathery': await handleScript(pool, 'weathery', event, command); break;
       case 'healthy': await handleScript(pool, 'healthy', event, command); break;
       case 'coachy': await handleScript(pool, 'coachy', event, command); break;
       case 'gander': await handleScript(pool, 'gander', event, command); break;
@@ -253,7 +248,6 @@ async function dispatch(pool, event) {
       case 'devy':    await handleScript(pool, 'devy',    event, command); break;
       case 'toddy': await handleScript(pool, 'toddy', event, command); break;
       case 'welcome': await handleScript(pool, 'welcome', event, command); break;
-      case 'linky': await handleScript(pool, 'linky', event, command); break;
       case 'skeiny': await handleScript(pool, 'skeiny', event, command); break;
       case 'onboarding-clawback': await handleScript(pool, 'onboarding-clawback', event, command); break;
       case 'splitty': await handleScript(pool, 'splitty', event, command); break;
