@@ -81,10 +81,6 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a dark green security guard uniform with a badge and epaulettes, holding a shield with authority. Strong, experienced, trustworthy pose.`,
   },
   {
-    name: 'checky',
-    prompt: `${BASE_STYLE}. Wearing sharp reading glasses, holding a magnifying glass in one hand and a clipboard with a checklist in the other. Sharp, analytical, no-nonsense expression.`,
-  },
-  {
     name: 'commy',
     prompt: `${BASE_STYLE}. Holding a rose-pink professional microphone, standing tall with an open confident beak as if addressing a crowd. Charismatic, commanding presence.`,
   },
