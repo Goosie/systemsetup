@@ -494,7 +494,9 @@ Jurry heeft alle apps beoordeeld (laatste check: 21 mei 2026).
 - **ZinIn** — zorgplicht bij fysieke ontmoetingen, 18+ check
 - **ProofOfMove** — camerabeelden client-side houden, blessure-disclaimer
 
-**Laag risico:** IDidHere, Feedback, Sofia
+**Laag risico:** Feedback
+
+> Let op: Weddendat, CatchZaps, IDidHere en Sofia uit deze beoordeling bestaan niet meer. Nieuwere apps (o.a. ProofOfRead, GameOfTheGoose, Skein, Bookwriter, Honkference) zijn nog **niet** door Jurry beoordeeld.
 
 **Openstaand voor alle apps:**
 - Privacyverklaring ontbreekt op goosielabs.com
