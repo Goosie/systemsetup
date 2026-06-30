@@ -142,10 +142,6 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a vibrant kaleidoscopic artist's smock splattered with bright rainbow paint colours, holding a glowing paintbrush in one wing and a magical lightbulb that looks like an idea in the other. Playful, curious expression with a mischievous sparkle in the eye — the creative goose who sees connections everywhere and says "yes, and..." to every idea.`,
   },
   {
-    name: 'prompty',
-    prompt: `${BASE_STYLE}. Wearing a crisp white shirt with rolled-up sleeves and a craftsman's apron covered in precisely arranged words and symbols, holding a glowing quill pen in one wing and a polished magnifying glass in the other. Expression: focused and precise, the artisan who chooses every word with intention.`,
-  },
-  {
     name: 'toddy',
     prompt: `${BASE_STYLE}. Wearing a cosy olive-green cardigan with a small checklist badge pinned on, holding a tall steaming mug of tea in one wing and a neat paper to-do list in the other with several items already ticked off. Relaxed, organised, quietly satisfied expression — the goose who gets things done without making a fuss.`,
   },
