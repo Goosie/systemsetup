@@ -870,10 +870,13 @@ async function renameGoose(oldName, newName) {
 
   // ── Step 7: Update gooseConfig.ts ──────────────────────────────────────────
   // Mirror of newGoose step 5 (gooseConfig.ts)
-  let config = readFileSync(GOOSE_CONFIG, 'utf8');
-  config = config
-    .replace(new RegExp(`name: '${oldDisplay}'`, 'g'), `name: '${newDisplay}'`);
-  writeFileSync(GOOSE_CONFIG, config);
+  if (existsSync(GOOSE_CONFIG)) {
+    let config = readFileSync(GOOSE_CONFIG, 'utf8');
+    config = config.replace(new RegExp(`name: '${oldDisplay}'`, 'g'), `name: '${newDisplay}'`);
+    writeFileSync(GOOSE_CONFIG, config);
+  } else {
+    console.log(`  ⏭  gooseConfig.ts not present (vformation app gone) — skipping`);
+  }
   console.log(`  ✅ gooseConfig.ts updated`);
 
   // ── Step 8: Update generate-agent-icons.mjs ────────────────────────────────
@@ -1027,7 +1030,7 @@ async function renameGoose(oldName, newName) {
 
 function status() {
   const wl   = JSON.parse(readFileSync(WHITELIST_PATH, 'utf8'));
-  const cfg  = readFileSync(GOOSE_CONFIG, 'utf8');
+  const cfg  = existsSync(GOOSE_CONFIG) ? readFileSync(GOOSE_CONFIG, 'utf8') : '';
 
   console.log('\n🤝 Humany — Formation Status\n');
   console.log('Registered geese (whitelist):');

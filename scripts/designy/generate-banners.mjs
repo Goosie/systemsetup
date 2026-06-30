@@ -67,7 +67,7 @@ const PROMPTS = {
 
   nosty:      `${BASE} Cryptographic keys rotating as constellations in deep space, NIP numbers floating like stars, a central Nostr logo pulsing purple. Identity and cosmos. Deep purple.`,
 
-  docy:       `${BASE} An illuminated pathway leading through stages of a journey — a door, steps, guides, a welcome mat — all glowing gently. Slate blue-grey, welcoming, professional.`,
+  admitty:       `${BASE} An illuminated pathway leading through stages of a journey — a door, steps, guides, a welcome mat — all glowing gently. Slate blue-grey, welcoming, professional.`,
 
   transy:     `${BASE} A brilliant red diamond gemstone cutting through layers of illusion and fog, hard truths emerging. Sharp edges, no softness. Deep crimson and steel grey.`,
 

@@ -266,10 +266,10 @@ const GOOSE_ROSTER = {
       check: { cmd: 'node /home/deploy/scripts/coachy/index.mjs', timeout: 30_000, desc: 'Send an encouraging message to the flock' },
     },
   },
-  docy: {
+  admitty: {
     emoji: '🎫', label: 'Onboarding manager',
     commands: {
-      status: { cmd: 'node /home/deploy/scripts/docy/index.mjs status', timeout: 30_000, desc: 'Onboarding status and invite codes overview' },
+      status: { cmd: 'node /home/deploy/scripts/admitty/index.mjs status', timeout: 30_000, desc: 'Onboarding status and invite codes overview' },
     },
   },
 };
@@ -553,7 +553,7 @@ const GEESE_CONFIG = {
   },
 };
 
-const ENABLED_GEESE = ['assistenty', 'healthy', 'docy', 'welcome'];
+const ENABLED_GEESE = ['assistenty', 'healthy', 'admitty', 'welcome'];
 
 // ── Claude API — tool loop with parallel tool execution ───────────────────────
 
@@ -711,7 +711,7 @@ async function getInboxRelays(pubkey) {
 async function sendReply(gooseSK, toPubkey, message) {
   const inboxRelays = await getInboxRelays(toPubkey);
   const targetRelays = [...new Set([...inboxRelays, RELAY])];
-  console.log(`[nostr-listener] docy: publishing DM to relays: ${targetRelays.join(', ')}`);
+  console.log(`[nostr-listener] admitty: publishing DM to relays: ${targetRelays.join(', ')}`);
   const wrapped = buildGiftWrap(gooseSK, toPubkey, message);
 
   // Publish to each relay individually so one auth-required relay can't crash everything
@@ -965,7 +965,7 @@ Thanks for posting about us. Here's your welcome voucher — ${WELCOME_SATS} sat
 
 **Step 3 — Collect your ${WELCOME_SATS} sats + Nostr badge** 🏅
 
-The book is about Bitcoin, Lightning and Nostr — written by Docy, our onboarding goose. It's short, it's honest, and the questions can't be answered without actually reading it.
+The book is about Bitcoin, Lightning and Nostr — written by Admitty, our onboarding goose. It's short, it's honest, and the questions can't be answered without actually reading it.
 
 **Know someone who's never touched Bitcoin?**
 Send them this link — no Nostr, no app, no sign-up. They'll read the book, earn their first 21 sats, and get a Nostr account right in their browser:
@@ -1023,7 +1023,7 @@ function connect() {
       ]));
       console.log(`[nostr-listener] watching mentions (#todo #agendaitem @assistenty)`);
     }
-    // Docy welcome token — kind:1 with #goosielabs on our relay
+    // Admitty welcome token — kind:1 with #goosielabs on our relay
     ws.send(JSON.stringify([
       'REQ', 'welcome-sub',
       { kinds: [1], '#t': ['goosielabs'], since: Math.floor(Date.now() / 1000) },
@@ -1114,7 +1114,7 @@ function connect() {
   ws.onerror = (e) => console.error(`[nostr-listener] ws error: ${e.message}`);
 }
 
-// ── Docy public relay watcher ─────────────────────────────────────────────────
+// ── Admitty public relay watcher ─────────────────────────────────────────────────
 // Listens on major public relays for #goosielabs posts from strangers
 
 const PUBLIC_RELAYS = PUBLIC_LISTEN_RELAYS;

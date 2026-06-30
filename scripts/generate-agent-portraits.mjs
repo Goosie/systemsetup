@@ -97,7 +97,7 @@ const agents = [
     prompt: `${BASE_STYLE}. Wearing a sharp orange blazer with a subtle Bitcoin ₿ pin on the lapel, holding a gold coin. Confident, successful, seasoned financier.`,
   },
   {
-    name: 'docy',
+    name: 'admitty',
     prompt: `${BASE_STYLE}. Wearing a crisp dark grey business suit with a tie, holding a golden ticket in one hand and a pen in the other. Authoritative, composed, professional gatekeeper.`,
   },
   {
