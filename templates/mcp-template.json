@@ -9,17 +9,6 @@
       "type": "stdio",
       "command": "/home/deploy/nostr-mcp-wrapper.sh",
       "args": []
-    },
-    "goosielabs": {
-      "command": "ssh",
-      "args": [
-        "goosielabs",
-        "wp mcp-adapter serve --user=goosieadmin --server=mcp-adapter-default-server --path=/var/www/goosielabs --allow-root"
-      ],
-      "env": {
-        "WP_USERNAME": "goosieadmin",
-        "WP_APP_PASSWORD": "9kXEsmU6lnXCBe1tEDCjwudo"
-      }
     }
   }
 }
