@@ -27,7 +27,7 @@ import { generateSecretKey, getPublicKey, finalizeEvent, SimplePool } from 'nost
 const PORT        = parseInt(process.env.ADMISSION_PORT ?? '3004', 10);
 const RELAY_URL   = process.env.RELAY_URL       ?? 'wss://goosielabs.com/relay';
 const WHITELIST   = process.env.WHITELIST_PATH  ?? '/home/deploy/whitelist.json';
-const PERRY_PUBKEY = process.env.PERRY_PUBKEY   ?? 'a80398e86c03ffadc7030fe135ee7614b6fabb204fc0f6641838fb4b8abf0b0c';
+const PERRY_PUBKEY = process.env.PERRY_PUBKEY   ?? 'a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c';
 
 // Alle bekende Goosie Labs apps — verzoeken met deze tag worden auto-approved
 const KNOWN_APPS = new Set([

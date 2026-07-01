@@ -12,7 +12,7 @@ RestartSec=5
 Environment=ADMISSION_PORT=3004
 Environment=RELAY_URL=wss://goosielabs.com/relay
 Environment=WHITELIST_PATH=/home/deploy/whitelist.json
-Environment=PERRY_PUBKEY=a80398e86c03ffadc7030fe135ee7614b6fabb204fc0f6641838fb4b8abf0b0c
+Environment=PERRY_PUBKEY=a8364bf8e5b828bd722a6dc71882ff4ee8d379e64fbf4584f0c6f1b393f8058c
 # Zet een geheim voor handmatige admin-endpoints:
 # Environment=ADMIN_SECRET=kies-een-sterk-geheim
 
