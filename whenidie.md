@@ -6,7 +6,7 @@
 >
 > Geschreven door: Perry Smit (Goosie)
 > Laatste update: 2026-05-26
-> Laatst herzien (feiten): 2026-06-30
+> Laatst herzien (feiten): 2026-07-01
 
 ---
 
