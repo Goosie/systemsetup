@@ -120,8 +120,12 @@ function push(name) {
     console.log(`  🔗 Gitea remote set`);
   }
 
-  run('git push gitea main --quiet', { cwd: appDir });
-  console.log(`  ✅ Pushed: http://${GITEA_HOST}:${GITEA_PORT}/${GITEA_USER}/${name}`);
+  // Detect the repo's actual current branch (master, main, …) and push that
+  // to the same-named branch on Gitea — hardcoding "main" breaks any repo
+  // whose default branch differs (e.g. iris → master).
+  const branch = run('git symbolic-ref --short HEAD', { cwd: appDir });
+  run(`git push gitea ${branch} --quiet`, { cwd: appDir });
+  console.log(`  ✅ Pushed ${branch}: http://${GITEA_HOST}:${GITEA_PORT}/${GITEA_USER}/${name}`);
 }
 
 async function status() {
