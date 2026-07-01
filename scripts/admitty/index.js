@@ -53,11 +53,21 @@ console.log(`🛂  Admission DVM pubkey: ${DVM_PUBKEY}`);
 
 // ─── Whitelist beheer ─────────────────────────────────────────────────────────
 
-function loadWhitelist() {
+// whitelist.json is a { name: pubkeyHex } map (sync-configs generated), NOT a
+// flat array. Read the pubkey VALUES for membership checks; preserve the object
+// shape on write so strfry / sync-configs keep working. (Legacy array format is
+// still tolerated defensively.)
+function loadWhitelistRaw() {
   try {
-    if (!existsSync(WHITELIST)) return [];
+    if (!existsSync(WHITELIST)) return {};
     return JSON.parse(readFileSync(WHITELIST, 'utf8'));
-  } catch { return []; }
+  } catch { return {}; }
+}
+
+function loadWhitelist() {
+  const data = loadWhitelistRaw();
+  const values = Array.isArray(data) ? data : Object.values(data);
+  return values.filter(v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v));
 }
 
 function isAdmitted(pubkey) {
@@ -65,10 +75,14 @@ function isAdmitted(pubkey) {
 }
 
 function addToWhitelist(pubkey) {
-  const list = loadWhitelist();
-  if (list.includes(pubkey)) return false;
-  list.push(pubkey);
-  writeFileSync(WHITELIST, JSON.stringify(list, null, 2), 'utf8');
+  if (loadWhitelist().includes(pubkey)) return false;
+  const data = loadWhitelistRaw();
+  if (Array.isArray(data)) {
+    data.push(pubkey);
+  } else {
+    data[`admitted_${pubkey.slice(0, 12)}`] = pubkey;
+  }
+  writeFileSync(WHITELIST, JSON.stringify(data, null, 2), 'utf8');
   console.log(`✅  Toegevoegd aan whitelist: ${pubkey.slice(0, 16)}...`);
   return true;
 }
