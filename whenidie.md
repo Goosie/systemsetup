@@ -461,7 +461,6 @@ Dit is mijn eigen Nostr-berichtenserver. Alle apps sturen berichten hier langs.
 └── whenidie.md         ← Dit bestand
 
 /var/www/goosielabs/
-├── (oude WordPress-bestanden — niet meer de live homepage; die draait nu via nsite/Blossom)
 ├── apps/
 │   ├── iris/           ← Iris (Nostr client)
 │   ├── gameofthegoose/ ← GameOfTheGoose
