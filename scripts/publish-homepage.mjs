@@ -683,6 +683,7 @@ const pages = {
   '/index.html':      Buffer.from(await generateHomepage(), 'utf8'),
   '/mcp.html':        Buffer.from(generateArticle(`${PAGES_DIR}/mcp_en.html`, 'What is MCP?', 'en'), 'utf8'),
   '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
+  '/sats.html':       Buffer.from(generateArticle(`${PAGES_DIR}/sats_en.html`, 'Your first sats', 'en'), 'utf8'),
 };
 
 console.log('Uploading to Blossom…\n');
