@@ -45,7 +45,7 @@ De server is gehuurd. Als je hem wilt afsluiten: opzeg het abonnement bij Digita
 
 | Dienst | Wat het is | Adres |
 |--------|-----------|-------|
-| **Homepage (nsite)** | De hoofdwebsite + app-overzicht — gehost via nsite op Blossom (gedecentraliseerd, geen WordPress meer) | goosielabs.com |
+| **Homepage (nsite)** | De hoofdwebsite + app-overzicht — gehost via nsite op Blossom (gedecentraliseerd) | goosielabs.com |
 | **Nostr relay** | Mijn eigen berichtenserver (strfry) | wss://relay.goosielabs.com |
 | **Cashu mint** | Digitale contant-geld machine (Nutshell) | mint.goosielabs.com |
 | **LNbits** | Lightning wallet backend voor apps | lnbits.goosielabs.com |
