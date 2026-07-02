@@ -685,6 +685,251 @@ function generateBitcoinEn() {
     </style>
   `, 'en');
 }
+// ── Manifest page (EN) — "Why we build this" ─────────────────────────────────
+// Dark long-form reading page. Text is verbatim from GOOSIE-LABS-MANIFEST.md —
+// typography is ours, the words are not. Self-contained (own fonts + styles +
+// live block-height script) so it renders identically whether served through the
+// nginx nsite proxy at goosielabs.com/manifest or directly via the nsite gateway.
+function generateManifest() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why we build this — The Goosie Labs Manifest</title>
+  <meta name="description" content="Why we build what we build — and why you can try every word of it. The Goosie Labs Manifest.">
+  <link rel="icon" type="image/svg+xml" href="/goosie-favicon.svg">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#042C53; --bg-soft:#063a6b; --ink:#EAF2FB; --ink-soft:#AFC8E4;
+      --ink-dim:#7FA2C6; --line:rgba(174,200,232,0.18); --accent:#7FB2F0;
+      --owning:#8FE3C4; --renting:#F0A9A0;
+      --font-display:'Libre Baskerville',Georgia,serif;
+      --font-body:'DM Sans',system-ui,sans-serif;
+    }
+    html { -webkit-text-size-adjust:100%; }
+    body { font-family:var(--font-body); background:var(--bg); color:var(--ink); font-size:18px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    a { color:var(--accent); }
+    .mf-nav { border-bottom:1px solid var(--line); }
+    .mf-nav-inner { max-width:1100px; margin:0 auto; padding:1.1rem 1.5rem; display:flex; align-items:center; gap:12px; }
+    .mf-nav-inner img { height:34px; width:auto; }
+    .mf-nav-inner span { font-family:var(--font-display); font-size:17px; color:var(--ink); letter-spacing:-0.02em; }
+    .mf-nav-inner a { margin-left:auto; font-size:14px; color:var(--ink-soft); text-decoration:none; font-weight:500; }
+    .mf-nav-inner a:hover { color:var(--ink); }
+    .mf { max-width:68ch; margin:0 auto; padding:4.5rem 1.5rem 3rem; }
+    .mf-eyebrow { font-size:0.78rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:1.2rem; }
+    h1 { font-family:var(--font-display); font-weight:700; font-size:clamp(2.2rem,6vw,3.2rem); line-height:1.15; letter-spacing:-0.01em; margin-bottom:0.6rem; color:#fff; }
+    .mf-subtitle { font-family:var(--font-display); font-style:italic; font-size:1.25rem; color:var(--ink-soft); margin-bottom:1.6rem; }
+    .mf-lede { font-size:1.15rem; color:var(--ink-soft); line-height:1.7; border-left:2px solid var(--line); padding-left:1.1rem; margin-bottom:2.5rem; }
+    h2 { font-family:var(--font-display); font-weight:700; font-size:1.6rem; line-height:1.3; color:#fff; margin:3.5rem 0 1.1rem; }
+    p { margin-bottom:1.4rem; color:var(--ink); }
+    .mf p strong { color:#fff; }
+    section:first-of-type h2 { margin-top:1rem; }
+    .mf-callout { font-family:var(--font-display); font-size:1.35rem; line-height:1.5; color:#fff; text-align:center; padding:1.8rem 1.4rem; margin:2rem 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .mf-callout-em { font-family:var(--font-display); font-weight:700; font-size:1.55rem; line-height:1.4; color:var(--owning); text-align:center; padding:1.6rem 1rem; margin:2.2rem 0; }
+    .mf-table-wrap { margin:2.2rem -0.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table.mf-table { width:100%; border-collapse:collapse; font-size:0.95rem; min-width:520px; }
+    table.mf-table caption { text-align:left; color:var(--ink-dim); font-size:0.9rem; padding:0 0.5rem 0.9rem; }
+    table.mf-table th, table.mf-table td { text-align:left; vertical-align:top; padding:0.85rem 0.9rem; border-bottom:1px solid var(--line); line-height:1.55; }
+    table.mf-table thead th { font-family:var(--font-body); font-weight:600; font-size:0.82rem; letter-spacing:0.02em; color:#fff; border-bottom:1px solid rgba(174,200,232,0.35); }
+    table.mf-table thead th.col-rent { color:var(--renting); }
+    table.mf-table thead th.col-own { color:var(--owning); }
+    table.mf-table tbody th { font-weight:600; color:#fff; width:26%; background:rgba(255,255,255,0.02); }
+    table.mf-table td.col-rent { color:var(--ink-soft); }
+    table.mf-table td.col-own { color:var(--owning); }
+    table.mf-table tbody tr:last-child th, table.mf-table tbody tr:last-child td { border-bottom:none; }
+    table.mf-table tbody tr.row-last { background:rgba(143,227,196,0.05); }
+    .mf-closing { font-family:var(--font-display); font-weight:700; font-size:clamp(1.5rem,4vw,2rem); line-height:1.45; color:#fff; text-align:center; margin:3.5rem 0 1.2rem; letter-spacing:-0.01em; }
+    .mf-signoff { text-align:center; font-family:var(--font-display); font-style:italic; font-size:1.05rem; color:var(--ink-soft); margin-bottom:1rem; }
+    .mf-appendix { margin-top:4.5rem; padding-top:2rem; border-top:1px solid var(--line); font-size:0.92rem; color:var(--ink-soft); line-height:1.7; }
+    .mf-appendix h2 { font-size:1.15rem; color:var(--ink-soft); font-style:italic; margin:0 0 1.2rem; }
+    .mf-appendix p { color:var(--ink-soft); font-size:0.92rem; margin-bottom:1.1rem; }
+    .mf-appendix ul { list-style:none; padding:0; margin:0 0 1.4rem; }
+    .mf-appendix li { margin-bottom:1.3rem; padding-left:0; }
+    .mf-appendix li b { color:var(--ink); font-weight:600; font-style:italic; }
+    .mf-src { display:block; margin-top:0.35rem; font-size:0.82rem; color:var(--ink-dim); }
+    .mf-src a { color:var(--accent); text-decoration:none; }
+    .mf-src a:hover { text-decoration:underline; }
+    footer.mf-foot { border-top:1px solid var(--line); padding:2rem 1.5rem; text-align:center; font-size:0.82rem; color:var(--ink-dim); }
+    footer.mf-foot a { color:var(--ink-soft); }
+    @media (max-width:600px) { body { font-size:16.5px; } .mf { padding:3rem 1.25rem 2.5rem; } }
+  </style>
+</head>
+<body>
+  <nav class="mf-nav">
+    <div class="mf-nav-inner">
+      <img src="/goosie-mark.svg" alt="" aria-hidden="true" width="34" height="34">
+      <span>Goosie Labs</span>
+      <a href="/">← Home</a>
+    </div>
+  </nav>
+
+  <main class="mf">
+    <div class="mf-eyebrow">The Goosie Labs Manifesto</div>
+    <h1>Why we build this</h1>
+    <div class="mf-subtitle">The Goosie Labs Manifesto</div>
+    <p class="mf-lede">Why we build what we build — and why you can try every word of it.</p>
+
+    <section>
+      <h2>1. You don&rsquo;t own anything online</h2>
+      <p>Check your pockets. Your account names, your followers, your photos, your messages, your game coins, your reputation — none of it is yours. You rent it all. The landlord is whichever company runs the server, and the rent you pay is your attention and your data.</p>
+      <p>Renting feels fine until the day it doesn&rsquo;t. An account gets locked and ten years of photos are gone. A payment gets frozen &ldquo;for review.&rdquo; A post disappears, or the whole platform does, and your name, your work, and everyone you knew there go with it. You did nothing wrong. You just never held the keys.</p>
+      <p>We are not angry about this. Most of the internet was built this way because it was the easiest way to build it. But easiest is not the same as best, and it is certainly not the only way. There is another way, and it is not a theory. It runs. We run it.</p>
+    </section>
+
+    <section>
+      <h2>2. What we mean by decentralization</h2>
+      <p>The word sounds technical. The idea is not.</p>
+      <p class="mf-callout">Something is decentralized when no single party can take it from you, block you from it, or delete it behind your back.</p>
+      <p>That&rsquo;s the whole definition. Not &ldquo;runs on a blockchain.&rdquo; Not &ldquo;has a token.&rdquo; One test, three parts: Can someone take it? Can someone lock you out? Can someone erase it? If all three answers are no, it&rsquo;s yours in a way nothing on a normal platform ever is.</p>
+      <p>The difference in one table:</p>
+      <div class="mf-table-wrap">
+        <table class="mf-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" class="col-rent">Renting (the normal internet)</th>
+              <th scope="col" class="col-own">Owning (what we build with)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Your identity</th>
+              <td class="col-rent">A row in their database. They can ban it.</td>
+              <td class="col-own">A key only you hold. Nobody can revoke it.</td>
+            </tr>
+            <tr>
+              <th scope="row">Your money</th>
+              <td class="col-rent">A number in their computer. They can freeze it.</td>
+              <td class="col-own">Coins in your pocket. Spendable by you alone.</td>
+            </tr>
+            <tr>
+              <th scope="row">Your words &amp; pictures</th>
+              <td class="col-rent">Stored on their server. They can delete them.</td>
+              <td class="col-own">Signed by you, copied across many servers.</td>
+            </tr>
+            <tr>
+              <th scope="row">Your proof &amp; reputation</th>
+              <td class="col-rent">Granted by them. They can take it back.</td>
+              <td class="col-own">Stamped on an open network. Unrevokable.</td>
+            </tr>
+            <tr class="row-last">
+              <th scope="row">When you lose your password</th>
+              <td class="col-rent">&ldquo;Click here to reset.&rdquo;</td>
+              <td class="col-own">Nobody can reset it. That&rsquo;s the deal.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Notice the last row. We put it in the table on purpose. Ownership has a price, and we will name it rather than hide it.</p>
+    </section>
+
+    <section>
+      <h2>3. Why it matters</h2>
+      <p>Because everything that matters about you is moving online, and whoever controls your online self controls more of your real self every year.</p>
+      <p>Your identity is how you enter every room on the internet. If a company holds it, every room has a bouncer you didn&rsquo;t hire. Your money is stored decisions — everything you might still choose to do. If a company holds it, your future needs their permission. Your words and pictures are your memory and your voice. If a company holds them, your past can be edited and your voice can be muted. Your proof — what you did, what you learned, what you earned — is your track record. If a company holds it, your track record has an expiry date you don&rsquo;t control.</p>
+      <p>None of this requires a villain. The people running platforms are mostly decent, and most bans are boring. That&rsquo;s exactly the point: a system where your things can be taken is a system where your things will, eventually, sometimes, be taken — by mistake, by policy change, by acquisition, by bankruptcy, by a moderator having a bad day. Ownership is not paranoia about bad people. It&rsquo;s architecture that doesn&rsquo;t need anyone to be good.</p>
+      <p>Those who came before us saw this early. The cypherpunks wrote in 1993 that nobody would grant us privacy — we would have to build it ourselves, in code. The self-sovereign identity movement turned that spirit into ten testable principles: your identity must exist, persist, and travel with you, under your control. Bitcoin proved money could work this way at planetary scale. Nostr proved your social self could too: no platform, so no deplatforming. We didn&rsquo;t invent any of this. We stand on it — and we notice that one thing is still missing.</p>
+    </section>
+
+    <section>
+      <h2>4. What&rsquo;s missing: nobody can feel it</h2>
+      <p>Manifestos argue. Whitepapers specify. Podcasts explain. And after thirty years of brilliant arguing, the average person still can&rsquo;t tell you what a key is, has never held a sat, and doesn&rsquo;t know that owning your digital life is even possible.</p>
+      <p>The problem is not that people don&rsquo;t get it. The problem is that reading about ownership is like reading about swimming. There is exactly one way to learn what it feels like when nobody can take your things: hold your things.</p>
+      <p>So here is our contribution, and our only real rule:</p>
+      <p class="mf-callout-em">If you can&rsquo;t demo it, it doesn&rsquo;t exist.</p>
+      <p>We don&rsquo;t ask you to believe decentralization is better. We hand you a key, 21 sats of real Bitcoin, and a badge stamped on an open network — in five minutes, with no account and no sign-up — and let you check the three questions yourself. Can we take them? Can we lock you out? Can we delete them? Go ahead. Try. That failure to control you is the entire lesson, and no essay can teach it.</p>
+      <p>Every experiment on this site follows the same rule. Each one is a working answer to one question: honest feedback with no middleman holding the names. An agreement that pays out with no bank in the middle. A last will with no notary. Proof-you-did-it with no institution that can revoke it. Small, real, clickable. Some are rough. All of them run.</p>
+    </section>
+
+    <section>
+      <h2>5. What it costs (the part other manifestos skip)</h2>
+      <p>We will not sell you a fairy tale. Ownership is a trade, and you should see both sides before you choose.</p>
+      <p><strong>There is no &ldquo;forgot password.&rdquo;</strong> If you hold the only key, then losing the key means losing the thing. No company to call is the feature and the responsibility.</p>
+      <p><strong>The edges are rougher.</strong> Platforms are smooth because a thousand employees sand them down. Open networks are built by volunteers and stubborn people. It gets better every month. It is not Instagram-smooth yet.</p>
+      <p><strong>Decentralization is a direction, not a badge.</strong> Even open networks drift toward convenient middlemen when everyone uses the same three servers — the builders of these protocols say so themselves, and we respect them more for it. Staying decentralized takes ongoing effort. Ours included: when you try our apps, some training wheels (like the mint that makes your first coins) are still points of trust. We label them instead of hiding them, and we show you the door to remove them.</p>
+      <p>If, knowing all this, you&rsquo;d rather rent — that is a fine and honest choice. We only insist that it be a choice. Right now, almost nobody has ever seen the alternative. That&rsquo;s what this site is for.</p>
+    </section>
+
+    <section>
+      <h2>6. Why geese</h2>
+      <p>Geese fly thousands of kilometers in a V with no boss. The lead position rotates — whoever is fresh takes the front, and the honking from behind is encouragement, not command. No goose owns the formation; the formation exists because each goose flies its own wings in the same direction. That is the most honest picture of decentralization we know, and it&rsquo;s why our experiments are called goosies and why you&rsquo;ll hear honking around here. Serious ideas don&rsquo;t require solemn packaging.</p>
+    </section>
+
+    <section>
+      <h2>7. Try it</h2>
+      <p>Don&rsquo;t take our word for any of this. Words are cheap; that&rsquo;s rather the point.</p>
+      <p><a href="https://goosielabs.com/apps/proofofread/start">Start here</a>: in five minutes you&rsquo;ll own three things — your own identity, real Bitcoin, and proof you did it. No account. No sign-up. Then ask the three questions.</p>
+      <p>After that, the experiments are open, the code is free, and the flock has room.</p>
+      <p class="mf-closing">Own your keys. Own your money. Own your words. And if you can&rsquo;t demo it, it doesn&rsquo;t exist.</p>
+      <p class="mf-signoff">— Goosie Labs, Schiedam<span id="mf-bh-clause">, block height <span id="mf-block">#&hellip;</span></span></p>
+    </section>
+
+    <div class="mf-appendix">
+      <h2>Lineage notes (appendix — for the curious, not part of the manifest)</h2>
+      <p>We wrote this in our own words, but not from nothing. What we learned from each ancestor:</p>
+      <ul>
+        <li>
+          <b>A Cypherpunk&rsquo;s Manifesto (Eric Hughes, 1993).</b> Define your terms plainly, then commit to building rather than asking. His &ldquo;cypherpunks write code&rdquo; becomes our &ldquo;if you can&rsquo;t demo it, it doesn&rsquo;t exist&rdquo; — the same spirit, one step further: code that a stranger can click.
+          <span class="mf-src">&rarr; <a href="https://www.activism.net/cypherpunk/manifesto.html" target="_blank" rel="noopener">activism.net/cypherpunk/manifesto.html</a> &middot; <a href="https://nakamotoinstitute.org/library/cypherpunk-manifesto/" target="_blank" rel="noopener">mirror at nakamotoinstitute.org</a></span>
+        </li>
+        <li>
+          <b>A Declaration of the Independence of Cyberspace (John Perry Barlow, 1996).</b> The cautionary tale. Beautiful voice, zero mechanism — and it aimed at governments while platforms quietly became the real landlords. Lessons: never declare what you can&rsquo;t demonstrate, and name the actual adversary (for a newcomer today: the login screen, not the state).
+          <span class="mf-src">&rarr; <a href="https://www.eff.org/cyberspace-independence" target="_blank" rel="noopener">eff.org/cyberspace-independence</a></span>
+        </li>
+        <li>
+          <b>The Path to Self-Sovereign Identity (Christopher Allen, 2016).</b> Principles as a testable checklist beat rhetoric. Our three questions (take it? block it? delete it?) are a folk-sized compression of his ten principles.
+          <span class="mf-src">&rarr; <a href="https://www.lifewithalacrity.com/2016/04/the-path-to-self-soverereign-identity.html" target="_blank" rel="noopener">lifewithalacrity.com</a> &middot; <a href="https://github.com/WebOfTrustInfo/self-sovereign-identity" target="_blank" rel="noopener">mirror at WebOfTrustInfo on GitHub</a></span>
+        </li>
+        <li>
+          <b>Nostr (fiatjaf, 2020).</b> Identity as a key: no platform, so no deplatforming. And crucially, fiatjaf&rsquo;s own honesty that decentralization degrades in practice when everyone uses the same relays — which is why our Section 5 exists.
+          <span class="mf-src">&rarr; <a href="https://fiatjaf.com/nostr.html" target="_blank" rel="noopener">fiatjaf.com/nostr.html</a> &middot; <a href="https://github.com/nostr-protocol/nostr" target="_blank" rel="noopener">protocol repo</a> &middot; <a href="https://fiatjaf.com/87a208d9.html" target="_blank" rel="noopener">his self-critique</a></span>
+        </li>
+      </ul>
+      <p>The structural choice: every ancestor manifesto argues. Ours ends every claim with something clickable. That&rsquo;s the only originality we claim, and it&rsquo;s enough.</p>
+    </div>
+  </main>
+
+  <footer class="mf-foot">
+    <a href="/">goosielabs.com</a> &middot; <a href="/creators.html">About the creators</a> &middot; <a href="https://goosielabs.com/apps/proofofread/start">Start here</a>
+  </footer>
+
+  <script>
+  // Live block height in the signature — same data source as the homepage counter
+  // (Blocky's kind:1 #t=block note on the relay). On failure, drop the clause so
+  // the signature reads a clean "— Goosie Labs, Schiedam" (never a broken placeholder).
+  (function(){
+    var RELAY='wss://relay.goosielabs.com';
+    var BLOCKY='d4e2e205c8e1437b40b635a88ca85c44f5f4b18539e8c09551d9ce0f200ff71b';
+    var clause=document.getElementById('mf-bh-clause');
+    var el=document.getElementById('mf-block');
+    var settled=false, ws;
+    function hide(){ if(settled) return; settled=true; if(clause) clause.style.display='none'; try{ ws&&ws.close(); }catch(e){} }
+    function show(h){ if(settled) return; settled=true; if(el) el.textContent='#'+h.toLocaleString('en'); try{ ws&&ws.close(); }catch(e){} }
+    var to=setTimeout(hide, 6000);
+    try { ws=new WebSocket(RELAY); } catch(e){ hide(); return; }
+    var sub='mf'+Math.random().toString(36).slice(2,7);
+    ws.onopen=function(){ ws.send(JSON.stringify(['REQ',sub,{kinds:[1],authors:[BLOCKY],'#t':['block'],limit:1}])); };
+    ws.onmessage=function(e){
+      try {
+        var m=JSON.parse(e.data);
+        if(m[0]==='EVENT'){
+          var t=(m[2].tags||[]).find(function(x){ return x[0]==='block_height'; });
+          if(t){ clearTimeout(to); show(parseInt(t[1],10)); }
+        }
+      } catch(err){}
+    };
+    ws.onerror=function(){ clearTimeout(to); hide(); };
+  })();
+  </script>
+</body>
+</html>`;
+}
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 console.log('Generating pages…\n');
@@ -694,6 +939,7 @@ const pages = {
   '/mcp.html':        Buffer.from(generateArticle(`${PAGES_DIR}/mcp_en.html`, 'What is MCP?', 'en'), 'utf8'),
   '/bitcoin.html':    Buffer.from(generateBitcoinEn(), 'utf8'),
   '/sats.html':       Buffer.from(generateArticle(`${PAGES_DIR}/sats_en.html`, 'Your first sats', 'en'), 'utf8'),
+  '/manifest.html':   Buffer.from(generateManifest(), 'utf8'),
 };
 
 console.log('Uploading to Blossom…\n');
