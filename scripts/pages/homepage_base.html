@@ -42,7 +42,7 @@
   .hero-sub { font-size:1.15rem; font-weight:300; color:var(--blue-200); margin-bottom:2rem; letter-spacing:0.01em; }
   .hero-text { font-size:1.05rem; line-height:1.8; color:rgba(255,255,255,0.8); max-width:620px; margin-bottom:1rem; }
   .hero-text em { color:var(--blue-200); font-style:italic; }
-  .hero-cols { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:2rem 0 1rem; }
+  .hero-cols { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.5rem; margin:2rem 0 1rem; }
   .hero-col { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:0.75rem; padding:1.25rem 1.5rem; }
   .hero-col-label { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--blue-200); margin-bottom:0.5rem; }
   .hero-col-title { font-size:1rem; font-weight:600; color:var(--white); margin-bottom:0.5rem; line-height:1.4; }
@@ -178,6 +178,17 @@
     </p>
     <div class="hero-cols">
       <div class="hero-col">
+        <div class="hero-col-label">NEW HERE?</div>
+        <div class="hero-col-title">Own something online — for the first time.</div>
+        <ul>
+          <li>Your own identity — no username, no password, no company holding it for you</li>
+          <li>Real money (21 sats of Bitcoin) — in your pocket, not in someone's database</li>
+          <li>Proof you did it — stamped on an open network no one can delete</li>
+        </ul>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin:0.85rem 0 0.65rem;">No account. No sign-up. ~5 minutes.</p>
+        <a href="https://start.goosielabs.com" class="btn-primary" style="font-size:14px;padding:10px 20px;">Start here</a>
+      </div>
+      <div class="hero-col">
         <div class="hero-col-label">For business professionals</div>
         <div class="hero-col-title">Real problems. No middleman required.</div>
         <ul>
@@ -224,6 +235,20 @@
 
 <!-- APPS-TILES-START -->
       <div class="project-card">
+        <div class="project-avatar" style="background:#4d7c2f"><img src="/apps/start/icons/icon-192.png" alt="Start here" width="72" height="72"></div>
+        <div class="project-info">
+          <div class="project-card-top">
+            <div class="project-name">Start here</div>
+            <span class="badge badge-live">Live</span>
+          </div>
+          <p class="project-desc">Get three things no company can take from you: your own identity, real Bitcoin, and proof you did it…</p>
+          <div class="project-links"><a href="https://start.goosielabs.com" class="project-link">Open app</a>
+          <a href="https://goosielabs.com/sats.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="ed6485dc1d618d67f96337c3cd047ceec529888075e0bec7897abb54a1698698" data-lnaddr="onboarding@goosielabs.com" data-app="Start here">⚡ Donate</button></div>
+        </div>
+      </div>
+
+      <div class="project-card">
         <div class="project-avatar" style="background:#065f46"><img src="/apps/proofofmove/icons/icon-192.png" alt="ProofOfMove" width="72" height="72"></div>
         <div class="project-info">
           <div class="project-card-top">
@@ -234,7 +259,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/proofofmove/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/proofofmove" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://goosielabs.com/apps/proofofmove/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="8a5a02c0966aa92ae5f6bfb91d965e62" data-app="ProofOfMove">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="8a5a02c0966aa92ae5f6bfb91d965e62" data-lnaddr="" data-app="ProofOfMove">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -249,7 +274,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/zaphunt/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/zaphunt" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://goosielabs.com/apps/zaphunt/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="19b0a478540d496aa3fe3e406671cf90" data-app="ZapHunt">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="19b0a478540d496aa3fe3e406671cf90" data-lnaddr="" data-app="ZapHunt">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -263,7 +288,7 @@
           <p class="project-desc">When two people feel like doing the same thing at the same moment without knowing it, this app bring…</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/zinin/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/zinin-demo" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="1533f47c4539ba4662f63a4d3d91d827" data-app="ZinIn">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="1533f47c4539ba4662f63a4d3d91d827" data-lnaddr="" data-app="ZinIn">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -276,7 +301,7 @@
           </div>
           <p class="project-desc">Cashu ecash mint — mint and melt tokens backed by Lightning. Your own sovereign money printer.</p>
           <div class="project-links"><a href="https://mint.goosielabs.com" class="project-link">Open app</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="92f71170e2ddacc379eb12ba6ed4e327" data-app="Goosie Mint">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="92f71170e2ddacc379eb12ba6ed4e327" data-lnaddr="" data-app="Goosie Mint">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -290,7 +315,7 @@
           <p class="project-desc">Prove you actually read a book. Scan the ISBN, pay 5 sats, answer an AI quiz — and receive a Nostr b…</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/proofofread/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/proofofread" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="71588ec03f007f9d9a969a31123d6462" data-app="ProofOfRead">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="71588ec03f007f9d9a969a31123d6462" data-lnaddr="" data-app="ProofOfRead">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -303,8 +328,9 @@
           </div>
           <p class="project-desc">Write your own thrillers with a little help from Goosie Writers AI. Add flashes of inspiration and l…</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/bookwriter/" class="project-link">Open app</a>
+          <a href="https://github.com/Goosie/bookwriter" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/bookwriter/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="f26ba30f6ad5b1be36ea920eefe72ea2" data-app="Write Book">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="f26ba30f6ad5b1be36ea920eefe72ea2" data-lnaddr="" data-app="Write Book">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -317,8 +343,9 @@
           </div>
           <p class="project-desc">Post a dilemma with a sat bounty. Others give advice, the community votes, you pick the winner — who…</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/dilemma/" class="project-link">Open app</a>
+          <a href="https://github.com/Goosie/dilemma" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://goosielabs.com/apps/dilemma/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="bb564687001cab7832b9b52f24ae8ba1" data-app="Dilemma">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="bb564687001cab7832b9b52f24ae8ba1" data-lnaddr="" data-app="Dilemma">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -331,8 +358,9 @@
           </div>
           <p class="project-desc">Honest feedback is socially risky — people stay quiet out of fear of conflict. This protocol decoupl…</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/feedback/" class="project-link">Open app</a>
+          <a href="https://github.com/Goosie/feedback" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://goosielabs.com/apps/feedback/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="1f1b7ebb942b9199292bebeed22072b7" data-app="Feedback">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="1f1b7ebb942b9199292bebeed22072b7" data-lnaddr="" data-app="Feedback">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -347,7 +375,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/gameofthegoose/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/gameofthegoose" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="/apps/gameofthegoose/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="01daaa9b5a92166da1290ef66b5e8ad0" data-app="Game of The Goose">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="01daaa9b5a92166da1290ef66b5e8ad0" data-lnaddr="" data-app="Game of The Goose">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -362,7 +390,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/georgie/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/georgie" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/georgie/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="35f94737d819a7aa75af87e1cddcfb4c" data-app="Georgie Trip">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="35f94737d819a7aa75af87e1cddcfb4c" data-lnaddr="" data-app="Georgie Trip">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -377,7 +405,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/honkbadge/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/honkbadge" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/honkbadge/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="4e61f22cc6400ced0f6e5651683bae1a" data-app="HonkBadge">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="4e61f22cc6400ced0f6e5651683bae1a" data-lnaddr="" data-app="HonkBadge">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -406,7 +434,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/honkference/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/honkference" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/honkference/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="efe97e27fa393d689b833d96360d278d" data-app="Honkference">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="efe97e27fa393d689b833d96360d278d" data-lnaddr="" data-app="Honkference">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -419,8 +447,9 @@
           </div>
           <p class="project-desc">What do you want to happen when you pass away? Store your digital legacy privately and decentrally, …</p>
           <div class="project-links"><a href="https://goosielabs.com/apps/lastwill/" class="project-link">Open app</a>
+          <a href="https://github.com/Goosie/lastwill" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://goosielabs.com/apps/lastwill/juridischadvies.html" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="c87381c5494fbdd2d46bfec702b82234" data-app="lastwill">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="c87381c5494fbdd2d46bfec702b82234" data-lnaddr="" data-app="lastwill">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -449,7 +478,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/satquiz/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/satquiz" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/satquiz/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="8c9dc9cc508c4228a554403eccf8e41b" data-app="Satoshi Quiz">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="8c9dc9cc508c4228a554403eccf8e41b" data-lnaddr="" data-app="Satoshi Quiz">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -464,7 +493,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/skein/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/skein" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/skein/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="bf01340e10cc2d0d0a69376ef2457bb3" data-app="Skein">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="bf01340e10cc2d0d0a69376ef2457bb3" data-lnaddr="" data-app="Skein">⚡ Donate</button></div>
         </div>
       </div>
 
@@ -479,7 +508,7 @@
           <div class="project-links"><a href="https://goosielabs.com/apps/toddy/" class="project-link">Open app</a>
           <a href="https://github.com/Goosie/toddy" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>
           <a href="https://github.com/Goosie/toddy/blob/main/juridischadvies.md" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>
-          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="3881c6c1ff764c07a9d758b1d7ad6eb1" data-app="toddy">⚡ Donate</button></div>
+          <button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="3881c6c1ff764c07a9d758b1d7ad6eb1" data-lnaddr="" data-app="toddy">⚡ Donate</button></div>
         </div>
       </div>
       <!-- APPS-TILES-END -->

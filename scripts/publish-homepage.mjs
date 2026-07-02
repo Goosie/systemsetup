@@ -389,7 +389,10 @@ async function generateHomepage() {
   html = html.replace(/id="projecten"/g, 'id="projects"');
 
   // Hero
-  html = html.replace('Een open lab voor Bitcoin, Nostr en AI', 'Making decentralized tech actually work for people');
+  html = html.replace(
+    '<h1>Een open lab voor Bitcoin, Nostr en AI</h1>',
+    '<h1>Making decentralized tech actually work for people</h1>\n    <p class="hero-sub">Who really owns your Instagram account, your PayPal balance, your followers? Not you. Here you can feel what it&rsquo;s like when you do.</p>'
+  );
   html = html.replace(
     /Ganzen vliegen in V-formatie[^<]+/,
     'Goosie Labs builds working prototypes with Bitcoin, Nostr, and AI — the kind of tech that removes intermediaries and actually works for regular people. Everything here is open, experimental, and free to build on. We also measure time differently: it is currently block <span id="blocky-block" style="font-weight:600;font-variant-numeric:tabular-nums">…</span>.'
@@ -398,8 +401,15 @@ async function generateHomepage() {
     'Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.',
     ''
   );
-  html = html.replace('>Bekijk de experimenten<', '>View experiments<');
-  html = html.replace(/>Mee vliegen\?(<\/a>)/, '>Fly along?$1');
+  // Hero CTAs — three buttons: Start here (primary) / View experiments / Fly along?
+  html = html.replace(
+    /<div class="hero-cta">[\s\S]*?<\/div>/,
+    `<div class="hero-cta">
+      <a href="https://start.goosielabs.com" class="btn-primary">Start here — own 3 things in 5 minutes</a>
+      <a href="#projects" class="btn-ghost">View experiments</a>
+      <a href="#meedoen" class="btn-ghost">Fly along?</a>
+    </div>`
+  );
 
   // Projects section headings
   html = html.replace(/>Experimenten<\/div>/, '>Experiments</div>');
