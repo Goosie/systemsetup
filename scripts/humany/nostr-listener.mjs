@@ -74,6 +74,15 @@ const VOUCHER_API_URL = 'http://127.0.0.1:3002';
 const BOOK_URL        = 'https://goosielabs.com/apps/proofofread/book';
 // Filter on #goosielabs hashtag — no hardcoded pubkey needed
 
+// ── Honk-back dedup — one public reply per newcomer, ever ────────────────────
+const HONKED_FILE = '/home/deploy/logs/nostr-listener-honked.json';
+function loadHonked() {
+  try { return new Set(JSON.parse(readFileSync(HONKED_FILE, 'utf8'))); } catch { return new Set(); }
+}
+function saveHonked(set) {
+  try { writeFileSync(HONKED_FILE, JSON.stringify([...set])); } catch {}
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function loadKey(name) {
@@ -729,6 +738,33 @@ async function sendReply(gooseSK, toPubkey, message) {
   }));
 }
 
+// ── Public honk-back — a kind:1 reply to a #goosielabs post ───────────────────
+async function publishPublicReply(gooseSK, replyToEv, content) {
+  const relayHint = 'wss://relay.goosielabs.com';
+  const event = finalizeEvent({
+    kind: 1,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['e', replyToEv.id, relayHint, 'root'],
+      ['p', replyToEv.pubkey],
+    ],
+    content,
+  }, gooseSK);
+
+  // Publish to our relay + the public relays the newcomer likely posted from.
+  // pool.publish returns one promise per relay; allSettled attaches handlers to
+  // each (so a relay that rejects — blocked/auth-required — never leaks as an
+  // unhandled rejection), and we cap the wait so a slow relay can't hang.
+  const relays = [...new Set([RELAY, ...PUBLIC_LISTEN_RELAYS])];
+  const pool = new SimplePool();
+  await Promise.race([
+    Promise.allSettled(pool.publish(relays, event)),
+    new Promise((res) => setTimeout(res, 6_000)),
+  ]);
+  pool.close(relays);
+  return event.id;
+}
+
 // ── Mention handler — kind:1 with #todo + @assistenty ────────────────────────
 
 function extractTodoText(content) {
@@ -925,77 +961,41 @@ async function handleGoosielabsMention(ev) {
   const geesePubkeys = new Set(geese.map(g => g.pubkey));
   if (geesePubkeys.has(pubkey)) return;
 
-  const rewarded = loadRewarded();
-  if (rewarded.has(pubkey)) {
-    console.log(`[nostr-listener] welcome: ${pubkey.slice(0, 8)}… already rewarded, skipping`);
+  const honked = loadHonked();
+  if (honked.has(pubkey)) {
+    console.log(`[nostr-listener] welcome: ${pubkey.slice(0, 8)}… already honked back, skipping`);
     return;
   }
 
-  console.log(`[nostr-listener] welcome: new #goosielabs mention from ${pubkey.slice(0, 8)}… — generating voucher`);
-
-  const code = generateVoucherCode();
-  try {
-    await registerVoucher(code, pubkey);
-  } catch (e) {
-    console.error(`[nostr-listener] welcome: voucher register failed: ${e.message}`);
-    return;
-  }
-
-  // Mark as rewarded before sending
-  rewarded.add(pubkey);
-  saveRewarded(rewarded);
-
-  // Pass pubkey as hex — Amethyst intercepts npub1... in URLs as a profile link
-  const redeemUrl = `https://goosielabs.com/apps/proofofread/redeem/${code}?pk=${pubkey}`;
-  const quizUrl = `${BOOK_URL}?voucher=${code}&pk=${pubkey}`;
-
-  const message = `🪿 Welcome to Goosie Labs!
-
-Thanks for posting about us. Here's your welcome voucher — ${WELCOME_SATS} sats waiting for you on the other side.
-
-**Your voucher code:** \`${code}\`
-
-**Step 1 — Read the book (3 pages):**
-👉 ${quizUrl}
-
-**Or skip straight to the quiz:**
-👉 ${redeemUrl}
-
-**Step 2 — Answer 5 questions correctly**
-
-**Step 3 — Collect your ${WELCOME_SATS} sats + Nostr badge** 🏅
-
-The book is about Bitcoin, Lightning and Nostr — written by Admitty, our onboarding goose. It's short, it's honest, and the questions can't be answered without actually reading it.
-
-**Know someone who's never touched Bitcoin?**
-Send them this link — no Nostr, no app, no sign-up. They'll read the book, earn their first 21 sats, and get a Nostr account right in their browser:
-👉 https://goosielabs.com/apps/proofofread/start
-
-— Welcome 🪿 (Goosie Labs)`;
+  console.log(`[nostr-listener] welcome: new #goosielabs post from ${pubkey.slice(0, 8)}… — honking back publicly`);
 
   const welcomeGoose = geese.find(g => g.name === 'welcome');
   if (!welcomeGoose) {
-    console.error('[nostr-listener] welcome: goose not loaded, cannot send DM');
+    console.error('[nostr-listener] welcome: goose not loaded, cannot honk back');
     return;
   }
 
-  try {
-    // NIP-17 gift-wrap (privacy-preserving, supported by Amethyst/0xchat)
-    await sendReply(welcomeGoose.sk, pubkey, message);
-    // NIP-04 fallback so clients like iris/Coarcle that don't support NIP-17 also receive the DM
-    const nip04Relays = [RELAY, ...LOOKUP_RELAYS];
-    await sendReplyNip04(welcomeGoose.sk, pubkey, message, nip04Relays).catch(() => {});
-    console.log(`[nostr-listener] welcome: voucher ${code} sent to ${pubkey.slice(0, 8)}… (NIP-17 + NIP-04)`);
+  // Reply-first: a public honk-back (kind:1). No tip, no voucher — just proof the
+  // open network heard them, tied to the "your key is your secret" lesson.
+  const message = `🪿 HONK back! We heard you — loud and clear, across a handful of independent relays at once. No company told us to listen, and none could stop us.
 
-    // Notify Perry
+That note is yours forever now: signed by your key, the secret only you hold, and impossible to un-say. Welcome to the flock. 🪿`;
+
+  try {
+    const replyId = await publishPublicReply(welcomeGoose.sk, ev, message);
+    honked.add(pubkey);
+    saveHonked(honked);
+    console.log(`[nostr-listener] welcome: honk-back ${replyId?.slice(0, 8)}… posted for ${pubkey.slice(0, 8)}…`);
+
+    // Notify Perry the loop fired for real
     const perryPubkey = loadWhitelist().perry_goosie;
     if (perryPubkey) {
       const npub = nip19.npubEncode(pubkey);
-      const notify = `🪿 Welcome sent a voucher to a new visitor!\n\nnostr:${npub}\n\nVoucher: ${code} (${WELCOME_SATS} sats)\nPosted #goosielabs and got sent to The Honk Standard.`;
+      const notify = `🪿 Welcome honked back at a new visitor!\n\nnostr:${npub}\n\nThey posted #goosielabs — the Start-here loop just fired for real.`;
       await sendReply(welcomeGoose.sk, perryPubkey, notify).catch(() => {});
     }
   } catch (e) {
-    console.error(`[nostr-listener] welcome: DM failed: ${e.message}`);
+    console.error(`[nostr-listener] welcome: honk-back failed: ${e.message}`);
   }
 }
 
