@@ -843,7 +843,7 @@ function generateManifest() {
       <p>The problem is not that people don&rsquo;t get it. The problem is that reading about ownership is like reading about swimming. There is exactly one way to learn what it feels like when nobody can take your things: hold your things.</p>
       <p>So here is our contribution, and our only real rule:</p>
       <p class="mf-callout-em">If you can&rsquo;t demo it, it doesn&rsquo;t exist.</p>
-      <p>We don&rsquo;t ask you to believe decentralization is better. We hand you a key, 21 sats of real Bitcoin, and a badge stamped on an open network — in five minutes, with no account and no sign-up — and let you check the three questions yourself. Can we take them? Can we lock you out? Can we delete them? Go ahead. Try. That failure to control you is the entire lesson, and no essay can teach it.</p>
+      <p>We don&rsquo;t ask you to believe decentralization is better. We point you to a real app, you make a key that is yours alone, and you say one word into an open network — and a goose you&rsquo;ve never met honks back, from no company&rsquo;s server. Then check the three questions on what you just made. Can we take your key? Can we lock you out of it? Can we delete what you said? Go ahead. Try. That failure to control you is the entire lesson, and no essay can teach it.</p>
       <p>Every experiment on this site follows the same rule. Each one is a working answer to one question: honest feedback with no middleman holding the names. An agreement that pays out with no bank in the middle. A last will with no notary. Proof-you-did-it with no institution that can revoke it. Small, real, clickable. Some are rough. All of them run.</p>
     </section>
 
@@ -863,8 +863,8 @@ function generateManifest() {
 
     <section>
       <h2>7. Try it</h2>
-      <p>Don&rsquo;t take our word for any of this. Words are cheap; that&rsquo;s rather the point.</p>
-      <p><a href="https://goosielabs.com/apps/proofofread/start">Start here</a>: in five minutes you&rsquo;ll own three things — your own identity, real Bitcoin, and proof you did it. No account. No sign-up. Then ask the three questions.</p>
+      <p>Don&rsquo;t take our word for any of this. Words are cheap — they can walk you to the edge of the pool, but they can&rsquo;t get you wet. So don&rsquo;t leave having only read.</p>
+      <p><a href="https://start.goosielabs.com">Start here</a>: install a real Nostr app, make a key that&rsquo;s yours alone, and say hello — a goose will honk back from an open network no company controls. About three minutes. Then ask the three questions of what you made.</p>
       <p>After that, the experiments are open, the code is free, and the flock has room.</p>
       <p class="mf-closing">Own your keys. Own your money. Own your words. And if you can&rsquo;t demo it, it doesn&rsquo;t exist.</p>
       <p class="mf-signoff">— Goosie Labs, Schiedam<span id="mf-bh-clause">, block height <span id="mf-block">#&hellip;</span></span></p>
@@ -896,7 +896,7 @@ function generateManifest() {
   </main>
 
   <footer class="mf-foot">
-    <a href="/">goosielabs.com</a> &middot; <a href="/creators.html">About the creators</a> &middot; <a href="https://goosielabs.com/apps/proofofread/start">Start here</a>
+    <a href="/">goosielabs.com</a> &middot; <a href="/creators.html">About the creators</a> &middot; <a href="https://start.goosielabs.com">Start here</a>
   </footer>
 
   <script>
