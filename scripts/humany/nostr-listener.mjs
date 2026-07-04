@@ -116,15 +116,19 @@ const GRADUATION = `🪿 That's the whole picture: your identity, your voice, yo
 Welcome to the open internet, for real. 🪿
 (The why behind it all: goosielabs.com/manifest)`;
 
-// Relays the public honk-back is broadcast to. Verified 2026-07-04: these 11
-// public relays accept kind:1 writes; with our own relay (RELAY) that's a dozen
-// servers, so the reply's "a dozen independent servers" claim is literally true.
+// Relays the public honk-back is broadcast to. Verified 2026-07-04: these public
+// relays accept kind:1 writes. We broadcast to ~16 (our own + 15 public) so a
+// reply still lands somewhere a given client reads even when a few rate-limit or
+// drop it. Copy still says "a dozen" — an honest floor, since we send to more.
+// (Many relays now gate on NIP-05 / web-of-trust / payment, so the truly-open set
+// is smaller than it looks — hence testing before adding.)
 const HONK_RELAYS = [
   RELAY,
   'wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net',
   'wss://nostr.mom', 'wss://offchain.pub', 'wss://nostr.oxtr.dev',
   'wss://nostr.bitcoiner.social', 'wss://relay.wellorder.net', 'wss://relay.snort.social',
   'wss://relay.nostr.wirednet.jp', 'wss://relay.mostr.pub',
+  'wss://relay.nostr.net', 'wss://nostr.data.haus', 'wss://purplerelay.com', 'wss://nostr.vulpem.com',
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
