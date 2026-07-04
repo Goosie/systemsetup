@@ -799,17 +799,26 @@ async function publishPublicReply(gooseSK, replyToEv, content) {
     content,
   }, gooseSK);
 
-  // Publish to a dozen independent relays (HONK_RELAYS). pool.publish returns one
-  // promise per relay; allSettled attaches handlers to each (so a relay that
-  // rejects never leaks as an unhandled rejection), and we cap the wait so a slow
-  // relay can't hang.
-  const relays = HONK_RELAYS;
-  const pool = new SimplePool();
-  await Promise.race([
-    Promise.allSettled(pool.publish(relays, event)),
-    new Promise((res) => setTimeout(res, 12_000)),   // a dozen relays need more than 6s
-  ]);
-  pool.close(relays);
+  // Publish via a raw WebSocket per relay. SimplePool (+ the websocket polyfill)
+  // was silently failing to deliver to some relays — including nos.lol/nostr.mom,
+  // the exact defaults newcomers read — so replies never reached their apps. A
+  // plain per-relay connection (the method that verifiably works) fixes it: each
+  // relay gets its own short-lived socket, and a slow one can't abort the others.
+  const results = await Promise.all(HONK_RELAYS.map((url) => new Promise((resolve) => {
+    let ws, done = false;
+    const fin = (ok) => { if (done) return; done = true; try { ws.close(); } catch (e) {} resolve({ url, ok }); };
+    try { ws = new WebSocket(url); } catch (e) { return fin(false); }
+    const timer = setTimeout(() => fin(false), 8_000);
+    ws.onopen = () => { try { ws.send(JSON.stringify(['EVENT', event])); } catch (e) { clearTimeout(timer); fin(false); } };
+    ws.onmessage = (m) => {
+      let d; try { d = JSON.parse(m.data.toString()); } catch (_) { return; }
+      if (d[0] === 'OK' && d[1] === event.id) { clearTimeout(timer); fin(!!d[2]); }  // d[2] = accepted?
+    };
+    ws.onerror = () => { clearTimeout(timer); fin(false); };
+  })));
+  const ok = results.filter((r) => r.ok).length;
+  const missed = results.filter((r) => !r.ok).map((r) => r.url.replace('wss://', '')).join(', ');
+  console.log(`[nostr-listener] welcome: reply on ${ok}/${HONK_RELAYS.length} relays${missed ? ` (missed: ${missed})` : ''}`);
   return event.id;
 }
 
