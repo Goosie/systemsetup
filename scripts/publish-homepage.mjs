@@ -287,16 +287,17 @@ async function generateHomepage() {
     const label    = STATUS_LABELS[status] ?? status;
     const cssClass = STATUS_CLASSES[status] ?? 'badge-idea';
     const links = [];
-    if (t.url) links.push(`<a href="${t.url}" class="project-link">Open app</a>`);
+    const isStart = t.url === 'https://start.goosielabs.com';
+    if (t.url) links.push(`<a href="${t.url}" class="project-link">${isStart ? 'Start here' : 'Open app'}</a>`);
     if (t.github) links.push(`<a href="${t.github}" class="project-link project-link-github" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"></a>`);
-    if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">Legal review</a>`);
+    if (t.juridischadvies) links.push(`<a href="${t.juridischadvies}" class="project-link project-link-juridisch" target="_blank" rel="noopener">${isStart ? 'More background' : 'Legal review'}</a>`);
     if (t.lnbits_inkey) links.push(`<button class="project-link project-link-donate" onclick="openDonate(this)" data-inkey="${t.lnbits_inkey}" data-lnaddr="${t.donation_lnaddress ?? ''}" data-app="${t.title ?? ''}">⚡ Donate</button>`);
     const linksHtml = links.length ? `<div class="project-links">${links.join('\n          ')}</div>` : '';
     const bg = t.icon_bg ?? '#6366f1';
     const iconHtml = t.icon
       ? `<div class="project-avatar" style="background:${bg}"><img src="${t.icon}" alt="${t.title ?? ''}" width="72" height="72"></div>`
       : `<div class="project-avatar" style="background:${bg}">🪿</div>`;
-    const desc = (t.description ?? '').length > 100 ? (t.description ?? '').slice(0, 100) + '…' : (t.description ?? '');
+    const desc = isStart ? (t.description ?? '') : ((t.description ?? '').length > 100 ? (t.description ?? '').slice(0, 100) + '…' : (t.description ?? ''));
     return `      <div class="project-card">
         ${iconHtml}
         <div class="project-info">
@@ -401,12 +402,13 @@ async function generateHomepage() {
     'Dit is geen product. Dit is een lab. Alles hier is in ontwikkeling — gebruik het, bouw erop verder, of neem contact op.',
     ''
   );
-  // Hero CTAs — three buttons: Start here (primary) / View experiments / Fly along?
+  // Hero CTAs — two buttons: View experiments (primary) / Fly along?
+  // (the newcomer card's [Start here] is now the single newcomer entrance — we no
+  // longer promise "own 3 things" in-page, since that flow no longer delivers it)
   html = html.replace(
     /<div class="hero-cta">[\s\S]*?<\/div>/,
     `<div class="hero-cta">
-      <a href="https://start.goosielabs.com" class="btn-primary">Start here — own 3 things in 5 minutes</a>
-      <a href="#projects" class="btn-ghost">View experiments</a>
+      <a href="#projects" class="btn-primary">View experiments</a>
       <a href="#meedoen" class="btn-ghost">Fly along?</a>
     </div>`
   );
