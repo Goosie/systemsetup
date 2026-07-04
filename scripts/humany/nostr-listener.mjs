@@ -83,6 +83,17 @@ function saveHonked(set) {
   try { writeFileSync(HONKED_FILE, JSON.stringify([...set])); } catch {}
 }
 
+// Relays the public honk-back is broadcast to. Verified 2026-07-04: these 11
+// public relays accept kind:1 writes; with our own relay (RELAY) that's a dozen
+// servers, so the reply's "a dozen independent servers" claim is literally true.
+const HONK_RELAYS = [
+  RELAY,
+  'wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net',
+  'wss://nostr.mom', 'wss://offchain.pub', 'wss://nostr.oxtr.dev',
+  'wss://nostr.bitcoiner.social', 'wss://relay.wellorder.net', 'wss://relay.snort.social',
+  'wss://relay.nostr.wirednet.jp', 'wss://relay.mostr.pub',
+];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function loadKey(name) {
@@ -751,15 +762,15 @@ async function publishPublicReply(gooseSK, replyToEv, content) {
     content,
   }, gooseSK);
 
-  // Publish to our relay + the public relays the newcomer likely posted from.
-  // pool.publish returns one promise per relay; allSettled attaches handlers to
-  // each (so a relay that rejects — blocked/auth-required — never leaks as an
-  // unhandled rejection), and we cap the wait so a slow relay can't hang.
-  const relays = [...new Set([RELAY, ...PUBLIC_LISTEN_RELAYS])];
+  // Publish to a dozen independent relays (HONK_RELAYS). pool.publish returns one
+  // promise per relay; allSettled attaches handlers to each (so a relay that
+  // rejects never leaks as an unhandled rejection), and we cap the wait so a slow
+  // relay can't hang.
+  const relays = HONK_RELAYS;
   const pool = new SimplePool();
   await Promise.race([
     Promise.allSettled(pool.publish(relays, event)),
-    new Promise((res) => setTimeout(res, 6_000)),
+    new Promise((res) => setTimeout(res, 12_000)),   // a dozen relays need more than 6s
   ]);
   pool.close(relays);
   return event.id;
@@ -977,9 +988,11 @@ async function handleGoosielabsMention(ev) {
 
   // Reply-first: a public honk-back (kind:1). No tip, no voucher — just proof the
   // open network heard them, tied to the "your key is your secret" lesson.
-  const message = `🪿 HONK back! We heard you — loud and clear, across a handful of independent relays at once. No company told us to listen, and none could stop us.
+  const message = `🪿 HONK back — welcome to Nostr!
 
-That note is yours forever now: signed by your key, the secret only you hold, and impossible to un-say. Welcome to the flock. 🪿`;
+Notice where you are: not a company's app, but an open network. We just sent this reply out to a dozen independent servers around the world — no single company controls them, so no one can quietly change or delete it.
+
+And it's yours to read anywhere. Saved your secret (your nsec — the words you backed up)? Sign into a different app with it — Damus, Primal, Iris — and you, your posts, and this welcome are all still there. No account, no lock-in. That's what owning your online self actually feels like. 🪿`;
 
   try {
     const replyId = await publishPublicReply(welcomeGoose.sk, ev, message);
