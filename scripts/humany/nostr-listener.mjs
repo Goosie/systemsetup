@@ -74,14 +74,47 @@ const VOUCHER_API_URL = 'http://127.0.0.1:3002';
 const BOOK_URL        = 'https://goosielabs.com/apps/proofofread/book';
 // Filter on #goosielabs hashtag — no hardcoded pubkey needed
 
-// ── Honk-back dedup — one public reply per newcomer, ever ────────────────────
-const HONKED_FILE = '/home/deploy/logs/nostr-listener-honked.json';
-function loadHonked() {
-  try { return new Set(JSON.parse(readFileSync(HONKED_FILE, 'utf8'))); } catch { return new Set(); }
+// ── Lesson sequence — Welcome teaches a NEW lesson on each #goosielabs post ───
+// State: { pubkeyHex: nextLessonIndex }. idx 0..N-1 = a lesson; N = graduation;
+// > N = graduated (stay quiet). Caps replies per pubkey at N+1 — no spam vector.
+const LESSONS_FILE = '/home/deploy/logs/nostr-listener-lessons.json';
+function loadLessons() {
+  try { return JSON.parse(readFileSync(LESSONS_FILE, 'utf8')); } catch { return {}; }
 }
-function saveHonked(set) {
-  try { writeFileSync(HONKED_FILE, JSON.stringify([...set])); } catch {}
+function saveLessons(m) {
+  try { writeFileSync(LESSONS_FILE, JSON.stringify(m)); } catch {}
 }
+
+const LESSONS = [
+  `🪿 HONK back — welcome to Nostr!
+
+You just posted on an open network, not a company's app. We sent this reply to a dozen independent servers around the world — so no single company can quietly change or delete it.
+
+Curious what platforms don't tell you? Post again with #goosielabs and I'll show you. 🪿`,
+
+  `🪿 Here's the trick no platform wants you to know: your account isn't trapped in one app.
+
+Saved your secret (your nsec)? Open a different Nostr app — Damus, Primal, Iris — sign in with it, and you, your posts, and your follows are all still there. The app is disposable; your key is you.
+
+Try it — then post again with #goosielabs for the next one. 🪿`,
+
+  `🪿 Next: everything you post is signed by your key.
+
+That's how anyone can prove a post is really you — and why no one can forge one in your name. Your reputation is stamped on the open network, not handed out by a company that can take it back.
+
+Post #goosielabs once more? 🪿`,
+
+  `🪿 One more thing: on Nostr, money moves person to person.
+
+Anyone can send you Bitcoin directly — a "zap" — with no bank or platform in the middle. Value and identity, both yours, both needing nobody's permission.
+
+Post #goosielabs one last time for the wrap-up. 🪿`,
+];
+
+const GRADUATION = `🪿 That's the whole picture: your identity, your voice, your reputation, and your money — all yours, all portable, none of it a company's to take.
+
+Welcome to the open internet, for real. 🪿
+(The why behind it all: goosielabs.com/manifest)`;
 
 // Relays the public honk-back is broadcast to. Verified 2026-07-04: these 11
 // public relays accept kind:1 writes; with our own relay (RELAY) that's a dozen
@@ -972,43 +1005,37 @@ async function handleGoosielabsMention(ev) {
   const geesePubkeys = new Set(geese.map(g => g.pubkey));
   if (geesePubkeys.has(pubkey)) return;
 
-  const honked = loadHonked();
-  if (honked.has(pubkey)) {
-    console.log(`[nostr-listener] welcome: ${pubkey.slice(0, 8)}… already honked back, skipping`);
+  const lessons = loadLessons();
+  const idx = lessons[pubkey] ?? 0;                    // next lesson to send
+  if (idx > LESSONS.length) {                          // past graduation → stay quiet
+    console.log(`[nostr-listener] welcome: ${pubkey.slice(0, 8)}… graduated, staying quiet`);
     return;
   }
-
-  console.log(`[nostr-listener] welcome: new #goosielabs post from ${pubkey.slice(0, 8)}… — honking back publicly`);
+  const message = idx < LESSONS.length ? LESSONS[idx] : GRADUATION;
+  const label   = idx < LESSONS.length ? `lesson ${idx + 1}/${LESSONS.length}` : 'graduation';
 
   const welcomeGoose = geese.find(g => g.name === 'welcome');
   if (!welcomeGoose) {
-    console.error('[nostr-listener] welcome: goose not loaded, cannot honk back');
+    console.error('[nostr-listener] welcome: goose not loaded, cannot reply');
     return;
   }
 
-  // Reply-first: a public honk-back (kind:1). No tip, no voucher — just proof the
-  // open network heard them, tied to the "your key is your secret" lesson.
-  const message = `🪿 HONK back — welcome to Nostr!
-
-Notice where you are: not a company's app, but an open network. We just sent this reply out to a dozen independent servers around the world — no single company controls them, so no one can quietly change or delete it.
-
-And it's yours to read anywhere. Saved your secret (your nsec — the words you backed up)? Sign into a different app with it — Damus, Primal, Iris — and you, your posts, and this welcome are all still there. No account, no lock-in. That's what owning your online self actually feels like. 🪿`;
-
+  console.log(`[nostr-listener] welcome: sending ${label} to ${pubkey.slice(0, 8)}…`);
   try {
     const replyId = await publishPublicReply(welcomeGoose.sk, ev, message);
-    honked.add(pubkey);
-    saveHonked(honked);
-    console.log(`[nostr-listener] welcome: honk-back ${replyId?.slice(0, 8)}… posted for ${pubkey.slice(0, 8)}…`);
+    lessons[pubkey] = idx + 1;                          // advance the sequence
+    saveLessons(lessons);
+    console.log(`[nostr-listener] welcome: ${label} (${replyId?.slice(0, 8)}…) posted for ${pubkey.slice(0, 8)}…`);
 
-    // Notify Perry the loop fired for real
+    // Notify Perry
     const perryPubkey = loadWhitelist().perry_goosie;
     if (perryPubkey) {
       const npub = nip19.npubEncode(pubkey);
-      const notify = `🪿 Welcome honked back at a new visitor!\n\nnostr:${npub}\n\nThey posted #goosielabs — the Start-here loop just fired for real.`;
+      const notify = `🪿 Welcome sent ${label} to a visitor!\n\nnostr:${npub}`;
       await sendReply(welcomeGoose.sk, perryPubkey, notify).catch(() => {});
     }
   } catch (e) {
-    console.error(`[nostr-listener] welcome: honk-back failed: ${e.message}`);
+    console.error(`[nostr-listener] welcome: lesson send failed: ${e.message}`);
   }
 }
 
