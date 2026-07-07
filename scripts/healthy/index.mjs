@@ -22,6 +22,8 @@ const HEALTHY_KEY  = '/home/deploy/agents/healthy/nostr-key.json';
 const WHITELIST    = '/home/deploy/whitelist.json';
 const AGENTS_JSON  = '/home/deploy/agents/agents.json';
 const STATE_FILE   = '/home/deploy/logs/healthy/last_status.txt';
+const DM_STATE_FILE = '/home/deploy/logs/healthy/last_dm.txt';
+const DM_REMINDER_MS = 24 * 60 * 60 * 1000; // herhaal 🔴-DM hooguit 1× per 24u
 const RELAY        = 'ws://127.0.0.1:7778';
 const HEALTH_CMD   = '/usr/local/bin/checkhealthy';
 
@@ -74,6 +76,18 @@ function loadLastStatus() {
 
 function saveLastStatus(emoji) {
   try { writeFileSync(STATE_FILE, emoji, 'utf8'); } catch {}
+}
+
+function loadLastDmTs() {
+  try {
+    const raw = existsSync(DM_STATE_FILE) ? readFileSync(DM_STATE_FILE, 'utf8').trim() : '';
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : 0;
+  } catch { return 0; }
+}
+
+function saveLastDmTs(ts) {
+  try { writeFileSync(DM_STATE_FILE, String(ts), 'utf8'); } catch {}
 }
 
 // ── Nostr publish (kind:1, publiek) ──────────────────────────────────────────
@@ -199,13 +213,25 @@ if (DRY_RUN) {
   process.exit(exitCode);
 }
 
-// DM alleen bij 🔴
+// DM alleen bij 🔴 — maar niet elk uur spammen:
+// stuur bij een nieuwe 🔴 (statuswijziging) of hooguit 1× per 24u zolang het rood blijft.
 if (emoji === '🔴') {
-  try {
-    await sendDM(PERRY_PUBKEY, dmMessage);
-    console.log(`[healthy] DM verstuurd naar Perry (🔴 status)`);
-  } catch (err) {
-    console.error(`[healthy] DM mislukt: ${err.message}`);
+  const now = Date.now();
+  const lastDmTs = loadLastDmTs();
+  const reminderDue = (now - lastDmTs) >= DM_REMINDER_MS;
+
+  if (changed || reminderDue) {
+    try {
+      await sendDM(PERRY_PUBKEY, dmMessage);
+      saveLastDmTs(now);
+      const reason = changed ? 'nieuwe 🔴' : '24u-herinnering';
+      console.log(`[healthy] DM verstuurd naar Perry (${reason})`);
+    } catch (err) {
+      console.error(`[healthy] DM mislukt: ${err.message}`);
+    }
+  } else {
+    const hoursAgo = ((now - lastDmTs) / 3_600_000).toFixed(1);
+    console.log(`[healthy] DM overgeslagen — 🔴 ongewijzigd, laatste DM ${hoursAgo}u geleden (< 24u)`);
   }
 } else {
   console.log(`[healthy] DM overgeslagen — status is ${emoji} (alleen 🔴 triggers DM)`);
