@@ -1,6 +1,10 @@
 #!/bin/bash
 # checkhealthy — Goosie Labs server health check
 # Outputs: colored report with ✔ / ⚠ / ✘ indicators
+#
+# LIVE = THIS FILE. /usr/local/bin/checkhealthy is a symlink to this repo file,
+# so editing here IS live — no deploy/copy step, no drift. Do NOT replace the
+# symlink with a copy (that reintroduces the "committed but not live" gap).
 
 RED='\033[0;31m'; YELLOW='\033[1;33m'; GREEN='\033[0;32m'
 CYAN='\033[0;36m'; BOLD='\033[1m'; RESET='\033[0m'
