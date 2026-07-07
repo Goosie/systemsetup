@@ -23,7 +23,7 @@ const WHITELIST    = '/home/deploy/whitelist.json';
 const AGENTS_JSON  = '/home/deploy/agents/agents.json';
 const STATE_FILE   = '/home/deploy/logs/healthy/last_status.txt';
 const DM_STATE_FILE = '/home/deploy/logs/healthy/last_dm.txt';
-const DM_REMINDER_MS = 24 * 60 * 60 * 1000; // herhaal 🔴-DM hooguit 1× per 24u
+const DM_REMINDER_MS = 12 * 60 * 60 * 1000; // herhaal 🔴-DM hooguit 1× per 12u
 const RELAY        = 'ws://127.0.0.1:7778';
 const HEALTH_CMD   = '/usr/local/bin/checkhealthy';
 
