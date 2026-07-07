@@ -17,6 +17,11 @@ import { readdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 const APPS_DIR    = '/var/www/goosielabs/apps';
+// Non-app repos to also mirror — name → absolute path. Apps are auto-discovered
+// under APPS_DIR; anything living elsewhere (server config, tooling) goes here.
+const EXTRA_REPOS = {
+  'claude-config': '/home/deploy/claude-config',
+};
 const GITEA_HOST  = process.env.GITEA_HOST  ?? '100.111.14.11';
 const GITEA_PORT  = process.env.GITEA_PORT  ?? '8085';
 const GITEA_USER  = process.env.GITEA_USER  ?? 'perry';
@@ -43,6 +48,19 @@ function apps() {
     if (existsSync(resolve(APPS_DIR, name, '.archived'))) return false;
     return existsSync(resolve(APPS_DIR, name, '.git'));
   });
+}
+
+// Resolve a repo name to its directory — an EXTRA_REPOS path if listed, else an
+// app under APPS_DIR.
+function repoDir(name) {
+  return EXTRA_REPOS[name] ?? resolve(APPS_DIR, name);
+}
+
+// All repos to mirror: auto-discovered apps + any EXTRA_REPOS that have a .git.
+function allRepos() {
+  const extra = Object.keys(EXTRA_REPOS)
+    .filter(name => existsSync(resolve(EXTRA_REPOS[name], '.git')));
+  return [...apps(), ...extra];
 }
 
 async function apiGet(path) {
@@ -103,8 +121,8 @@ async function createRepo(name) {
 }
 
 function push(name) {
-  const appDir = resolve(APPS_DIR, name);
-  if (!existsSync(appDir)) throw new Error(`App not found: ${appDir}`);
+  const appDir = repoDir(name);
+  if (!existsSync(appDir)) throw new Error(`Repo not found: ${appDir}`);
 
   console.log(`\n🏮 Gitea: pushing ${name}...`);
 
@@ -131,13 +149,13 @@ function push(name) {
 async function status() {
   console.log(`\n🏮 Gitea — Mirror Status (${GITEA_HOST}:${GITEA_PORT})\n`);
   const onGitea   = await giteaRepos();
-  const localApps = apps();
+  const localApps = allRepos();
   let ok = 0, missing = 0;
 
   for (const name of localApps.sort()) {
     const exists = onGitea.has(name);
     if (exists) {
-      const appDir = resolve(APPS_DIR, name);
+      const appDir = repoDir(name);
       const remote = getGiteaRemote(appDir);
       const synced = remote?.includes('gitea');
       console.log(`  ✅  ${name.padEnd(24)} ${GITEA_HOST}:${GITEA_PORT}/${GITEA_USER}/${name}${!synced ? ' (remote not set)' : ''}`);
@@ -153,9 +171,9 @@ async function status() {
 }
 
 async function syncAll() {
-  console.log(`\n🏮 Gitea: sync-all — ensuring all apps are mirrored...\n`);
+  console.log(`\n🏮 Gitea: sync-all — ensuring all repos are mirrored...\n`);
   const onGitea   = await giteaRepos();
-  const localApps = apps();
+  const localApps = allRepos();
   let created = 0, skipped = 0, failed = 0;
 
   for (const name of localApps) {
