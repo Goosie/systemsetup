@@ -12,6 +12,7 @@
 import { checkConfig } from './skills/check.js';
 import { advies } from './skills/advies.js';
 import { overview } from './skills/overview.js';
+import { configNudge } from './skills/config-nudge.js';
 import { execSync } from 'child_process';
 
 // Roster drift-check — compares agents/*/nostr-key.json (source of truth) against
@@ -43,10 +44,18 @@ switch (command) {
   case 'check':
     await checkConfig(PATHS);
     runDrift();
+    // Weekly settings-suggestion digest — sends one DM to Perry if the inbox
+    // has items or drift is found. Wrapped so a DM/relay failure never fails check.
+    try { await configNudge(PATHS, { dryRun: false }); }
+    catch (e) { console.log(`  ⚠️  config-nudge skipped: ${e.message}`); }
     break;
 
   case 'drift':
     runDrift();
+    break;
+
+  case 'config-nudge':
+    await configNudge(PATHS, { dryRun: process.argv.includes('--dry-run') });
     break;
 
   case 'advies':
@@ -59,7 +68,7 @@ switch (command) {
 
   default:
     console.log(`Onbekend commando: "${command}"`);
-    console.log(`Gebruik: check | drift | advies | overview`);
+    console.log(`Gebruik: check | drift | advies | overview | config-nudge [--dry-run]`);
     process.exit(1);
 }
 
