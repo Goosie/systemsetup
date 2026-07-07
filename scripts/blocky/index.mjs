@@ -46,6 +46,7 @@ const DEFAULT_SCHEDULE = {
   splitty: { interval_blocks: 6, command: 'sweep', description: '~1 hour — sweep rounding dust into the flock (no-op when empty)' },
   'whenidie-review': { interval_blocks: 4320, command: 'remind', description: '~1 month — remind Perry to review the family handover doc (whenidie.md)' },
   welcome: { interval_blocks: 1008, command: 'relaylist', description: '~1 week — refresh Welcome NIP-65 relay list (outbox discovery)' },
+  'session-cleanup': { interval_blocks: 1008, command: 'run', description: '~1 week — close detached tmux sessions idle >7d (reclaim swap)' },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────
