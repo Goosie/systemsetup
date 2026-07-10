@@ -57,6 +57,8 @@ const KEYS = {
   'onboarding-clawback': loadKey('welcome'), // app maintenance — signs as Welcome (the onboarding goose)
   splitty: loadKey('splitty'),
   'session-cleanup': loadKey('devy'), // server maintenance — signs as Devy (DevOps)
+  'commy-traffic': loadKey('commy'), // daily private visitor-pulse DM — signs as Commy
+  'commy-traction': loadKey('commy'), // weekly Nostr-traction DM — signs as Commy
   // ── NEW GEESE ──
 };
 
@@ -249,6 +251,8 @@ async function dispatch(pool, event) {
       case 'onboarding-clawback': await handleScript(pool, 'onboarding-clawback', event, command); break;
       case 'splitty': await handleScript(pool, 'splitty', event, command); break;
       case 'session-cleanup': await handleScript(pool, 'session-cleanup', event, command); break;
+      case 'commy-traffic': await handleScript(pool, 'commy', event, command); break;
+      case 'commy-traction': await handleScript(pool, 'commy', event, command); break;
       // ── NEW CASES ──
     }
   } catch (e) {

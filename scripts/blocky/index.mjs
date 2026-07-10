@@ -47,6 +47,8 @@ const DEFAULT_SCHEDULE = {
   'whenidie-review': { interval_blocks: 4320, command: 'remind', description: '~1 month — remind Perry to review the family handover doc (whenidie.md)' },
   welcome: { interval_blocks: 1008, command: 'relaylist', description: '~1 week — refresh Welcome NIP-65 relay list (outbox discovery)' },
   'session-cleanup': { interval_blocks: 1008, command: 'run', description: '~1 week — close detached tmux sessions idle >7d (reclaim swap)' },
+  'commy-traffic': { interval_blocks: 144, command: 'traffic-pulse', description: '~1 day — private visitor-pulse DM to Perry (nginx logs, bots stripped)' },
+  'commy-traction': { interval_blocks: 1008, command: 'flock-traction', description: '~1 week — flock Nostr-traction DM (followers/reactions/zaps per goose)' },
 };
 
 // ── State ────────────────────────────────────────────────────────────────────

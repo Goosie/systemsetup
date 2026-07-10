@@ -1,1 +1,1 @@
-{"name":"goosie-systemsetup","private":true,"type":"module","dependencies":{"nostr-tools":"^2.23.5"}}
+{"name":"goosie-systemsetup","private":true,"type":"module","dependencies":{"maxmind":"^5.0.6","nostr-tools":"^2.23.5"}}

@@ -20,7 +20,7 @@ const DRY_RUN  = process.argv.includes('--dry-run');
 const [cmd, ...cmdArgs] = process.argv.slice(2).filter(a => a !== '--dry-run');
 
 const RELAY       = 'ws://127.0.0.1:7778';
-const NOSTR_TOOLS = '/var/www/goosielabs/apps/catchzaps/node_modules/nostr-tools/lib/esm/index.js';
+const NOSTR_TOOLS = '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
 const WS_PATH     = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
 const APPS_DIR    = '/var/www/goosielabs/apps';
 const LOGS_DIR    = '/home/deploy/logs';
@@ -347,6 +347,8 @@ switch (cmd) {
   case 'collect': await cmdCollect();                      break;
   case 'post':    await cmdPost(cmdArgs.join(' ') || null); break;
   case 'check':   cmdCheck();                              break;
+  case 'traffic-pulse': await import('./traffic-pulse.mjs'); break; // daily private visitor-pulse DM to Perry
+  case 'flock-traction': await import('./flock-traction.mjs'); break; // weekly Nostr-traction DM to Perry
   default:
-    console.log('Gebruik: node index.mjs [run|collect|post|post "tekst"|check] [--dry-run]');
+    console.log('Gebruik: node index.mjs [run|collect|post|post "tekst"|check|traffic-pulse] [--dry-run]');
 }
