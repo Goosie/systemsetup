@@ -21,78 +21,15 @@
  */
 
 import { readFileSync } from 'fs';
+import { loadGeese, gather } from './traction-lib.mjs';
 
 const NOSTR_TOOLS = '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
 const WS_PATH     = '/home/deploy/nsite-gateway/node_modules/ws/lib/websocket.js';
-const AGENTS      = '/home/deploy/agents/agents.json';
 const WHITELIST   = '/home/deploy/whitelist.json';
 const COMMY_KEY   = '/home/deploy/agents/commy/nostr-key.json';
 const SEND_RELAY  = 'ws://127.0.0.1:7778';
 
-// Where to look for engagement. Our relay + big public ones (outbox coverage).
-const QUERY_RELAYS = [
-  'wss://relay.goosielabs.com',
-  'wss://relay.damus.io',
-  'wss://nos.lol',
-  'wss://relay.primal.net',
-];
-
 const DRY_RUN = process.argv.includes('--dry-run');
-
-function loadGeese() {
-  const data = JSON.parse(readFileSync(AGENTS, 'utf8'));
-  const map = {};                     // pubkey -> name
-  for (const a of data.agents) if (a.pubkey) map[a.pubkey] = a.name;
-  return map;
-}
-
-async function gather(geese) {
-  const { SimplePool } = await import(NOSTR_TOOLS);
-  globalThis.WebSocket = (await import(WS_PATH)).default;
-
-  const pubkeys = Object.keys(geese);
-  const flock   = new Set(pubkeys);
-  const wl      = JSON.parse(readFileSync(WHITELIST, 'utf8'));
-  const perry   = wl.perry_goosie;
-  if (perry) flock.add(perry);        // don't count Perry as external interest
-
-  const pool = new SimplePool();
-  // One batched query per relay covers ALL geese and all three kinds.
-  let events = [];
-  try {
-    events = await pool.querySync(QUERY_RELAYS, {
-      kinds: [3, 7, 9735],
-      '#p': pubkeys,
-    }, { maxWait: 12_000 });
-  } catch { /* return whatever we have */ }
-  try { pool.close(QUERY_RELAYS); } catch {}
-
-  // Bucket per goose.
-  const stats = {};
-  for (const pk of pubkeys) stats[pk] = { followers: new Set(), reactions: 0, zaps: 0 };
-
-  for (const ev of events) {
-    const targets = ev.tags.filter(t => t[0] === 'p' && stats[t[1]]).map(t => t[1]);
-    if (!targets.length) continue;
-    for (const pk of targets) {
-      if (ev.kind === 3) {
-        if (!flock.has(ev.pubkey)) stats[pk].followers.add(ev.pubkey); // external only
-      } else if (ev.kind === 7)     stats[pk].reactions++;
-      else if (ev.kind === 9735)    stats[pk].zaps++;
-    }
-  }
-
-  // Flatten + sort by (followers, reactions, zaps).
-  return pubkeys
-    .map(pk => ({
-      name: geese[pk],
-      followers: stats[pk].followers.size,
-      reactions: stats[pk].reactions,
-      zaps: stats[pk].zaps,
-    }))
-    .sort((a, b) =>
-      b.followers - a.followers || b.reactions - a.reactions || b.zaps - a.zaps || a.name.localeCompare(b.name));
-}
 
 function buildMessage(rows) {
   const totF = rows.reduce((s, r) => s + r.followers, 0);

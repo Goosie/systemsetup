@@ -19,6 +19,7 @@
 import { readFileSync, existsSync, statSync, writeFileSync } from 'fs';
 import { gunzipSync } from 'zlib';
 import maxmind from 'maxmind';
+import { loadGeese, gather, totals } from './traction-lib.mjs';
 
 const GEO_DB      = '/home/deploy/data/geo/dbip-country-lite.mmdb';
 const NOSTR_TOOLS = '/var/www/goosielabs/apps/skein/node_modules/nostr-tools/lib/esm/index.js';
@@ -95,6 +96,15 @@ async function ensureGeoDb() {
   } catch { /* offline / download failed → keep existing DB */ }
 }
 
+// Compact flock-wide Nostr traction (followers/reactions/zaps) — best-effort, skipped on failure.
+async function addTraction(s) {
+  s.traction = null;
+  try {
+    const t = totals(await gather(loadGeese()));
+    s.traction = t;
+  } catch { /* relays slow/unreachable → just omit the line */ }
+}
+
 // Country per UNIQUE visitor IP — fully offline (DB-IP local mmdb, country only).
 async function addGeo(s) {
   s.countries = [];
@@ -149,6 +159,12 @@ function buildMessage(s) {
       s.countries.slice(0, 6).map(([c, n]) => `  • ${c} — ${n}`).join('\n'),
       ``,
     ] : []),
+    ...(s.traction ? [
+      `🪿 Nostr traction (flock): ${s.traction.followers}👤 ${s.traction.reactions}❤️ ${s.traction.zaps}⚡`
+        + (s.traction.top.length ? `  · top: ${s.traction.top.map(t => t.name).join(', ')}` : ''),
+      `(full per-goose breakdown in the weekly pulse)`,
+      ``,
+    ] : []),
     `Caveat: some datacenter IPs fake a browser — true human count may be lower.`,
     `Blind spot: the homepage runs on Blossom, not nginx — those visits aren't counted here.`,
   ].join('\n');
@@ -179,6 +195,7 @@ async function sendDM(toPubkey, message) {
   const stats = parse();
   await ensureGeoDb();
   await addGeo(stats);
+  await addTraction(stats);
   const message = buildMessage(stats);
 
   if (DRY_RUN) {
