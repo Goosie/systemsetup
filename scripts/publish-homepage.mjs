@@ -392,7 +392,7 @@ async function generateHomepage() {
   // Hero
   html = html.replace(
     '<h1>Een open lab voor Bitcoin, Nostr en AI</h1>',
-    '<h1>Making decentralized tech actually work for people</h1>\n    <p class="hero-sub">Who really owns your Instagram account, your PayPal balance, your followers? Not you. Here you can feel what it&rsquo;s like when you do.</p>'
+    '<h1>Exploring what decentralized tech can do!</h1>\n    <p class="hero-sub">Who really owns your Instagram account, your PayPal balance, your followers? Not you. Here you can feel what it&rsquo;s like when you do.</p>'
   );
   html = html.replace(
     /Ganzen vliegen in V-formatie[^<]+/,
